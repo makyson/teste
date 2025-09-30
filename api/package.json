@@ -1,0 +1,17 @@
+{
+  "name": "energy-telemetry-api",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "fastify": "^4.26.2",
+    "mqtt": "^5.3.5",
+    "neo4j-driver": "^5.18.0",
+    "pg": "^8.11.5"
+  }
+}
