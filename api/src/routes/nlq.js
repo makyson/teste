@@ -1,4 +1,5 @@
-import { generateCypher } from '../nlq/gemini.js';
+// src/routes/nlq.js
+import { generateQueries } from '../nlq/gemini.js';
 import { runCypher } from '../db/neo4j.js';
 import {
   DEFAULT_APPROVAL_THRESHOLD,
@@ -8,9 +9,7 @@ import {
 } from '../nlq/questions.js';
 
 function normalizeText(value) {
-  if (typeof value !== 'string') {
-    return '';
-  }
+  if (typeof value !== 'string') return '';
   return value.trim();
 }
 
@@ -56,11 +55,13 @@ export default async function registerNlqRoutes(fastify) {
         properties: {
           text: { type: 'string', minLength: 1 },
           companyId: { type: 'string', minLength: 1 }
+          // Se quiser suportar consultas globais depois, adicione: scope: { type: 'string', enum: ['company', 'all'] }
         }
       }
     },
     handler: async (request, reply) => {
       const { text, companyId } = request.body;
+
       const normalizedText = normalizeText(text);
       if (!normalizedText) {
         reply.code(400);
@@ -75,15 +76,18 @@ export default async function registerNlqRoutes(fastify) {
         normalizeText(companyId) ||
         normalizeText(tokenCompanyId) ||
         fastify.config.defaultCompanyId;
+
       const normalizedSearchText = normalizeForSearch(normalizedText);
       const start = Date.now();
 
-      let cypher;
+      let cypher, sql;
       let source = 'gemini';
+
       const approvalThreshold = Number.isFinite(fastify.config?.nlq?.approvalThreshold)
         ? fastify.config.nlq.approvalThreshold
         : DEFAULT_APPROVAL_THRESHOLD;
 
+      // 1) Tenta catálogo aprovado
       try {
         const stored = await findApprovedQuestion({
           normalizedText: normalizedSearchText,
@@ -93,7 +97,9 @@ export default async function registerNlqRoutes(fastify) {
 
         if (stored) {
           cypher = stored.cypher;
+          sql = stored.sql; // <- pega SQL salva
           source = 'catalog';
+
           await registerQuestionUsage({
             normalizedText: normalizedSearchText,
             companyId: stored.companyKey ?? targetCompanyId
@@ -103,14 +109,17 @@ export default async function registerNlqRoutes(fastify) {
         fastify.log.error({ err }, 'Falha ao buscar pergunta aprovada no Neo4j');
       }
 
-      if (!cypher) {
+      // 2) Se não veio do catálogo, gera via Gemini ({ cypher, sql })
+      if (!cypher || !sql) {
         try {
-          cypher = await generateCypher({
+          const out = await generateQueries({
             text: normalizedText,
             companyId: targetCompanyId
           });
+          cypher = out.cypher;
+          sql = out.sql;
         } catch (err) {
-          fastify.log.error({ err }, 'Erro ao gerar Cypher via Gemini');
+          fastify.log.error({ err }, 'Erro ao gerar consultas via Gemini');
           reply.code(502);
           return {
             code: 'GEMINI_ERROR',
@@ -119,6 +128,7 @@ export default async function registerNlqRoutes(fastify) {
         }
       }
 
+      // 3) Executa no Neo4j (Cypher)
       let rows;
       try {
         const result = await runCypher(cypher, { companyId: targetCompanyId });
@@ -132,13 +142,15 @@ export default async function registerNlqRoutes(fastify) {
         };
       }
 
+      // 4) Se veio do Gemini, salva no catálogo (incluindo SQL)
       if (source === 'gemini') {
         try {
           await registerQuestionSuccess({
             text: normalizedText,
             normalizedText: normalizedSearchText,
             companyId: targetCompanyId,
-            cypher
+            cypher,
+            sql // <- salva SQL
           });
         } catch (err) {
           fastify.log.error({ err }, 'Falha ao salvar pergunta NLQ no Neo4j');
@@ -151,6 +163,7 @@ export default async function registerNlqRoutes(fastify) {
       return {
         answer: buildAnswer(rows, targetCompanyId),
         cypher,
+        sql, // <- devolve a SQL gerada/salva
         rows,
         source
       };
