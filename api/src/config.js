@@ -26,7 +26,10 @@ const requiredVars = [
   'MQTT_TOPIC',
   'GEMINI_API_KEY',
   'GEMINI_MODEL',
-  'DEFAULT_COMPANY_ID'
+  'DEFAULT_COMPANY_ID',
+  'JWT_SECRET',
+  'AUTH_USERNAME',
+  'AUTH_PASSWORD'
 ];
 
 const config = {};
@@ -42,6 +45,7 @@ for (const key of requiredVars) {
 config.NODE_ENV = process.env.NODE_ENV || 'development';
 config.REDIS_URL = process.env.REDIS_URL || 'redis://redis:6379';
 config.LOG_LEVEL = process.env.LOG_LEVEL || 'info';
+config.JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
 
 export default Object.freeze({
   port: Number.parseInt(config.PORT, 10) || 3000,
@@ -70,5 +74,11 @@ export default Object.freeze({
     model: config.GEMINI_MODEL
   },
   defaultCompanyId: config.DEFAULT_COMPANY_ID,
-  logLevel: config.LOG_LEVEL
+  logLevel: config.LOG_LEVEL,
+  auth: {
+    username: config.AUTH_USERNAME,
+    password: config.AUTH_PASSWORD,
+    jwtSecret: config.JWT_SECRET,
+    tokenExpiresIn: config.JWT_EXPIRES_IN
+  }
 });
