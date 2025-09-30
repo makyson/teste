@@ -33,6 +33,7 @@ function buildAnswer(rows, companyId) {
 
 export default async function registerNlqRoutes(fastify) {
   fastify.post('/nlq/query', {
+    preHandler: fastify.authenticate,
     schema: {
       body: {
         type: 'object',
@@ -54,7 +55,11 @@ export default async function registerNlqRoutes(fastify) {
         };
       }
 
-      const targetCompanyId = normalizeText(companyId) || fastify.config.defaultCompanyId;
+      const tokenCompanyId = request.user?.companyId;
+      const targetCompanyId =
+        normalizeText(companyId) ||
+        normalizeText(tokenCompanyId) ||
+        fastify.config.defaultCompanyId;
       const start = Date.now();
 
       let cypher;

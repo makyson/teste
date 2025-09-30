@@ -20,3 +20,9 @@ Os serviços provisionados incluem:
 4. Opcionalmente, publique uma mensagem de exemplo com `./scripts/demo_publish.sh`.
 
 O arquivo `.env` é gerado com valores padrão seguros para desenvolvimento. Ajuste conforme necessário antes de rodar em produção.
+
+## Autenticação
+
+A API expõe autenticação via JWT. Para obter um token, faça uma requisição `POST /auth/login` com `username` e `password` definidos nas variáveis de ambiente `AUTH_USERNAME` e `AUTH_PASSWORD`. Opcionalmente informe `companyId` para vincular o token a uma empresa específica; caso contrário, será usada `DEFAULT_COMPANY_ID`.
+
+Utilize o token recebido no cabeçalho `Authorization: Bearer <token>` para acessar rotas protegidas, como `POST /nlq/query`.
