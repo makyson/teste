@@ -82,7 +82,6 @@ export default Object.freeze({
   },
   defaultCompanyId: config.DEFAULT_COMPANY_ID,
   logLevel: config.LOG_LEVEL,
-     codex/automatizar-geracao-de-sql
   nlq: {
     approvalThreshold: nlqApprovalThreshold
 
@@ -91,6 +90,5 @@ export default Object.freeze({
     password: config.AUTH_PASSWORD,
     jwtSecret: config.JWT_SECRET,
     tokenExpiresIn: config.JWT_EXPIRES_IN
-     main
   }
 });
