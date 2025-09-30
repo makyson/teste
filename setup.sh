@@ -79,7 +79,7 @@ services:
       - default
 
   timescale:
-    image: timescale/timescaledb-ha:pg16.4
+    image: timescale/timescaledb-ha:pg16-all
     environment:
       POSTGRES_DB: energy
       POSTGRES_USER: postgres
