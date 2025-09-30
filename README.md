@@ -21,6 +21,7 @@ Os serviços provisionados incluem:
 
 O arquivo `.env` é gerado com valores padrão seguros para desenvolvimento. Ajuste conforme necessário antes de rodar em produção.
 
+     codex/automatizar-geracao-de-sql
 ## Como funciona o NLQ (Natural Language Query)
 
 1. A API recebe o texto da pergunta e o `companyId` desejado.
@@ -32,3 +33,10 @@ O arquivo `.env` é gerado com valores padrão seguros para desenvolvimento. Aju
 7. O resultado retornado ao cliente inclui o Cypher utilizado, a origem (`gemini` ou `catalog`) e as linhas provenientes do Neo4j.
 
 > ℹ️ O pipeline continua exclusivo do grafo: não há geração nem execução automática de SQL no TimescaleDB/PostgreSQL. O Neo4j concentra tanto a execução quanto o histórico das consultas validadas.
+
+## Autenticação
+
+A API expõe autenticação via JWT. Para obter um token, faça uma requisição `POST /auth/login` com `username` e `password` definidos nas variáveis de ambiente `AUTH_USERNAME` e `AUTH_PASSWORD`. Opcionalmente informe `companyId` para vincular o token a uma empresa específica; caso contrário, será usada `DEFAULT_COMPANY_ID`.
+
+Utilize o token recebido no cabeçalho `Authorization: Bearer <token>` para acessar rotas protegidas, como `POST /nlq/query`.
+     main

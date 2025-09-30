@@ -1,8 +1,10 @@
 import process from 'node:process';
 import fastify from 'fastify';
+import fastifyJwt from '@fastify/jwt';
 import config from './config.js';
 import registerHealthRoute from './routes/health.js';
 import registerNlqRoute from './routes/nlq.js';
+import registerAuthRoute from './routes/auth.js';
 import { verifyConnectivity as verifyTimescale, closePool } from './db/timescale.js';
 import { verifyConnectivity as verifyNeo4j, closeDriver } from './db/neo4j.js';
 import { startMqttIngest } from './ingest/mqtt.js';
@@ -15,7 +17,27 @@ const app = fastify({
 
 app.decorate('config', config);
 
+app.register(fastifyJwt, {
+  secret: config.auth.jwtSecret,
+  sign: {
+    expiresIn: config.auth.tokenExpiresIn
+  }
+});
+
+app.decorate('authenticate', async function authenticate(request, reply) {
+  try {
+    await request.jwtVerify();
+  } catch (err) {
+    request.log.warn({ err }, 'Falha na verificação do token JWT');
+    const error = new Error('Token inválido ou ausente.');
+    error.statusCode = 401;
+    error.code = 'UNAUTHORIZED';
+    throw error;
+  }
+});
+
 app.register(registerHealthRoute);
+app.register(registerAuthRoute);
 app.register(registerNlqRoute);
 
 let stopMqtt = null;
