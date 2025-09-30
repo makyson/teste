@@ -22,6 +22,10 @@ CREATE CONSTRAINT alert_id_unique IF NOT EXISTS
 FOR (a:Alert)
 REQUIRE a.id IS UNIQUE;
 
+CREATE CONSTRAINT nlq_question_identity_unique IF NOT EXISTS
+FOR (q:NlqQuestion)
+REQUIRE (q.companyKey, q.normalizedText) IS UNIQUE;
+
 MERGE (c:Company {id: 'company-1'})
 ON CREATE SET c.name = 'Empresa Demo'
 RETURN c;

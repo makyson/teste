@@ -1,11 +1,26 @@
 import { generateCypher } from '../nlq/gemini.js';
 import { runCypher } from '../db/neo4j.js';
+import {
+  DEFAULT_APPROVAL_THRESHOLD,
+  findApprovedQuestion,
+  registerQuestionSuccess,
+  registerQuestionUsage
+} from '../nlq/questions.js';
 
 function normalizeText(value) {
   if (typeof value !== 'string') {
     return '';
   }
   return value.trim();
+}
+
+function normalizeForSearch(value) {
+  return value
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
 }
 
 function buildAnswer(rows, companyId) {
@@ -55,21 +70,48 @@ export default async function registerNlqRoutes(fastify) {
       }
 
       const targetCompanyId = normalizeText(companyId) || fastify.config.defaultCompanyId;
+      const normalizedSearchText = normalizeForSearch(normalizedText);
       const start = Date.now();
 
       let cypher;
+      let source = 'gemini';
+      const approvalThreshold = Number.isFinite(fastify.config?.nlq?.approvalThreshold)
+        ? fastify.config.nlq.approvalThreshold
+        : DEFAULT_APPROVAL_THRESHOLD;
+
       try {
-        cypher = await generateCypher({
-          text: normalizedText,
-          companyId: targetCompanyId
+        const stored = await findApprovedQuestion({
+          normalizedText: normalizedSearchText,
+          companyId: targetCompanyId,
+          threshold: approvalThreshold
         });
+
+        if (stored) {
+          cypher = stored.cypher;
+          source = 'catalog';
+          await registerQuestionUsage({
+            normalizedText: normalizedSearchText,
+            companyId: stored.companyKey ?? targetCompanyId
+          });
+        }
       } catch (err) {
-        fastify.log.error({ err }, 'Erro ao gerar Cypher via Gemini');
-        reply.code(502);
-        return {
-          code: 'GEMINI_ERROR',
-          message: 'Não foi possível gerar a consulta a partir do texto informado.'
-        };
+        fastify.log.error({ err }, 'Falha ao buscar pergunta aprovada no Neo4j');
+      }
+
+      if (!cypher) {
+        try {
+          cypher = await generateCypher({
+            text: normalizedText,
+            companyId: targetCompanyId
+          });
+        } catch (err) {
+          fastify.log.error({ err }, 'Erro ao gerar Cypher via Gemini');
+          reply.code(502);
+          return {
+            code: 'GEMINI_ERROR',
+            message: 'Não foi possível gerar a consulta a partir do texto informado.'
+          };
+        }
       }
 
       let rows;
@@ -85,13 +127,27 @@ export default async function registerNlqRoutes(fastify) {
         };
       }
 
+      if (source === 'gemini') {
+        try {
+          await registerQuestionSuccess({
+            text: normalizedText,
+            normalizedText: normalizedSearchText,
+            companyId: targetCompanyId,
+            cypher
+          });
+        } catch (err) {
+          fastify.log.error({ err }, 'Falha ao salvar pergunta NLQ no Neo4j');
+        }
+      }
+
       const total = Date.now() - start;
-      fastify.log.info({ cypher, totalMs: total }, 'NLQ executado');
+      fastify.log.info({ cypher, totalMs: total, source }, 'NLQ executado');
 
       return {
         answer: buildAnswer(rows, targetCompanyId),
         cypher,
-        rows
+        rows,
+        source
       };
     }
   });

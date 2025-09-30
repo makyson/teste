@@ -20,3 +20,15 @@ Os serviços provisionados incluem:
 4. Opcionalmente, publique uma mensagem de exemplo com `./scripts/demo_publish.sh`.
 
 O arquivo `.env` é gerado com valores padrão seguros para desenvolvimento. Ajuste conforme necessário antes de rodar em produção.
+
+## Como funciona o NLQ (Natural Language Query)
+
+1. A API recebe o texto da pergunta e o `companyId` desejado.
+2. O serviço NLQ consulta primeiro o Neo4j em busca de uma pergunta semelhante já cadastrada com **aprovação ≥ 80%**.
+3. Se existir uma correspondência aprovada, a API reutiliza o Cypher armazenado e executa diretamente no Neo4j.
+4. Caso não haja correspondência suficiente, o serviço envia o prompt para o Gemini, que devolve **somente** uma consulta Cypher.
+5. O Cypher gerado é sanitizado, executado no Neo4j e, em seguida, armazenado no grafo já com aprovação 100%, evitando novas validações manuais.
+6. Cada execução atualiza métricas de uso da pergunta reaproveitada, mantendo um histórico de popularidade diretamente no grafo.
+7. O resultado retornado ao cliente inclui o Cypher utilizado, a origem (`gemini` ou `catalog`) e as linhas provenientes do Neo4j.
+
+> ℹ️ O pipeline continua exclusivo do grafo: não há geração nem execução automática de SQL no TimescaleDB/PostgreSQL. O Neo4j concentra tanto a execução quanto o histórico das consultas validadas.
