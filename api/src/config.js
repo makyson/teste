@@ -47,6 +47,13 @@ config.REDIS_URL = process.env.REDIS_URL || 'redis://redis:6379';
 config.LOG_LEVEL = process.env.LOG_LEVEL || 'info';
 config.JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1h';
 
+const nlqApprovalThresholdRaw = process.env.NLQ_APPROVAL_THRESHOLD;
+let nlqApprovalThreshold = Number.parseFloat(nlqApprovalThresholdRaw);
+if (!Number.isFinite(nlqApprovalThreshold)) {
+  nlqApprovalThreshold = 0.8;
+}
+nlqApprovalThreshold = Math.min(Math.max(nlqApprovalThreshold, 0), 1);
+
 export default Object.freeze({
   port: Number.parseInt(config.PORT, 10) || 3000,
   nodeEnv: config.NODE_ENV,
@@ -75,10 +82,15 @@ export default Object.freeze({
   },
   defaultCompanyId: config.DEFAULT_COMPANY_ID,
   logLevel: config.LOG_LEVEL,
+     codex/automatizar-geracao-de-sql
+  nlq: {
+    approvalThreshold: nlqApprovalThreshold
+
   auth: {
     username: config.AUTH_USERNAME,
     password: config.AUTH_PASSWORD,
     jwtSecret: config.JWT_SECRET,
     tokenExpiresIn: config.JWT_EXPIRES_IN
+     main
   }
 });
