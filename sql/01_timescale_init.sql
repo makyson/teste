@@ -21,25 +21,35 @@ CREATE INDEX IF NOT EXISTS idx_telemetry_raw_device_ts
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS ca_device_daily
 WITH (timescaledb.continuous) AS
-SELECT
-    company_id,
-    logical_id,
-    time_bucket('1 day', ts) AS day,
-    SUM(
-        ((voltage * current * COALESCE(power_factor, 1)) / 1000.0)
-        * COALESCE(
+WITH ordered AS (
+    SELECT
+        company_id,
+        logical_id,
+        time_bucket('1 day', ts) AS day,
+        ts,
+        voltage,
+        current,
+        frequency,
+        power_factor,
+        COALESCE(
             EXTRACT(EPOCH FROM LEAD(ts, 1, ts + INTERVAL '1 minute') OVER (
                 PARTITION BY company_id, logical_id ORDER BY ts
             ) - ts) / 3600.0,
             1.0 / 60.0
-        )
-    ) AS kwh_estimated,
+        ) AS duration_hours
+    FROM telemetry_raw
+)
+SELECT
+    company_id,
+    logical_id,
+    day,
+    SUM(((voltage * current * COALESCE(power_factor, 1)) / 1000.0) * duration_hours) AS kwh_estimated,
     AVG(voltage * current) AS avg_power,
     MIN(frequency) AS min_freq,
     MAX(frequency) AS max_freq,
     AVG(power_factor) AS pf_avg
-FROM telemetry_raw
-GROUP BY company_id, logical_id, time_bucket('1 day', ts);
+FROM ordered
+GROUP BY company_id, logical_id, day;
 
 DO $$
 BEGIN

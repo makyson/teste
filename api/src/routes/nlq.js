@@ -70,16 +70,12 @@ export default async function registerNlqRoutes(fastify) {
         };
       }
 
-      codex/automatizar-geracao-de-sql
-      const targetCompanyId = normalizeText(companyId) || fastify.config.defaultCompanyId;
-      const normalizedSearchText = normalizeForSearch(normalizedText);
-
       const tokenCompanyId = request.user?.companyId;
       const targetCompanyId =
         normalizeText(companyId) ||
         normalizeText(tokenCompanyId) ||
         fastify.config.defaultCompanyId;
-        main
+      const normalizedSearchText = normalizeForSearch(normalizedText);
       const start = Date.now();
 
       let cypher;

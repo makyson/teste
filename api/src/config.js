@@ -84,7 +84,7 @@ export default Object.freeze({
   logLevel: config.LOG_LEVEL,
   nlq: {
     approvalThreshold: nlqApprovalThreshold
-
+  },
   auth: {
     username: config.AUTH_USERNAME,
     password: config.AUTH_PASSWORD,
