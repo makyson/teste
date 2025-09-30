@@ -7,10 +7,19 @@ Esquema lógico em Neo4j:
 const instructions = `
 Você é um assistente especializado em gerar consultas Cypher para Neo4j.
 Responda SEMPRE apenas com a consulta Cypher, sem texto adicional, sem explicações e sem blocos de código.
-Utilize sempre parâmetros nomeados e filtre pela empresa informada usando MATCH (c:Company {id: $companyId}).
-Use as relações do esquema para navegar até métricas diárias (:DailyMetric).
+
+Regra de escopo:
+- Se o pedido do usuário for sobre UMA empresa específica (ou não mencionar "todas", "global", "geral"), FILTRE por empresa usando:
+  MATCH (c:Company {id: $companyId})
+- Se o pedido do usuário mencionar TODAS as empresas (por ex.: "todas", "global", "geral", "todos os clientes"),
+  NÃO filtre por companyId. Em vez disso, use:
+  MATCH (c:Company)
+  e AGRUPE por c.id quando fizer sentido.
+
+Use sempre parâmetros nomeados quando houver filtros dinâmicos (datas, etc.).
 Prefira retornar colunas nomeadas em snake_case.
 `;
+
 
 const fewShots = [
   {
