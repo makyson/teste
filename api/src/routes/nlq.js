@@ -1,24 +1,25 @@
 // src/routes/nlq.js
-import { generateQueries } from '../nlq/gemini.js';
-import { runCypher } from '../db/neo4j.js';
-import { runSql } from '../db/timescale.js';
+import { generateQueries } from "../nlq/gemini.js";
+import { runCypher } from "../db/neo4j.js";
+import { runSql } from "../db/timescale.js";
+import { patchNaiveDateSubtractions } from "../nlq/cypherFixes.js";
 import {
   DEFAULT_APPROVAL_THRESHOLD,
   findApprovedQuestion,
   registerQuestionSuccess,
-  registerQuestionUsage
-} from '../nlq/questions.js';
+  registerQuestionUsage,
+} from "../nlq/questions.js";
 
 function normalizeText(value) {
-  if (typeof value !== 'string') return '';
+  if (typeof value !== "string") return "";
   return value.trim();
 }
 
 function normalizeForSearch(value) {
   return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, ' ')
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
     .trim()
     .toLowerCase();
 }
@@ -37,7 +38,7 @@ function buildAnswer(rows, companyId) {
   const preview = keys
     .slice(0, 5)
     .map((key) => `${key}: ${sample[key]}`)
-    .join(', ');
+    .join(", ");
 
   if (rows.length === 1) {
     return `Encontrada 1 linha para a empresa ${companyId}. Principais valores: ${preview}.`;
@@ -47,18 +48,18 @@ function buildAnswer(rows, companyId) {
 }
 
 export default async function registerNlqRoutes(fastify) {
-  fastify.post('/nlq/query', {
+  fastify.post("/nlq/query", {
     preHandler: fastify.authenticate,
     schema: {
       body: {
-        type: 'object',
-        required: ['text'],
+        type: "object",
+        required: ["text"],
         properties: {
-          text: { type: 'string', minLength: 1 },
-          companyId: { type: 'string', minLength: 1 }
+          text: { type: "string", minLength: 1 },
+          companyId: { type: "string", minLength: 1 },
           // Se quiser suportar consultas globais depois, adicione: scope: { type: 'string', enum: ['company', 'all'] }
-        }
-      }
+        },
+      },
     },
     handler: async (request, reply) => {
       const { text, companyId } = request.body;
@@ -67,8 +68,8 @@ export default async function registerNlqRoutes(fastify) {
       if (!normalizedText) {
         reply.code(400);
         return {
-          code: 'INVALID_TEXT',
-          message: 'O campo "text" deve ser uma string não vazia.'
+          code: "INVALID_TEXT",
+          message: 'O campo "text" deve ser uma string não vazia.',
         };
       }
 
@@ -82,9 +83,12 @@ export default async function registerNlqRoutes(fastify) {
       const start = Date.now();
 
       let cypher, sql;
-      let source = 'gemini';
+      cypher = patchNaiveDateSubtractions(cypher);
+      let source = "gemini";
 
-      const approvalThreshold = Number.isFinite(fastify.config?.nlq?.approvalThreshold)
+      const approvalThreshold = Number.isFinite(
+        fastify.config?.nlq?.approvalThreshold
+      )
         ? fastify.config.nlq.approvalThreshold
         : DEFAULT_APPROVAL_THRESHOLD;
 
@@ -93,21 +97,24 @@ export default async function registerNlqRoutes(fastify) {
         const stored = await findApprovedQuestion({
           normalizedText: normalizedSearchText,
           companyId: targetCompanyId,
-          threshold: approvalThreshold
+          threshold: approvalThreshold,
         });
 
         if (stored) {
           cypher = stored.cypher;
           sql = stored.sql; // <- pega SQL salva
-          source = 'catalog';
+          source = "catalog";
 
           await registerQuestionUsage({
             normalizedText: normalizedSearchText,
-            companyId: stored.companyKey ?? targetCompanyId
+            companyId: stored.companyKey ?? targetCompanyId,
           });
         }
       } catch (err) {
-        fastify.log.error({ err }, 'Falha ao buscar pergunta aprovada no Neo4j');
+        fastify.log.error(
+          { err },
+          "Falha ao buscar pergunta aprovada no Neo4j"
+        );
       }
 
       // 2) Se não veio do catálogo, gera via Gemini ({ cypher, sql })
@@ -115,16 +122,17 @@ export default async function registerNlqRoutes(fastify) {
         try {
           const out = await generateQueries({
             text: normalizedText,
-            companyId: targetCompanyId
+            companyId: targetCompanyId,
           });
           cypher = out.cypher;
           sql = out.sql;
         } catch (err) {
-          fastify.log.error({ err }, 'Erro ao gerar consultas via Gemini');
+          fastify.log.error({ err }, "Erro ao gerar consultas via Gemini");
           reply.code(502);
           return {
-            code: 'GEMINI_ERROR',
-            message: 'Não foi possível gerar a consulta a partir do texto informado.'
+            code: "GEMINI_ERROR",
+            message:
+              "Não foi possível gerar a consulta a partir do texto informado.",
           };
         }
       }
@@ -136,10 +144,10 @@ export default async function registerNlqRoutes(fastify) {
         const result = await runCypher(cypher, { companyId: targetCompanyId });
         graphRows = result.records.map((record) => record.toObject());
       } catch (err) {
-        fastify.log.error({ err, cypher }, 'Erro ao executar Cypher');
+        fastify.log.error({ err, cypher }, "Erro ao executar Cypher");
         graphError = {
           code: err.code,
-          message: err.message
+          message: err.message,
         };
       }
 
@@ -151,35 +159,35 @@ export default async function registerNlqRoutes(fastify) {
         const sqlResult = await runSql(sql, sqlParams);
         sqlRows = Array.isArray(sqlResult?.rows) ? sqlResult.rows : [];
       } catch (err) {
-        fastify.log.error({ err, sql }, 'Erro ao executar SQL gerado');
+        fastify.log.error({ err, sql }, "Erro ao executar SQL gerado");
         sqlError = {
           code: err.code,
-          message: err.message
+          message: err.message,
         };
       }
 
       if (graphError && sqlError) {
         reply.code(500);
         return {
-          code: 'NLQ_EXECUTION_ERROR',
-          message: 'Falha ao executar as consultas no grafo e no relacional.',
+          code: "NLQ_EXECUTION_ERROR",
+          message: "Falha ao executar as consultas no grafo e no relacional.",
           graphError,
-          sqlError
+          sqlError,
         };
       }
 
       // 5) Se veio do Gemini e SQL executou, salva no catalogo (incluindo SQL)
-      if (source === 'gemini' && !sqlError && !graphError) {
+      if (source === "gemini" && !sqlError && !graphError) {
         try {
           await registerQuestionSuccess({
             text: normalizedText,
             normalizedText: normalizedSearchText,
             companyId: targetCompanyId,
             cypher,
-            sql // <- salva SQL
+            sql, // <- salva SQL
           });
         } catch (err) {
-          fastify.log.error({ err }, 'Falha ao salvar pergunta NLQ no Neo4j');
+          fastify.log.error({ err }, "Falha ao salvar pergunta NLQ no Neo4j");
         }
       }
 
@@ -191,12 +199,16 @@ export default async function registerNlqRoutes(fastify) {
       let answerText = buildAnswer(answerRows, targetCompanyId);
 
       if (sqlError && graphSucceeded) {
-        const sqlReason = sqlError.code ? `${sqlError.code} - ${sqlError.message}` : sqlError.message;
+        const sqlReason = sqlError.code
+          ? `${sqlError.code} - ${sqlError.message}`
+          : sqlError.message;
         answerText = `${answerText} Atencao: a consulta SQL falhou (${sqlReason}). Resultado exibido a partir do grafo.`;
       }
 
       if (graphError && sqlSucceeded) {
-        const graphReason = graphError.code ? `${graphError.code} - ${graphError.message}` : graphError.message;
+        const graphReason = graphError.code
+          ? `${graphError.code} - ${graphError.message}`
+          : graphError.message;
         answerText = `${answerText} Atencao: a consulta no grafo falhou (${graphReason}). Resultado exibido a partir do SQL.`;
       }
 
@@ -209,9 +221,9 @@ export default async function registerNlqRoutes(fastify) {
           sqlRowCount: sqlRows.length,
           graphRowCount: graphRows.length,
           sqlError,
-          graphError
+          graphError,
         },
-        'NLQ executado'
+        "NLQ executado"
       );
 
       return {
@@ -223,9 +235,8 @@ export default async function registerNlqRoutes(fastify) {
         source,
         totalMs: total,
         sqlError,
-        graphError
+        graphError,
       };
-    }
+    },
   });
 }
-

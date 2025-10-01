@@ -137,23 +137,49 @@ SELECT DISTINCT
 FROM telemetry_raw;
 
 CREATE OR REPLACE VIEW daily_metrics AS
+WITH ordered AS (
+  SELECT
+    company_id,
+    logical_id,
+    time_bucket('1 day', ts, 'UTC') AS day,
+    COALESCE(voltage, 0) AS voltage,
+    COALESCE(current, 0) AS current,
+    frequency,
+    power_factor,
+    GREATEST(
+      EXTRACT(EPOCH FROM COALESCE(LEAD(ts) OVER (PARTITION BY company_id, logical_id ORDER BY ts), ts + INTERVAL '60 minutes') - ts) / 3600.0,
+      0
+    ) AS duration_hours
+  FROM telemetry_raw
+),
+aggregated AS (
+  SELECT
+    company_id,
+    logical_id,
+    day,
+    SUM(((voltage * current * COALESCE(power_factor, 1)) / 1000.0) * duration_hours) AS kwh,
+    AVG(voltage * current) AS avg_power,
+    MIN(frequency)        AS min_freq,
+    MAX(frequency)        AS max_freq,
+    AVG(power_factor)     AS pf_avg
+  FROM ordered
+  GROUP BY company_id, logical_id, day
+)
 SELECT
-  e.company_id,
+  agg.company_id,
   ld.id AS device_id,
   s.id  AS site_id,
-  e.day,
-  e.kwh_estimated AS kwh,
-  s2.avg_power,
-  s2.min_freq,
-  s2.max_freq,
-  s2.pf_avg
-FROM ca_device_daily_energy e
-LEFT JOIN ca_device_daily_simple s2
-  ON s2.company_id = e.company_id
- AND s2.logical_id = e.logical_id
- AND s2.day        = e.day
+  agg.day,
+  agg.kwh,
+  agg.avg_power,
+  agg.min_freq,
+  agg.max_freq,
+  agg.pf_avg
+FROM aggregated agg
 LEFT JOIN logical_devices ld
-  ON ld.id = e.logical_id
+  ON ld.id = agg.logical_id
 LEFT JOIN sites s
-  ON s.company_id = e.company_id
- AND s.id         = ld.site_id;
+  ON s.company_id = agg.company_id
+ AND s.id = ld.site_id;
+
+
