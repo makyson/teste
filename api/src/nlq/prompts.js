@@ -28,12 +28,12 @@ Esquema relacional (Timescale/Postgres):
 - sites(id, company_id)
 - logical_devices(id, site_id)
 - daily_metrics(company_id, site_id, device_id, day, kwh, avg_power, min_freq, max_freq, pf_avg)
-- telemetry_raw(company_id, logical_id, ts, voltage, current, frequency, power_factor)
+- telemetry_raw(company_id, logical_id, ts, voltage, current, frequency, power_factor, payload)
 
 Observações importantes:
 - Não invente nomes de colunas fora desta lista (ex.: use d.id, nunca d.logicalId).
 - A view daily_metrics já consolida o consumo diário (kwh) por device e dia.
-- Para janelas de minutos/horas recentes, utilize telemetry_raw com filtros em ts (ex.: ts BETWEEN now() - INTERVAL '5 minutes' AND now()).
+- Para janelas de minutos/horas recentes, utilize telemetry_raw com filtros em ts (ex.: ts BETWEEN now() - INTERVAL '5 minutes' AND now()). Sempre retorne colunas reais da leitura, sem mensagens estáticas.
 - Potências e energias podem ter valores baixos (Watts/kWh pequenos) porque vêm de telemetria real.
 \n- Não use CTEs em consultas que precisem virar continuous aggregates (só informação).
 `.trim();
@@ -64,6 +64,7 @@ Regras de geração (obrigatórias):
 9) Gere **sempre os dois**: Cypher e SQL. Não explique, apenas forneça os campos no JSON.
 10) Nunca escreva consultas do tipo \`WITH (SELECT ...) AS alias\`. Use CTEs nomeadas (ex.: \`WITH total AS (...), top AS (...) SELECT ... FROM total CROSS JOIN top\`).
 11) Quando a pergunta indicar uma regra agendada ou recorrência, assuma janelas relativas ao presente (ex.: use ts <= now() e o intervalo apropriado) e deixe claro no SQL/Cypher que o recorte termina em now().
+12) Nunca substitua resultados por mensagens fixas ou strings literais. Sempre escreva consultas que retornem dados reais das tabelas disponíveis.
 `.trim();
 
 const fewShots = [
@@ -93,7 +94,7 @@ const baseInstructions = `
 Você gera consultas para duas bases: Neo4j (Cypher) e Timescale/Postgres (SQL).
 Gere **sempre** {"cypher":"...","sql":"..."}.
 - **Cypher** deve seguir o grafo descrito no esquema lógico.
-- **SQL** deve usar exclusivamente as views: companies, sites, logical_devices, daily_metrics (com os nomes de coluna listados).
+- **SQL** deve usar exclusivamente as views/tabelas autorizadas: companies, sites, logical_devices, daily_metrics, telemetry_raw (com os nomes exatos das colunas). Para períodos de minutos/horas recentes, prefira telemetry_raw e filtre por ts.
 - Se a pergunta mencionar "ontem", "hoje", "este mês", "este ano", **SQL** normalmente é a fonte primária mais confiável, mas gere os dois.
 `.trim();
 
