@@ -92,3 +92,7 @@ Se já possui o ambiente rodando, aplique `sql/02_nlq_rules.sql` no banco Timesc
 - As mensagens em tempo real são úteis para dashboards/centros de operações consumirem relatórios (8h) ou alertas de tensão > 50 mV por 5 minutos, por exemplo.
 - O gerenciador de regras para automaticamente durante o shutdown (`SIGINT`/`SIGTERM`).
 
+
+### UI rápida
+
+Uma UI simples está disponível em `/app/rules.html`. Abra no navegador, informe um token JWT e manipule as regras (criar, ativar, remover) sem precisar de ferramentas externas.

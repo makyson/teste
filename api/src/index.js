@@ -1,6 +1,9 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import process from 'node:process';
 import fastify from 'fastify';
 import fastifyWebsocket from '@fastify/websocket';
+import fastifyStatic from '@fastify/static';
 import fastifyJwt from '@fastify/jwt';
 import config from './config.js';
 import registerHealthRoute from './routes/health.js';
@@ -20,9 +23,17 @@ const app = fastify({
   }
 });
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 app.decorate('config', config);
 
 app.register(fastifyWebsocket, { options: { maxPayload: 1048576 } });
+app.register(fastifyStatic, {
+  root: path.join(__dirname, 'public'),
+  prefix: '/app/',
+  decorateReply: false
+});
 
 const wsHub = new WebsocketHub(app.log);
 app.decorate('wsHub', wsHub);
