@@ -145,21 +145,21 @@ export default async function registerNlqRoutes(fastify) {
 
       // 4) Executa no Timescale (SQL)
       let sqlRows = [];
+      let sqlError = null;
       try {
         const sqlParams = /\$1\b/.test(sql) ? [targetCompanyId] : [];
         const sqlResult = await runSql(sql, sqlParams);
         sqlRows = Array.isArray(sqlResult?.rows) ? sqlResult.rows : [];
       } catch (err) {
         fastify.log.error({ err, sql }, 'Erro ao executar SQL gerado');
-        reply.code(500);
-        return {
-          code: 'SQL_ERROR',
-          message: 'Falha ao executar consulta no banco relacional.'
+        sqlError = {
+          code: err.code,
+          message: err.message
         };
       }
 
-      // 5) Se veio do Gemini, salva no cat√°logo (incluindo SQL)
-      if (source === 'gemini') {
+      // 5) Se veio do Gemini e SQL executou, salva no cat·logo (incluindo SQL)
+      if (source === 'gemini' && !sqlError) {
         try {
           await registerQuestionSuccess({
             text: normalizedText,
@@ -183,7 +183,8 @@ export default async function registerNlqRoutes(fastify) {
           totalMs: total,
           source,
           sqlRowCount: sqlRows.length,
-          graphRowCount: graphRows.length
+          graphRowCount: graphRows.length,
+          sqlError
         },
         'NLQ executado'
       );
@@ -195,7 +196,8 @@ export default async function registerNlqRoutes(fastify) {
         rows: sqlRows, // <- devolve resultado do SQL
         graphRows,
         source,
-        totalMs: total
+        totalMs: total,
+        sqlError
       };
     }
   });
