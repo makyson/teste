@@ -31,7 +31,7 @@ Esquema relacional (Timescale/Postgres):
 - telemetry_raw(company_id, logical_id, ts, voltage, current, frequency, power_factor)
 
 Observações importantes:
-- Use **apenas** as colunas listadas acima. Não existem variantes camelCase (ex.: use d.id, jamais d.logicalId).
+- Não invente nomes de colunas fora desta lista (ex.: use d.id, nunca d.logicalId).
 - A view daily_metrics já consolida o consumo diário (kwh) por device e dia.
 - Para janelas de minutos/horas recentes, utilize telemetry_raw com filtros em ts (ex.: ts BETWEEN now() - INTERVAL '5 minutes' AND now()).
 - Potências e energias podem ter valores baixos (Watts/kWh pequenos) porque vêm de telemetria real.
