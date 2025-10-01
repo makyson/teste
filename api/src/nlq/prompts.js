@@ -23,15 +23,7 @@ Esquema lógico em Neo4j (grafo agregado):
   -[:HAS_DEVICE]-> (:LogicalDevice {id, logicalId, name})
   -[:HAS_DAILY]-> (:DailyMetric {day, kwh, avg_power, min_freq, max_freq, pf_avg})
 
-Esquema relacional (Timescale/Postgres):
-- companies(id)
-- sites(id, company_id)
-- logical_devices(id, site_id)
-- daily_metrics(device_id, day, kwh, avg_power, min_freq, max_freq, pf_avg)
-
-Observações importantes:
-- A view daily_metrics já consolida o consumo diário (kwh) por device e dia.
-- Não use CTEs em consultas que precisem virar continuous aggregates (só informação).
+Esquema relacional (Timescale/Postgres):\r\n- companies(id)\r\n- sites(id, company_id)\r\n- logical_devices(id, site_id)\r\n- daily_metrics(company_id, site_id, device_id, day, kwh, avg_power, min_freq, max_freq, pf_avg)\r\n\r\nObservações importantes:\r\n- Use **apenas** as colunas listadas acima. Não existem variantes camelCase (ex.: use d.id, jamais d.logicalId).\r\n- A view daily_metrics já consolida o consumo diário (kwh) por device e dia.\r\n- Potências e energias podem ter valores baixos (Watts/kWh pequenos) porque vêm de telemetria real.\n- Não use CTEs em consultas que precisem virar continuous aggregates (só informação).
 `.trim();
 
 const hardRules = `
@@ -55,7 +47,7 @@ Regras de geração (obrigatórias):
    - Intervalo explícito: "dm.day >= :start AND dm.day < :end" (o servidor pode substituir por parâmetros/safe literals).
 5) Sempre que fizer agregação por dispositivo: GROUP BY d.id (SQL) e retorne d.id AS device_id / em Cypher d.id AS device_id.
 6) Quando pedir "top" ou "maior", inclua ORDER BY apropriado + LIMIT.
-7) Preserve nomes de colunas existentes: kwh, avg_power, min_freq, max_freq, pf_avg.
+7) Preserve nomes de colunas existentes: id, device_id, site_id, company_id, kwh, avg_power, min_freq, max_freq, pf_avg (snake_case).
 8) Quando for comparar "ano/mês/dia específicos", prefira filtros por igualdade de mês/ano ou por faixa (ex.: BETWEEN).
 9) Gere **sempre os dois**: Cypher e SQL. Não explique, apenas forneça os campos no JSON.
 `.trim();
@@ -87,7 +79,7 @@ const baseInstructions = `
 Você gera consultas para duas bases: Neo4j (Cypher) e Timescale/Postgres (SQL).
 Gere **sempre** {"cypher":"...","sql":"..."}.
 - **Cypher** deve seguir o grafo descrito no esquema lógico.
-- **SQL** deve usar as tabelas/views: companies, sites, logical_devices, daily_metrics.
+- **SQL** deve usar exclusivamente as views: companies, sites, logical_devices, daily_metrics (com os nomes de coluna listados).
 - Se a pergunta mencionar "ontem", "hoje", "este mês", "este ano", **SQL** normalmente é a fonte primária mais confiável, mas gere os dois.
 `.trim();
 
@@ -120,3 +112,4 @@ export function buildPrompt({
     `${footer}${dynamicContext}\n\nResponda somente com JSON {"cypher":"...","sql":"..."}`,
   ].join("\n\n");
 }
+
