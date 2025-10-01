@@ -28,10 +28,12 @@ Esquema relacional (Timescale/Postgres):
 - sites(id, company_id)
 - logical_devices(id, site_id)
 - daily_metrics(company_id, site_id, device_id, day, kwh, avg_power, min_freq, max_freq, pf_avg)
+- telemetry_raw(company_id, logical_id, ts, voltage, current, frequency, power_factor)
 
 Observações importantes:
 - Use **apenas** as colunas listadas acima. Não existem variantes camelCase (ex.: use d.id, jamais d.logicalId).
 - A view daily_metrics já consolida o consumo diário (kwh) por device e dia.
+- Para janelas de minutos/horas recentes, utilize telemetry_raw com filtros em ts (ex.: ts BETWEEN now() - INTERVAL '5 minutes' AND now()).
 - Potências e energias podem ter valores baixos (Watts/kWh pequenos) porque vêm de telemetria real.
 \n- Não use CTEs em consultas que precisem virar continuous aggregates (só informação).
 `.trim();
@@ -61,6 +63,7 @@ Regras de geração (obrigatórias):
 8) Quando for comparar "ano/mês/dia específicos", prefira filtros por igualdade de mês/ano ou por faixa (ex.: BETWEEN).
 9) Gere **sempre os dois**: Cypher e SQL. Não explique, apenas forneça os campos no JSON.
 10) Nunca escreva consultas do tipo \`WITH (SELECT ...) AS alias\`. Use CTEs nomeadas (ex.: \`WITH total AS (...), top AS (...) SELECT ... FROM total CROSS JOIN top\`).
+11) Quando a pergunta indicar uma regra agendada ou recorrência, assuma janelas relativas ao presente (ex.: use ts <= now() e o intervalo apropriado) e deixe claro no SQL/Cypher que o recorte termina em now().
 `.trim();
 
 const fewShots = [

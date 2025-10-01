@@ -298,20 +298,28 @@
           throw new Error('Informe o token JWT.');
         }
         return {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`
         };
       }
 
-      async function fetchJson(url, options = {}) {
-        const response = await fetch(url, options);
-        if (!response.ok) {
-          const text = await response.text();
-          throw new Error(text || response.statusText);
-        }
-        if (response.status === 204) return null;
-        return response.json();
-      }
+   async function fetchJson(url, options = {}) {
+  const opts = { ...options };
+  const headers = new Headers(opts.headers || {});
+
+  if (opts.body && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+  opts.headers = headers;
+
+  const res = await fetch(url, opts);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text || res.statusText);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
 
       function renderRules(list) {
         cachedRules = list;
@@ -346,7 +354,7 @@
           <td data-label="Resultado">
             ${rule.lastResult ? `<pre>${JSON.stringify(rule.lastResult, null, 2)}</pre>` : '-'}
           </td>
-          <td data-label="Ações" class="actions"></td>
+          <td data-label="Aï¿½ï¿½es" class="actions"></td>
         `;
 
           const actionsCell = tr.querySelector('.actions');
