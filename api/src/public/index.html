@@ -229,6 +229,11 @@
     .event-item.card-alert { border-left: 4px solid #dc2626; }
     .event-item.card-system { border-left: 4px solid #64748b; }
     .event-item.card-generic { border-left: 4px solid rgba(15, 23, 42, 0.3); }
+    .mini-table-wrapper { margin-top: 12px; overflow-x: auto; }
+    .mini-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .mini-table th, .mini-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; }
+    .mini-table tbody tr:nth-child(even) { background: rgba(15, 23, 42, 0.03); }
+    .mini-table tfoot td { font-style: italic; color: var(--muted); }
 
     .event-item h4 {
       margin: 0 0 6px 0;
@@ -779,81 +784,173 @@
       renderStream();
     }
 
+        function escapeHtml(value) {
+      return String(value ?? '-')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/'/g, '&#39;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function prettifyKey(key) {
+      const map = {
+        device_id: 'Dispositivo',
+        daily_kwh: 'Energia (kWh)',
+        consumption: 'Consumo',
+        voltage: 'Tensão',
+        current: 'Corrente',
+        frequency: 'Frequência',
+        power_factor: 'Fator de potência',
+        max_voltage: 'Tensão máx.',
+        min_voltage: 'Tensão mín.',
+        avg_voltage: 'Tensão média',
+        avg_current: 'Corrente média'
+      };
+      return map[key] || key.replace(/_/g, ' ');
+    }
+
+    function formatValue(value, key) {
+      if (value == null) return '-';
+      if (typeof value === 'number') {
+        if (/kwh/i.test(key)) return `${value.toFixed(2)} kWh`;
+        if (/voltage/i.test(key)) return `${value.toFixed(2)} V`;
+        if (/current/i.test(key)) return `${value.toFixed(2)} A`;
+        if (/frequency/i.test(key)) return `${value.toFixed(2)} Hz`;
+        if (/power_factor/i.test(key)) return value.toFixed(2);
+        return value.toFixed(2);
+      }
+      return String(value);
+    }
+
+    function summarizeRow(row) {
+      if (!row || typeof row !== 'object') return '-';
+      const entries = Object.entries(row).slice(0, 3);
+      return entries
+        .map(([key, value]) => `${prettifyKey(key)}: ${formatValue(value, key)}`)
+        .join(' • ');
+    }
+
     function normalizeEvent(event) {
       const nowIso = new Date().toISOString();
       if (!event || typeof event !== 'object') {
         return {
+          type: 'unknown',
           title: 'Evento desconhecido',
           timestamp: nowIso,
           summary: 'Payload não reconhecido.',
+          rows: [],
           details: JSON.stringify(event, null, 2),
           category: 'Sistema',
-          style: 'card-system'
+          style: 'card-system',
+          raw: event
         };
       }
 
       if (event.type === 'device.telemetry') {
+        const sample = event.sample ?? {};
+        const summaryParts = [
+          sample.voltage != null ? `Voltage: ${sample.voltage}` : null,
+          sample.current != null ? `Current: ${sample.current}` : null,
+          sample.frequency != null ? `Frequency: ${sample.frequency}` : null
+        ].filter(Boolean);
+
         return {
-          title: event.deviceId ? `Telemetria - ${event.deviceId}` : 'Telemetria',
-          timestamp: event.sample?.ts || nowIso,
-          summary: 'Nova leitura recebida do dispositivo.',
-          details: JSON.stringify(event.sample ?? event, null, 2),
+          type: event.type,
+          title: event.deviceId ? `Dispositivo ${event.deviceId}` : 'Telemetria',
+          timestamp: sample.ts || nowIso,
+          summary: summaryParts.join(' • ') || 'Nova leitura recebida do dispositivo.',
+          rows: [],
+          details: JSON.stringify(sample, null, 2),
           category: 'Telemetria',
-          style: 'card-device'
+          style: 'card-device',
+          raw: event
         };
       }
 
       if (event.type === 'rule.report' || event.type === 'rule.alert') {
         const rows = Array.isArray(event.rows) ? event.rows : [];
-        const summary = rows.length ? `${rows.length} linha(s) retornadas.` : 'Nenhum dado retornado.';
+        const summaryBase = rows.length
+          ? `${rows.length} linha(s). Destaque: ${summarizeRow(rows[0])}`
+          : 'Nenhum dado retornado.';
+        const schedule = event.metadata?.scheduleSummary ? ` • ${event.metadata.scheduleSummary}` : '';
         return {
-          title: event.type === 'rule.alert' ? `Alerta - ${event.name ?? event.ruleId}` : `Relatório - ${event.name ?? event.ruleId}`,
+          type: event.type,
+          title: event.type === 'rule.alert' ? `Alerta – ${event.name ?? event.ruleId}` : `Relatório – ${event.name ?? event.ruleId}`,
           timestamp: event.generatedAt || nowIso,
-          summary,
+          summary: summaryBase + schedule,
+          rows,
           details: JSON.stringify(rows.length ? rows : (event.metadata ?? event), null, 2),
           category: event.type === 'rule.alert' ? 'Alerta' : 'Relatório',
-          style: event.type === 'rule.alert' ? 'card-alert' : 'card-report'
+          style: event.type === 'rule.alert' ? 'card-alert' : 'card-report',
+          raw: event
         };
       }
 
       if (event.type === 'system') {
         return {
+          type: event.type,
           title: 'Sistema',
           timestamp: nowIso,
           summary: event.message || 'Evento do sistema.',
+          rows: [],
           details: JSON.stringify(event, null, 2),
           category: 'Sistema',
-          style: 'card-system'
+          style: 'card-system',
+          raw: event
         };
       }
 
       return {
+        type: event.type || 'evento',
         title: event.type ? `Evento ${event.type}` : 'Evento',
         timestamp: event.generatedAt || nowIso,
         summary: 'Conteúdo capturado das mensagens em tempo real.',
+        rows: [],
         details: JSON.stringify(event, null, 2),
         category: event.type || 'Evento',
-        style: 'card-generic'
+        style: 'card-generic',
+        raw: event
       };
     }
 
-    function renderStream() {
+    function renderRowsTable(rows) {
+      if (!Array.isArray(rows) || rows.length === 0) return '';
+      const headers = Object.keys(rows[0]);
+      const head = headers.map((h) => `<th>${escapeHtml(h)}</th>`).join('');
+      const body = rows.slice(0, 5)
+        .map((row) => `<tr>${headers.map((h) => `<td>${escapeHtml(row[h])}</td>`).join('')}</tr>`)
+        .join('');
+      const more = rows.length > 5
+        ? `<tfoot><tr><td colspan="${headers.length}" style="font-style:italic; color: var(--muted);">+${rows.length - 5} linha(s) extras…</td></tr></tfoot>`
+        : '';
+      return `<div class="mini-table-wrapper"><table class="mini-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody>${more}</table></div>`;
+    }
+
+        function renderStream() {
       streamList.innerHTML = '';
-      const filters = Array.from(new Set(state.events.map((e) => e.type)));
       streamFilters.innerHTML = '';
-      filters.forEach((type) => {
-        const chip = document.createElement('span');
-        chip.className = 'chip';
-        chip.textContent = type;
-        streamFilters.appendChild(chip);
-      });
 
       state.events.forEach((event) => {
         const item = document.createElement('div');
-        item.className = 'event-item';
+        item.className = `event-item ${event.style || ''}`.trim();
+
+        const detailHtml = event.rows && event.rows.length
+          ? renderRowsTable(event.rows)
+          : event.details
+            ? `<pre>${escapeHtml(event.details)}</pre>`
+            : '';
+
         item.innerHTML = `
-          <h4>${event.type} â€” ${event.generatedAt || event.sample?.ts || new Date().toISOString()}</h4>
-          <pre>${JSON.stringify(event, null, 2)}</pre>
+          <div class="flex" style="justify-content: space-between; align-items:center;">
+            <div>
+              <h4 style="margin:0">${escapeHtml(event.title)}</h4>
+              <small style="color: var(--muted);">${escapeHtml(event.timestamp)}</small>
+            </div>
+            <span class="chip">${escapeHtml(event.category || '')}</span>
+          </div>
+          <p style="margin: 10px 0 6px; color: var(--muted);">${escapeHtml(event.summary || '')}</p>
+          ${detailHtml}
         `;
         streamList.appendChild(item);
       });

@@ -126,6 +126,51 @@
         max-height: 180px;
         overflow: auto;
       }
+
+      .result-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 13px;
+        color: #0f172a;
+      }
+      .result-meta {
+        display: grid;
+        gap: 4px;
+        margin-bottom: 12px;
+      }
+      .result-table-wrapper {
+        overflow-x: auto;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+      }
+      .result-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .result-table th,
+      .result-table td {
+        padding: 8px 10px;
+        border-bottom: 1px solid #e2e8f0;
+        text-align: left;
+      }
+      .result-table th {
+        background: #e2e8f0;
+        font-size: 12px;
+        text-transform: none;
+        letter-spacing: normal;
+      }
+      .result-empty {
+        font-size: 12px;
+        color: #64748b;
+        font-style: italic;
+      }
+      .result-footnote {
+        margin-top: 10px;
+        font-size: 12px;
+        color: #475569;
+      }
       .message {
         padding: 12px 16px;
         border-radius: 8px;
@@ -281,6 +326,112 @@
 
       let cachedRules = [];
 
+      function escapeHtml(value) {
+        if (value === null || value === undefined) {
+          return '';
+        }
+        return String(value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      function formatDateTime(value) {
+        if (!value) {
+          return '-';
+        }
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+          return value;
+        }
+        return date.toLocaleString('pt-BR');
+      }
+
+      function formatCellValue(value) {
+        if (value === null || value === undefined || value === '') {
+          return '-';
+        }
+        if (typeof value === 'number') {
+          return escapeHtml(value.toLocaleString('pt-BR', { maximumFractionDigits: 6 }));
+        }
+        if (typeof value === 'object') {
+          try {
+            return escapeHtml(JSON.stringify(value));
+          } catch (err) {
+            return escapeHtml(String(value));
+          }
+        }
+        return escapeHtml(String(value));
+      }
+
+      function renderRowsTable(rows) {
+        if (!Array.isArray(rows) || rows.length === 0) {
+          return '<div class="result-empty">Nenhum dado retornado.</div>';
+        }
+
+        const columns = Array.from(
+          rows.reduce((set, row) => {
+            Object.keys(row || {}).forEach((key) => set.add(key));
+            return set;
+          }, new Set())
+        );
+
+        if (columns.length === 0) {
+          return '<div class="result-empty">Nenhum dado retornado.</div>';
+        }
+
+        const headerHtml = columns.map((col) => `<th>${escapeHtml(col)}</th>`).join('');
+        const bodyHtml = rows
+          .map((row) => {
+            const cells = columns
+              .map((col) => `<td>${formatCellValue(row?.[col])}</td>`)
+              .join('');
+            return `<tr>${cells}</tr>`;
+          })
+          .join('');
+
+        return `
+          <div class="result-table-wrapper">
+            <table class="result-table">
+              <thead><tr>${headerHtml}</tr></thead>
+              <tbody>${bodyHtml}</tbody>
+            </table>
+          </div>
+        `;
+      }
+
+      function renderLastResult(result) {
+        if (!result) {
+          return '-';
+        }
+
+        if (result.type === 'rule.report') {
+          const generatedAt = formatDateTime(result.generatedAt);
+          const rowsTable = renderRowsTable(result.rows);
+          const rowCount = Array.isArray(result.rows) ? result.rows.length : 0;
+          const scheduleSummary = result.metadata?.scheduleSummary
+            ? `<div class="result-footnote">${escapeHtml(result.metadata.scheduleSummary)}</div>`
+            : '';
+
+          return `
+            <div class="result-card">
+              <div class="result-meta">
+                <div><strong>Regra:</strong> ${escapeHtml(result.name || '-')}</div>
+                <div><strong>Empresa:</strong> ${escapeHtml(result.companyId || '-')}</div>
+                <div><strong>Gerado em:</strong> ${escapeHtml(generatedAt)}</div>
+                <div><strong>Linhas retornadas:</strong> ${rowCount}</div>
+              </div>
+              ${rowsTable}
+              ${scheduleSummary}
+            </div>
+          `;
+        }
+
+        return `<pre>${escapeHtml(JSON.stringify(result, null, 2))}</pre>`;
+      }
+
       function setMessage(el, message, type = 'success') {
         if (!message) {
           el.style.display = 'none';
@@ -352,7 +503,7 @@
           </td>
           <td data-label="Prompt"><pre>${rule.prompt || ''}</pre></td>
           <td data-label="Resultado">
-            ${rule.lastResult ? `<pre>${JSON.stringify(rule.lastResult, null, 2)}</pre>` : '-'}
+            ${renderLastResult(rule.lastResult)}
           </td>
           <td data-label="A��es" class="actions"></td>
         `;
