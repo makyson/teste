@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <title>Energy NLQ Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f5f7fb;
+      --fg: #1f2933;
+      --card: #ffffff;
+      --border: #d9e0f0;
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --danger: #dc2626;
+      --success: #15803d;
+      --muted: #64748b;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    a { color: var(--accent); }
+
+    .hidden { display: none !important; }
+
+    header {
+      background: #0f172a;
+      color: #fff;
+      padding: 24px;
+    }
+
+    header h1 { margin: 0 0 4px 0; font-size: 24px; }
+    header p { margin: 0; color: rgba(255,255,255,0.75); }
+
+    main {
+      display: flex;
+      min-height: calc(100vh - 120px);
+    }
+
+    nav {
+      width: 240px;
+      padding: 24px;
+      border-right: 1px solid var(--border);
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(6px);
+    }
+
+    nav button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 12px 16px;
+      border: none;
+      margin-bottom: 8px;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--fg);
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    nav button.active {
+      background: rgba(37, 99, 235, 0.15);
+      color: var(--accent-dark);
+    }
+
+    nav button:hover { background: rgba(37, 99, 235, 0.1); }
+
+    section {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    h2 { margin-top: 0; font-size: 20px; }
+    h3 { margin-top: 0; }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="datetime-local"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      transition: border 0.2s ease;
+      margin-bottom: 16px;
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+    }
+
+    textarea { resize: vertical; min-height: 120px; }
+
+    button.primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button.primary:hover { background: var(--accent-dark); }
+
+    button.link {
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+    button.danger {
+      background: var(--danger);
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--border);
+      padding: 12px 10px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th { background: rgba(15,23,42,0.03); text-transform: uppercase; font-size: 12px; letter-spacing: 0.05em; }
+
+    pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 12px;
+      border-radius: 10px;
+      max-height: 220px;
+      overflow: auto;
+      font-size: 13px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge.active { background: rgba(22, 163, 74, 0.16); color: #166534; }
+    .badge.inactive { background: rgba(220, 38, 38, 0.15); color: #991b1b; }
+
+    .message {
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      display: none;
+    }
+
+    .message.success { background: rgba(22, 163, 74, 0.12); color: #166534; display: block; }
+    .message.error { background: rgba(220, 38, 38, 0.12); color: #991b1b; display: block; }
+
+    .flex { display: flex; gap: 16px; }
+    .flex-wrap { flex-wrap: wrap; }
+    .grow { flex: 1; }
+
+    .events-list {
+      max-height: 420px;
+      overflow-y: auto;
+      display: grid;
+      gap: 12px;
+    }
+
+    .event-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      background: #fff;
+      box-shadow: 0 8px 20px rgba(15,23,42,0.04);
+    }
+
+    .event-item h4 {
+      margin: 0 0 6px 0;
+    }
+
+    .chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .chip {
+      background: rgba(37, 99, 235, 0.12);
+      color: var(--accent-dark);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+    }
+
+    canvas { background: #fff; border-radius: 12px; border: 1px solid var(--border); padding: 12px; }
+
+    @media (max-width: 980px) {
+      main { flex-direction: column; }
+      nav { width: 100%; display: flex; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--border); }
+      nav button { flex: 1; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <div id="loginView" class="card" style="max-width: 420px; margin: 120px auto;">
+    <h2>Autenticação</h2>
+    <form id="loginForm">
+      <label for="loginUser">Usuário</label>
+      <input id="loginUser" type="text" required />
+
+      <label for="loginPass">Senha</label>
+      <input id="loginPass" type="password" required />
+
+      <label for="loginCompany">Empresa (opcional)</label>
+      <input id="loginCompany" type="text" placeholder="company-1" />
+
+      <button class="primary" type="submit">Entrar</button>
+    </form>
+    <div id="loginMessage" class="message"></div>
+  </div>
+
+  <div id="dashboard" class="hidden">
+    <header>
+      <div class="flex flex-wrap" style="justify-content: space-between; align-items: center; gap: 12px;">
+        <div>
+          <h1>Energy NLQ Dashboard</h1>
+          <p id="companyLabel">Empresa:</p>
+        </div>
+        <div>
+          <button class="primary" id="logoutBtn">Sair</button>
+        </div>
+      </div>
+    </header>
+    <main>
+      <nav>
+        <button class="active" data-section="rules">Regras</button>
+        <button data-section="stream">Streaming</button>
+        <button data-section="devices">Dispositivos</button>
+      </nav>
+      <section>
+        <div id="rulesSection">
+          <div class="card">
+            <h2>Nova regra</h2>
+            <form id="ruleForm">
+              <div class="flex flex-wrap">
+                <div class="grow">
+                  <label for="ruleName">Nome</label>
+                  <input id="ruleName" type="text" required />
+                </div>
+                <div style="width: 240px;">
+                  <label for="ruleType">Tipo</label>
+                  <select id="ruleType">
+                    <option value="schedule_report">Relatório agendado</option>
+                    <option value="threshold_alert">Alerta contínuo</option>
+                  </select>
+                </div>
+                <div style="width: 200px;">
+                  <label for="ruleActivate">Ativar?</label>
+                  <select id="ruleActivate">
+                    <option value="yes">Sim</option>
+                    <option value="no" selected>Não</option>
+                  </select>
+                </div>
+              </div>
+
+              <label for="rulePrompt">Prompt (explique a consulta e quando rodar)</label>
+              <textarea id="rulePrompt" placeholder="Ex.: Todo dia às 08h me avise os 10 dispositivos com maior consumo nas últimas 24 horas"></textarea>
+              <small id="scheduleHint" class="hint">Para relatórios agendados, descreva o horário/período no próprio prompt.</small>
+
+              <div style="display:flex; gap: 12px; align-items:center;">
+                <button class="primary" type="submit">Salvar regra</button>
+                <button class="link" type="button" id="ruleResetBtn">Limpar</button>
+              </div>
+            </form>
+            <div id="ruleFormMessage" class="message"></div>
+          </div>
+
+          <div class="card">
+            <div class="flex" style="justify-content: space-between; align-items: center;">
+              <h2>Regras cadastradas</h2>
+              <div>
+                <button class="primary" id="reloadRulesBtn">Atualizar</button>
+              </div>
+            </div>
+            <div id="rulesMessage" class="message"></div>
+            <table id="rulesTable">
+              <thead>
+                <tr>
+                  <th>Nome</th>
+                  <th>Tipo</th>
+                  <th>Status</th>
+                  <th>Agendamento</th>
+                  <th>Prompt</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="card hidden" id="ruleDetailCard">
+            <div class="flex" style="justify-content: space-between; align-items:center;">
+              <h2>Detalhes da regra</h2>
+              <button class="link" id="closeRuleDetail">Fechar</button>
+            </div>
+            <div id="ruleDetailContent"></div>
+          </div>
+        </div>
+
+        <div id="streamSection" class="hidden">
+          <div class="card">
+            <h2>Eventos em tempo real</h2>
+            <div class="chips" id="streamFilters"></div>
+            <div id="streamList" class="events-list"></div>
+          </div>
+        </div>
+
+        <div id="devicesSection" class="hidden">
+          <div class="card">
+            <div class="flex" style="justify-content: space-between; align-items:center;">
+              <h2>Dispositivos monitorados</h2>
+              <button class="primary" id="reloadDevicesBtn">Atualizar</button>
+            </div>
+            <div id="devicesMessage" class="message"></div>
+            <table id="devicesTable">
+              <thead>
+                <tr>
+                  <th>Device</th>
+                  <th>Última leitura</th>
+                  <th>Voltage</th>
+                  <th>Current</th>
+                  <th>Frequency</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div id="deviceDetailCard" class="card hidden">
+            <div class="flex" style="justify-content: space-between; align-items:center;">
+              <h2 id="deviceTitle">Dispositivo</h2>
+              <button class="link" id="closeDeviceDetail">Fechar</button>
+            </div>
+            <div class="flex flex-wrap" style="gap: 16px;">
+              <div class="grow">
+                <label>Início</label>
+                <input id="metricsStart" type="datetime-local" />
+              </div>
+              <div class="grow">
+                <label>Fim</label>
+                <input id="metricsEnd" type="datetime-local" />
+              </div>
+              <div style="width:220px;">
+                <label>Agrupar por</label>
+                <select id="metricsBucket">
+                  <option value="hour" selected>Hora</option>
+                  <option value="minute">Minuto</option>
+                  <option value="day">Dia</option>
+                </select>
+              </div>
+              <div style="align-self: flex-end;">
+                <button class="primary" id="applyMetricsBtn">Aplicar</button>
+              </div>
+            </div>
+            <div class="flex flex-wrap" style="gap: 16px; margin-top: 12px;">
+              <div class="card" style="flex:1; min-width:240px; background: rgba(37,99,235,0.08); border-color: rgba(37,99,235,0.2);">
+                <h3>Última leitura em tempo real</h3>
+                <div id="liveTelemetry">
+                  <p><strong>TS:</strong> <span id="liveTs">-</span></p>
+                  <p><strong>Voltage:</strong> <span id="liveVoltage">-</span></p>
+                  <p><strong>Current:</strong> <span id="liveCurrent">-</span></p>
+                  <p><strong>Frequency:</strong> <span id="liveFrequency">-</span></p>
+                  <p><strong>Power Factor:</strong> <span id="livePF">-</span></p>
+                </div>
+              </div>
+              <div class="card" style="flex:2; min-width:300px;">
+                <canvas id="metricsChart" height="220"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      token: null,
+      companyId: null,
+      ws: null,
+      events: [],
+      rules: [],
+      devices: [],
+      selectedRule: null,
+      selectedDevice: null,
+      deviceLive: {},
+      chart: null
+    };
+
+    const loginView = document.getElementById('loginView');
+    const dashboard = document.getElementById('dashboard');
+    const loginForm = document.getElementById('loginForm');
+    const loginMessage = document.getElementById('loginMessage');
+    const companyLabel = document.getElementById('companyLabel');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    const navButtons = Array.from(document.querySelectorAll('nav button'));
+    const sections = {
+      rules: document.getElementById('rulesSection'),
+      stream: document.getElementById('streamSection'),
+      devices: document.getElementById('devicesSection')
+    };
+
+    const ruleForm = document.getElementById('ruleForm');
+    const ruleFormMessage = document.getElementById('ruleFormMessage');
+    const rulesMessage = document.getElementById('rulesMessage');
+    const rulesTableBody = document.querySelector('#rulesTable tbody');
+    const reloadRulesBtn = document.getElementById('reloadRulesBtn');
+    const ruleDetailCard = document.getElementById('ruleDetailCard');
+    const ruleDetailContent = document.getElementById('ruleDetailContent');
+    const closeRuleDetail = document.getElementById('closeRuleDetail');
+    const ruleResetBtn = document.getElementById('ruleResetBtn');
+    const ruleTypeSelect = document.getElementById('ruleType');
+    const scheduleHint = document.getElementById('scheduleHint');
+
+    const streamList = document.getElementById('streamList');
+    const streamFilters = document.getElementById('streamFilters');
+
+    const devicesMessage = document.getElementById('devicesMessage');
+    const devicesTableBody = document.querySelector('#devicesTable tbody');
+    const reloadDevicesBtn = document.getElementById('reloadDevicesBtn');
+    const deviceDetailCard = document.getElementById('deviceDetailCard');
+    const deviceTitle = document.getElementById('deviceTitle');
+    const closeDeviceDetail = document.getElementById('closeDeviceDetail');
+    const metricsStart = document.getElementById('metricsStart');
+    const metricsEnd = document.getElementById('metricsEnd');
+    const metricsBucket = document.getElementById('metricsBucket');
+    const applyMetricsBtn = document.getElementById('applyMetricsBtn');
+    const liveTs = document.getElementById('liveTs');
+    const liveVoltage = document.getElementById('liveVoltage');
+    const liveCurrent = document.getElementById('liveCurrent');
+    const liveFrequency = document.getElementById('liveFrequency');
+    const livePF = document.getElementById('livePF');
+
+    const metricsCtx = document.getElementById('metricsChart').getContext('2d');
+
+    function setMessage(el, msg, type = 'success') {
+      if (!msg) {
+        el.className = 'message';
+        el.style.display = 'none';
+        el.textContent = '';
+        return;
+      }
+      el.className = `message ${type}`;
+      el.style.display = 'block';
+      el.textContent = msg;
+    }
+
+    function saveSession(data) {
+      state.token = data.token;
+      state.companyId = data.companyId;
+      localStorage.setItem('nlq_token', data.token);
+      localStorage.setItem('nlq_company', data.companyId);
+    }
+
+    function clearSession() {
+      state.token = null;
+      state.companyId = null;
+      localStorage.removeItem('nlq_token');
+      localStorage.removeItem('nlq_company');
+      if (state.ws) {
+        state.ws.close();
+        state.ws = null;
+      }
+    }
+
+    async function apiFetch(path, options = {}) {
+      if (!state.token) throw new Error('Token não definido');
+      const headers = Object.assign({
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${state.token}`
+      }, options.headers || {});
+
+      const response = await fetch(path, { ...options, headers });
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || response.statusText);
+      }
+      if (response.status === 204) return null;
+      return response.json();
+    }
+
+    async function loadRules() {
+      try {
+        const data = await apiFetch('/rules');
+        state.rules = data.items || [];
+        renderRules();
+      } catch (err) {
+        setMessage(rulesMessage, err.message, 'error');
+      }
+    }
+
+    function renderRules() {
+      rulesTableBody.innerHTML = '';
+      if (!state.rules.length) {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.colSpan = 6;
+        cell.textContent = 'Nenhuma regra cadastrada.';
+        cell.style.textAlign = 'center';
+        row.appendChild(cell);
+        rulesTableBody.appendChild(row);
+        return;
+      }
+
+      for (const rule of state.rules) {
+        const tr = document.createElement('tr');
+        const summary = rule.scheduleSummary || '-';
+
+        tr.innerHTML = `
+          <td><strong>${rule.name}</strong><br/><small>${rule.companyId}</small></td>
+          <td>${rule.type}</td>
+          <td><span class="badge ${rule.status}">${rule.status}</span></td>
+          <td>${rule.scheduleCron || '-'}<br/><small>${summary}</small></td>
+          <td><pre>${rule.prompt || ''}</pre></td>
+          <td></td>
+        `;
+
+        const actionsCell = tr.lastElementChild;
+
+        const detailBtn = document.createElement('button');
+        detailBtn.className = 'link';
+        detailBtn.textContent = 'Ver detalhes';
+        detailBtn.addEventListener('click', () => showRuleDetail(rule.id));
+
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'primary';
+        toggleBtn.textContent = rule.status === 'active' ? 'Desativar' : 'Ativar';
+        toggleBtn.addEventListener('click', () => toggleRule(rule));
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'danger';
+        deleteBtn.textContent = 'Excluir';
+        deleteBtn.addEventListener('click', () => deleteRule(rule));
+
+        actionsCell.append(detailBtn, document.createElement('br'), toggleBtn, document.createElement('br'), deleteBtn);
+        rulesTableBody.appendChild(tr);
+      }
+    }
+
+    async function showRuleDetail(id) {
+      const rule = state.rules.find((r) => r.id === id);
+      if (!rule) return;
+      state.selectedRule = rule;
+
+      const content = `
+        <p><strong>ID:</strong> ${rule.id}</p>
+        <p><strong>Tipo:</strong> ${rule.type}</p>
+        <p><strong>Status:</strong> ${rule.status}</p>
+        <p><strong>Schedule:</strong> ${rule.scheduleCron || '-'} (${rule.scheduleSummary || '-'})</p>
+        <p><strong>Última execução:</strong> ${rule.lastRunAt || '-'} | <strong>Disparo:</strong> ${rule.lastTriggeredAt || '-'}</p>
+        <h3>SQL</h3>
+        <pre>${rule.sql || ''}</pre>
+        <h3>Cypher</h3>
+        <pre>${rule.cypher || ''}</pre>
+        <h3>Último resultado</h3>
+        <pre>${JSON.stringify(rule.lastResult ?? '-', null, 2)}</pre>
+      `;
+      ruleDetailContent.innerHTML = content;
+      ruleDetailCard.classList.remove('hidden');
+    }
+
+    function hideRuleDetail() {
+      state.selectedRule = null;
+      ruleDetailCard.classList.add('hidden');
+    }
+
+    async function toggleRule(rule) {
+      try {
+        const endpoint = rule.status === 'active' ? 'deactivate' : 'activate';
+        await apiFetch(`/rules/${rule.id}/${endpoint}`, { method: 'POST' });
+        await loadRules();
+      } catch (err) {
+        setMessage(rulesMessage, err.message, 'error');
+      }
+    }
+
+    async function deleteRule(rule) {
+      if (!confirm(`Excluir a regra "${rule.name}"?`)) return;
+      try {
+        await apiFetch(`/rules/${rule.id}`, { method: 'DELETE' });
+        hideRuleDetail();
+        await loadRules();
+      } catch (err) {
+        setMessage(rulesMessage, err.message, 'error');
+      }
+    }
+
+    async function loadDevices() {
+      try {
+        const data = await apiFetch('/devices');
+        state.devices = data.items || [];
+        renderDevices();
+      } catch (err) {
+        setMessage(devicesMessage, err.message, 'error');
+      }
+    }
+
+    function renderDevices() {
+      devicesTableBody.innerHTML = '';
+      if (!state.devices.length) {
+        const row = document.createElement('tr');
+        const cell = document.createElement('td');
+        cell.colSpan = 6;
+        cell.textContent = 'Nenhum dispositivo encontrado.';
+        cell.style.textAlign = 'center';
+        row.appendChild(cell);
+        devicesTableBody.appendChild(row);
+        return;
+      }
+
+      for (const device of state.devices) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${device.id}</td>
+          <td>${device.lastTs ?? '-'}</td>
+          <td>${device.voltage ?? '-'}</td>
+          <td>${device.current ?? '-'}</td>
+          <td>${device.frequency ?? '-'}</td>
+          <td></td>
+        `;
+        const actionCell = tr.lastElementChild;
+        const viewBtn = document.createElement('button');
+        viewBtn.className = 'primary';
+        viewBtn.textContent = 'Ver detalhes';
+        viewBtn.addEventListener('click', () => openDevice(device.id));
+        actionCell.appendChild(viewBtn);
+        devicesTableBody.appendChild(tr);
+      }
+    }
+
+    function openDevice(deviceId) {
+      state.selectedDevice = deviceId;
+      deviceTitle.textContent = `Dispositivo ${deviceId}`;
+      deviceDetailCard.classList.remove('hidden');
+      updateMetricsRangeInputs();
+      loadDeviceMetrics();
+      updateLiveTelemetry();
+    }
+
+    function closeDevice() {
+      state.selectedDevice = null;
+      deviceDetailCard.classList.add('hidden');
+    }
+
+    function updateMetricsRangeInputs() {
+      const end = new Date();
+      const start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
+      metricsEnd.value = end.toISOString().slice(0, 16);
+      metricsStart.value = start.toISOString().slice(0, 16);
+    }
+
+    async function loadDeviceMetrics() {
+      if (!state.selectedDevice) return;
+      const start = metricsStart.value ? new Date(metricsStart.value) : null;
+      const end = metricsEnd.value ? new Date(metricsEnd.value) : null;
+      if (!start || !end || start >= end) {
+        setMessage(devicesMessage, 'Intervalo inválido.', 'error');
+        return;
+      }
+
+      const params = new URLSearchParams({
+        start: start.toISOString(),
+        end: end.toISOString(),
+        bucket: metricsBucket.value
+      });
+
+      try {
+        const data = await apiFetch(`/devices/${state.selectedDevice}/metrics?${params.toString()}`);
+        renderMetricsChart(data.points || []);
+      } catch (err) {
+        setMessage(devicesMessage, err.message, 'error');
+      }
+    }
+
+    function renderMetricsChart(points) {
+      const labels = points.map((p) => p.bucket);
+      const dataset = points.map((p) => p.avgVoltage || 0);
+
+      if (!state.chart) {
+        state.chart = new Chart(metricsCtx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              {
+                label: 'Média de tensão (V)',
+                data: dataset,
+                backgroundColor: 'rgba(37, 99, 235, 0.4)',
+                borderColor: 'rgba(37, 99, 235, 1)',
+                borderWidth: 1
+              }
+            ]
+          },
+          options: {
+            scales: {
+              y: { beginAtZero: true }
+            }
+          }
+        });
+      } else {
+        state.chart.data.labels = labels;
+        state.chart.data.datasets[0].data = dataset;
+        state.chart.update();
+      }
+    }
+
+    function addStreamEvent(event) {
+      state.events.unshift(event);
+      if (state.events.length > 200) state.events.pop();
+      renderStream();
+    }
+
+    function renderStream() {
+      streamList.innerHTML = '';
+      const filters = Array.from(new Set(state.events.map((e) => e.type)));
+      streamFilters.innerHTML = '';
+      filters.forEach((type) => {
+        const chip = document.createElement('span');
+        chip.className = 'chip';
+        chip.textContent = type;
+        streamFilters.appendChild(chip);
+      });
+
+      state.events.forEach((event) => {
+        const item = document.createElement('div');
+        item.className = 'event-item';
+        item.innerHTML = `
+          <h4>${event.type} — ${event.generatedAt || event.sample?.ts || new Date().toISOString()}</h4>
+          <pre>${JSON.stringify(event, null, 2)}</pre>
+        `;
+        streamList.appendChild(item);
+      });
+    }
+
+    function updateLiveTelemetry() {
+      const deviceId = state.selectedDevice;
+      if (!deviceId) return;
+      const latest = state.deviceLive[deviceId];
+      if (!latest) {
+        liveTs.textContent = '-';
+        liveVoltage.textContent = '-';
+        liveCurrent.textContent = '-';
+        liveFrequency.textContent = '-';
+        livePF.textContent = '-';
+        return;
+      }
+      liveTs.textContent = latest.sample?.ts || '-';
+      liveVoltage.textContent = latest.sample?.voltage ?? '-';
+      liveCurrent.textContent = latest.sample?.current ?? '-';
+      liveFrequency.textContent = latest.sample?.frequency ?? '-';
+      livePF.textContent = latest.sample?.power_factor ?? '-';
+    }
+
+    function connectWebSocket() {
+      if (!state.token) return;
+      const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+      const wsUrl = `${protocol}://${window.location.host}/ws?token=${state.token}`;
+      if (state.ws) state.ws.close();
+      const ws = new WebSocket(wsUrl);
+      state.ws = ws;
+
+      ws.onopen = () => {
+        addStreamEvent({ type: 'system', message: 'WebSocket conectado.' });
+      };
+
+      ws.onclose = () => {
+        addStreamEvent({ type: 'system', message: 'WebSocket desconectado.' });
+        if (state.token) {
+          setTimeout(connectWebSocket, 3000);
+        }
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          addStreamEvent(data);
+          if (data.type === 'device.telemetry' && data.deviceId) {
+            state.deviceLive[data.deviceId] = data;
+            if (state.selectedDevice === data.deviceId) {
+              updateLiveTelemetry();
+            }
+          } else if (data.type && data.type.startsWith('rule.')) {
+            loadRules();
+          }
+        } catch (err) {
+          console.error('Falha ao tratar evento WS', err);
+        }
+      };
+    }
+
+    function showDashboard() {
+      loginView.classList.add('hidden');
+      dashboard.classList.remove('hidden');
+      companyLabel.textContent = `Empresa: ${state.companyId}`;
+      loadRules();
+      loadDevices();
+      connectWebSocket();
+    }
+
+    function showLogin() {
+      dashboard.classList.add('hidden');
+      loginView.classList.remove('hidden');
+    }
+
+    loginForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      setMessage(loginMessage);
+      const username = document.getElementById('loginUser').value.trim();
+      const password = document.getElementById('loginPass').value.trim();
+      const companyId = document.getElementById('loginCompany').value.trim();
+      try {
+        const response = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, companyId: companyId || undefined })
+        });
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(text || response.statusText);
+        }
+        const data = await response.json();
+        saveSession(data);
+        showDashboard();
+      } catch (err) {
+        setMessage(loginMessage, err.message, 'error');
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      clearSession();
+      showLogin();
+    });
+
+    navButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        navButtons.forEach((b) => b.classList.remove('active'));
+        btn.classList.add('active');
+        Object.values(sections).forEach((sec) => sec.classList.add('hidden'));
+        sections[btn.dataset.section].classList.remove('hidden');
+      });
+    });
+
+    ruleTypeSelect.addEventListener('change', () => {
+      scheduleHint.style.display = ruleTypeSelect.value === 'schedule_report' ? 'block' : 'none';
+    });
+    ruleTypeSelect.dispatchEvent(new Event('change'));
+
+    ruleResetBtn.addEventListener('click', () => {
+      ruleForm.reset();
+      scheduleHint.style.display = 'block';
+      ruleTypeSelect.dispatchEvent(new Event('change'));
+    });
+
+    ruleForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      setMessage(ruleFormMessage);
+      const payload = {
+        name: document.getElementById('ruleName').value.trim(),
+        type: ruleTypeSelect.value,
+        prompt: document.getElementById('rulePrompt').value.trim(),
+        activate: document.getElementById('ruleActivate').value === 'yes'
+      };
+
+      try {
+        await apiFetch('/rules', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        setMessage(ruleFormMessage, 'Regra criada com sucesso!', 'success');
+        ruleForm.reset();
+        scheduleHint.style.display = 'block';
+        await loadRules();
+      } catch (err) {
+        setMessage(ruleFormMessage, err.message, 'error');
+      }
+    });
+
+    closeRuleDetail.addEventListener('click', hideRuleDetail);
+    reloadRulesBtn.addEventListener('click', loadRules);
+
+    reloadDevicesBtn.addEventListener('click', loadDevices);
+    closeDeviceDetail.addEventListener('click', closeDevice);
+    applyMetricsBtn.addEventListener('click', loadDeviceMetrics);
+
+    (function autoLoginFromStorage() {
+      const storedToken = localStorage.getItem('nlq_token');
+      const storedCompany = localStorage.getItem('nlq_company');
+      if (storedToken && storedCompany) {
+        state.token = storedToken;
+        state.companyId = storedCompany;
+        showDashboard();
+      }
+    })();
+  </script>
+</body>
+</html>

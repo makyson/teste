@@ -11,6 +11,7 @@ import registerNlqRoute from './routes/nlq.js';
 import registerRulesRoute from './routes/rules.js';
 import registerAuthRoute from './routes/auth.js';
 import registerTelemetryRoute from './routes/telemetry.js';
+import registerDeviceRoutes from './routes/devices.js';
 import { WebsocketHub } from './ws/hub.js';
 import { createRuleManager } from './rules/manager.js';
 import { verifyConnectivity as verifyTimescale, closePool } from './db/timescale.js';
@@ -98,6 +99,7 @@ app.register(registerAuthRoute);
 app.register(registerNlqRoute);
 app.register(registerTelemetryRoute);
 app.register(registerRulesRoute);
+app.register(registerDeviceRoutes);
 
 let stopMqtt = null;
 
@@ -120,7 +122,8 @@ async function boot() {
 
   stopMqtt = startMqttIngest({
     config,
-    logger: app.log
+    logger: app.log,
+    hub: wsHub
   });
 
   const ruleManager = createRuleManager({

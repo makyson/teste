@@ -201,6 +201,20 @@ export default async function registerTelemetryRoutes(fastify) {
             // mantém o payload bruto + board_id para auditoria
             payload: { ...snake._raw, board_id: boardId },
           });
+          fastify.wsHub?.broadcast(companyId, {
+            type: 'device.telemetry',
+            companyId,
+            deviceId: snake.logical_id,
+            sample: {
+              logical_id: snake.logical_id,
+              ts: snake.ts,
+              voltage: snake.voltage ?? null,
+              current: snake.current ?? null,
+              frequency: snake.frequency ?? null,
+              power_factor: snake.power_factor ?? null
+            }
+          });
+
           accepted += 1;
         } catch (err) {
           fastify.log.error(

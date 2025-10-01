@@ -10,7 +10,7 @@ function extractCompanyId(topic) {
   return match[1];
 }
 
-export function startMqttIngest({ config, logger }) {
+export function startMqttIngest({ config, logger, hub }) {
   const client = mqtt.connect(config.mqtt.url, {
     reconnectPeriod: 5_000
   });
@@ -61,6 +61,22 @@ export function startMqttIngest({ config, logger }) {
         powerFactor: payload.power_factor ?? null,
         payload
       });
+
+      if (hub) {
+        hub.broadcast(companyId, {
+          type: 'device.telemetry',
+          companyId,
+          deviceId: payload.logical_id,
+          sample: {
+            logical_id: payload.logical_id,
+            ts: payload.ts,
+            voltage: payload.voltage ?? null,
+            current: payload.current ?? null,
+            frequency: payload.frequency ?? null,
+            power_factor: payload.power_factor ?? null
+          }
+        });
+      }
     } catch (err) {
       logger.error({ err, topic }, 'Falha ao inserir telemetria');
     }

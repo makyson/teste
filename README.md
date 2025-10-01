@@ -96,3 +96,7 @@ Se já possui o ambiente rodando, aplique `sql/02_nlq_rules.sql` no banco Timesc
 ### UI rápida
 
 Uma UI simples está disponível em `/app/rules.html`. Abra no navegador, informe um token JWT e manipule as regras (criar, ativar, remover) sem precisar de ferramentas externas.
+
+### Dashboard Web
+
+Uma interface completa está disponível em `/app/index.html` com login, gerenciamento de regras, feed em tempo real e tela de dispositivos com gráficos. Basta acessar pelo navegador após subir a API.
