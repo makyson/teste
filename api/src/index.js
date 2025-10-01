@@ -5,6 +5,7 @@ import config from './config.js';
 import registerHealthRoute from './routes/health.js';
 import registerNlqRoute from './routes/nlq.js';
 import registerAuthRoute from './routes/auth.js';
+import registerTelemetryRoute from './routes/telemetry.js';
 import { verifyConnectivity as verifyTimescale, closePool } from './db/timescale.js';
 import { verifyConnectivity as verifyNeo4j, closeDriver } from './db/neo4j.js';
 import { startMqttIngest } from './ingest/mqtt.js';
@@ -39,6 +40,7 @@ app.decorate('authenticate', async function authenticate(request, reply) {
 app.register(registerHealthRoute);
 app.register(registerAuthRoute);
 app.register(registerNlqRoute);
+app.register(registerTelemetryRoute);
 
 let stopMqtt = null;
 

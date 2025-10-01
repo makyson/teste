@@ -17,7 +17,7 @@ Os serviços provisionados incluem:
 1. Garanta que Docker e Docker Compose v2 estejam instalados.
 2. Execute o script `./setup.sh` na raiz do repositório.
 3. Aguarde a criação dos arquivos, subida dos containers e aplicação dos schemas.
-4. Opcionalmente, publique uma mensagem de exemplo com `./scripts/demo_publish.sh`.
+4. Opcionalmente, publique uma mensagem de exemplo com `./scripts/demo_publish.sh` ou utilize o script `./scripts/month_fill.ps1` para enviar um mês de amostras sintéticas via HTTP.
 
 O arquivo `.env` é gerado com valores padrão seguros para desenvolvimento. Ajuste conforme necessário antes de rodar em produção.
 
@@ -39,4 +39,10 @@ O arquivo `.env` é gerado com valores padrão seguros para desenvolvimento. Aju
 A API expõe autenticação via JWT. Para obter um token, faça uma requisição `POST /auth/login` com `username` e `password` definidos nas variáveis de ambiente `AUTH_USERNAME` e `AUTH_PASSWORD`. Opcionalmente informe `companyId` para vincular o token a uma empresa específica; caso contrário, será usada `DEFAULT_COMPANY_ID`.
 
 Utilize o token recebido no cabeçalho `Authorization: Bearer <token>` para acessar rotas protegidas, como `POST /nlq/query`.
+
+## Ingestão HTTP de telemetria
+
+Além da ingestão via MQTT, a API expõe o endpoint autenticado `POST /companies/{companyId}/boards/{boardId}/telemetry`. Ele aceita um objeto único ou um array de objetos com os campos `logical_id`, `ts` e métricas opcionais (`voltage`, `current`, `frequency`, `power_factor`).
+
+O script `scripts/month_fill.ps1` demonstra como autenticar, gerar e enviar amostras sequenciais para este endpoint usando PowerShell.
      main
