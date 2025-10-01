@@ -78,7 +78,7 @@ Todas as rotas exigem JWT e respeitam o `companyId` do token.
 
 ### Execução das regras
 
-- **Relatório agendado (`schedule_report`)**: forneça `scheduleCron` no formato padrão cron (UTC). Ex.: `0 8 * * *` para 08:00 todos os dias.
+- **Relatório agendado (`schedule_report`)**: descreva em linguagem natural (ex.: `todo dia às 8h`, `em 20/09/2025 às 10h`). A IA converte para cron e registra no catálogo.
 - **Alerta contínuo (`threshold_alert`)**: cadastre a condição no prompt/metadata. O motor executa as regras ativas a cada minuto; se o SQL retornar linhas, um evento `rule.alert` é disparado.
 - Use `metadata` para guardar configurações extras (ex.: lista de devices, cooldown customizado).
 

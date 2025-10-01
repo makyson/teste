@@ -244,6 +244,7 @@
     const rulesTableBody = document.querySelector('#rulesTable tbody');
     const typeSelect = document.getElementById('ruleType');
     const cronWrapper = document.getElementById('cronWrapper');
+    const scheduleInput = document.getElementById('ruleScheduleText');
 
     let cachedRules = [];
 
@@ -303,8 +304,10 @@
           </td>
           <td data-label="Tipo">${rule.type}</td>
           <td data-label="Status"><span class="status ${rule.status}">${rule.status}</span></td>
-          <td data-label="Cron">
+          <td data-label="Agendamento">
             ${rule.scheduleCron || '-'}<br />
+            <small>${rule.scheduleSummary || rule.metadata?.scheduleSummary || ''}</small><br />
+            <small>${rule.scheduleText || rule.metadata?.scheduleText || ''}</small><br />
             <small>last run: ${rule.lastRunAt || '-'}</small>
           </td>
           <td data-label="Prompt"><pre>${rule.prompt || ''}</pre></td>
@@ -382,7 +385,7 @@
         const name = document.getElementById('ruleName').value.trim();
         const type = typeSelect.value;
         const prompt = document.getElementById('rulePrompt').value.trim();
-        const scheduleCron = document.getElementById('ruleCron').value.trim();
+        const scheduleText = scheduleInput.value.trim();
         const activate = document.getElementById('activateToggle').value === 'yes';
         const bodyCompanyId = companyInput.value.trim() || undefined;
         let metadata = {};
@@ -433,6 +436,9 @@
     typeSelect.addEventListener('change', () => {
       const value = typeSelect.value;
       cronWrapper.style.display = value === 'schedule_report' ? 'block' : 'none';
+      if (value !== 'schedule_report') {
+        scheduleInput.value = '';
+      }
     });
 
     typeSelect.dispatchEvent(new Event('change'));
