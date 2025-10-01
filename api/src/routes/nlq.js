@@ -1,6 +1,7 @@
 // src/routes/nlq.js
 import { generateQueries } from '../nlq/gemini.js';
 import { runCypher } from '../db/neo4j.js';
+import { runSql } from '../db/timescale.js';
 import {
   DEFAULT_APPROVAL_THRESHOLD,
   findApprovedQuestion,
@@ -129,10 +130,10 @@ export default async function registerNlqRoutes(fastify) {
       }
 
       // 3) Executa no Neo4j (Cypher)
-      let rows;
+      let graphRows = [];
       try {
         const result = await runCypher(cypher, { companyId: targetCompanyId });
-        rows = result.records.map((record) => record.toObject());
+        graphRows = result.records.map((record) => record.toObject());
       } catch (err) {
         fastify.log.error({ err, cypher }, 'Erro ao executar Cypher');
         reply.code(500);
@@ -142,7 +143,22 @@ export default async function registerNlqRoutes(fastify) {
         };
       }
 
-      // 4) Se veio do Gemini, salva no catálogo (incluindo SQL)
+      // 4) Executa no Timescale (SQL)
+      let sqlRows = [];
+      try {
+        const sqlParams = /\$1\b/.test(sql) ? [targetCompanyId] : [];
+        const sqlResult = await runSql(sql, sqlParams);
+        sqlRows = Array.isArray(sqlResult?.rows) ? sqlResult.rows : [];
+      } catch (err) {
+        fastify.log.error({ err, sql }, 'Erro ao executar SQL gerado');
+        reply.code(500);
+        return {
+          code: 'SQL_ERROR',
+          message: 'Falha ao executar consulta no banco relacional.'
+        };
+      }
+
+      // 5) Se veio do Gemini, salva no catálogo (incluindo SQL)
       if (source === 'gemini') {
         try {
           await registerQuestionSuccess({
@@ -158,15 +174,30 @@ export default async function registerNlqRoutes(fastify) {
       }
 
       const total = Date.now() - start;
-      fastify.log.info({ cypher, totalMs: total, source }, 'NLQ executado');
+      const answerRows = sqlRows.length ? sqlRows : graphRows;
+
+      fastify.log.info(
+        {
+          cypher,
+          sql,
+          totalMs: total,
+          source,
+          sqlRowCount: sqlRows.length,
+          graphRowCount: graphRows.length
+        },
+        'NLQ executado'
+      );
 
       return {
-        answer: buildAnswer(rows, targetCompanyId),
+        answer: buildAnswer(answerRows, targetCompanyId),
         cypher,
         sql, // <- devolve a SQL gerada/salva
-        rows,
-        source
+        rows: sqlRows, // <- devolve resultado do SQL
+        graphRows,
+        source,
+        totalMs: total
       };
     }
   });
 }
+

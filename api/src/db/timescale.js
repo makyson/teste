@@ -21,6 +21,24 @@ export async function verifyConnectivity() {
   }
 }
 
+export async function runSql(query, params = []) {
+  const text = typeof query === 'string' ? query.trim() : '';
+  if (!text) {
+    throw new Error('SQL query must be a non-empty string.');
+  }
+
+  let values;
+  if (params === undefined || params === null) {
+    values = [];
+  } else if (Array.isArray(params)) {
+    values = params;
+  } else {
+    values = [params];
+  }
+
+  return pool.query({ text, values });
+}
+
 export async function insertTelemetry(entry) {
   const {
     companyId,
@@ -69,3 +87,4 @@ process.on('beforeExit', () => {
 });
 
 export default pool;
+
