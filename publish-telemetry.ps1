@@ -36,7 +36,7 @@ if ($UseRest) {
     $loginBody = @{ username = $Username; password = $Password; companyId = $CompanyId } | ConvertTo-Json
     try {
         $loginResponse = Invoke-RestMethod -Method Post -Uri $loginUrl -Body $loginBody -Headers $headers -ErrorAction Stop
-         throw ("Falha ao autenticar na API ({0}): {1}" -f $loginUrl, $_)
+        
     } catch {
         throw ("Falha ao autenticar na API ({0}): {1}" -f  $loginResponse, $_)
     }

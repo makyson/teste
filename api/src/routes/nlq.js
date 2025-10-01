@@ -131,15 +131,15 @@ export default async function registerNlqRoutes(fastify) {
 
       // 3) Executa no Neo4j (Cypher)
       let graphRows = [];
+      let graphError = null;
       try {
         const result = await runCypher(cypher, { companyId: targetCompanyId });
         graphRows = result.records.map((record) => record.toObject());
       } catch (err) {
         fastify.log.error({ err, cypher }, 'Erro ao executar Cypher');
-        reply.code(500);
-        return {
-          code: 'NEO4J_ERROR',
-          message: 'Falha ao executar consulta no grafo.'
+        graphError = {
+          code: err.code,
+          message: err.message
         };
       }
 
@@ -158,8 +158,18 @@ export default async function registerNlqRoutes(fastify) {
         };
       }
 
-      // 5) Se veio do Gemini e SQL executou, salva no catálogo (incluindo SQL)
-      if (source === 'gemini' && !sqlError) {
+      if (graphError && sqlError) {
+        reply.code(500);
+        return {
+          code: 'NLQ_EXECUTION_ERROR',
+          message: 'Falha ao executar as consultas no grafo e no relacional.',
+          graphError,
+          sqlError
+        };
+      }
+
+      // 5) Se veio do Gemini e SQL executou, salva no catalogo (incluindo SQL)
+      if (source === 'gemini' && !sqlError && !graphError) {
         try {
           await registerQuestionSuccess({
             text: normalizedText,
@@ -174,7 +184,21 @@ export default async function registerNlqRoutes(fastify) {
       }
 
       const total = Date.now() - start;
-      const answerRows = sqlRows.length ? sqlRows : graphRows;
+      const sqlSucceeded = !sqlError;
+      const graphSucceeded = !graphError;
+      const preferSql = sqlSucceeded && (!graphSucceeded || sqlRows.length > 0);
+      const answerRows = preferSql ? sqlRows : graphRows;
+      let answerText = buildAnswer(answerRows, targetCompanyId);
+
+      if (sqlError && graphSucceeded) {
+        const sqlReason = sqlError.code ? `${sqlError.code} - ${sqlError.message}` : sqlError.message;
+        answerText = `${answerText} Atencao: a consulta SQL falhou (${sqlReason}). Resultado exibido a partir do grafo.`;
+      }
+
+      if (graphError && sqlSucceeded) {
+        const graphReason = graphError.code ? `${graphError.code} - ${graphError.message}` : graphError.message;
+        answerText = `${answerText} Atencao: a consulta no grafo falhou (${graphReason}). Resultado exibido a partir do SQL.`;
+      }
 
       fastify.log.info(
         {
@@ -184,20 +208,22 @@ export default async function registerNlqRoutes(fastify) {
           source,
           sqlRowCount: sqlRows.length,
           graphRowCount: graphRows.length,
-          sqlError
+          sqlError,
+          graphError
         },
         'NLQ executado'
       );
 
       return {
-        answer: buildAnswer(answerRows, targetCompanyId),
+        answer: answerText,
         cypher,
         sql, // <- devolve a SQL gerada/salva
         rows: sqlRows, // <- devolve resultado do SQL
         graphRows,
         source,
         totalMs: total,
-        sqlError
+        sqlError,
+        graphError
       };
     }
   });
