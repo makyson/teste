@@ -1,7 +1,10 @@
 param(
+       codex/criar-script-.ps-para-pre-exibir-dados-wbnnde
     [string]$BaseUrl = "http://localhost:3000",
     [string]$Username = "admin",
     [string]$Password = "admin",
+
+       main
     [string]$CompanyId = "company-1",
     [string]$BoardId = "board-1",
     [string]$DeviceId = "device-123",
@@ -18,6 +21,7 @@ if ($Days -le 0) {
     throw "Days deve ser maior que zero."
 }
 
+     codex/criar-script-.ps-para-pre-exibir-dados-wbnnde
 try {
     $baseUri = [Uri]::new($BaseUrl)
 } catch {
@@ -51,6 +55,20 @@ $headers = @{
     'Content-Type' = 'application/json'
 }
 
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$rootDir = Split-Path -Parent $scriptDir
+Set-Location $rootDir
+
+if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+    throw "docker não encontrado no PATH. Instale o Docker Desktop e tente novamente."
+}
+
+$topic = "companies/$CompanyId/boards/$BoardId/telemetry"
+$end = $Start.AddDays($Days)
+
+Write-Host "[info] Publicando medições de $($Start.ToString('u')) até $($end.ToString('u')) em $topic" -ForegroundColor Cyan
+     main
+
 for ($ts = $Start; $ts -lt $end; $ts = $ts.AddMinutes($IntervalMinutes)) {
     $payloadObj = [ordered]@{
         logical_id  = $DeviceId
@@ -63,6 +81,7 @@ for ($ts = $Start; $ts -lt $end; $ts = $ts.AddMinutes($IntervalMinutes)) {
 
     $payload = $payloadObj | ConvertTo-Json -Compress
 
+       codex/criar-script-.ps-para-pre-exibir-dados-wbnnde
     Write-Host ("[POST] {0}" -f $payload) -ForegroundColor Green
 
     try {
@@ -73,6 +92,18 @@ for ($ts = $Start; $ts -lt $end; $ts = $ts.AddMinutes($IntervalMinutes)) {
 
     if ($response.accepted -lt 1) {
         throw "Nenhuma amostra aceita na resposta da API."
+
+    Write-Host ("[publish] {0}" -f $payload) -ForegroundColor Green
+
+    $args = @(
+        "compose", "exec", "-T", "mosquitto",
+        "mosquitto_pub", "-t", $topic, "-m", $payload
+    )
+
+    $process = Start-Process -FilePath "docker" -ArgumentList $args -NoNewWindow -Wait -PassThru
+    if ($process.ExitCode -ne 0) {
+        throw "Falha ao publicar mensagem em $topic (exit $($process.ExitCode))."
+       main
     }
 
     if ($SleepMs -gt 0) {
