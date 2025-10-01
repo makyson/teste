@@ -226,10 +226,6 @@
               <option value="threshold_alert">Alerta contínuo</option>
             </select>
           </div>
-          <div id="cronWrapper">
-            <label for="ruleCron">Cron (UTC)</label>
-            <input id="ruleCron" type="text" placeholder="ex.: 0 8 * * *" />
-          </div>
           <div>
             <label for="activateToggle">Ativar imediatamente?</label>
             <select id="activateToggle">
@@ -278,25 +274,25 @@
     </div>
 
     <script>
-      const tokenInput = document.getElementById("token");
-      const companyInput = document.getElementById("companyId");
-      const loadBtn = document.getElementById("loadRules");
-      const authMessage = document.getElementById("authMessage");
-      const createForm = document.getElementById("createForm");
-      const createMessage = document.getElementById("createMessage");
-      const rulesMessage = document.getElementById("rulesMessage");
-      const rulesTableBody = document.querySelector("#rulesTable tbody");
-      const typeSelect = document.getElementById("ruleType");
-      const cronWrapper = document.getElementById("cronWrapper");
-      const scheduleInput = document.getElementById("ruleScheduleText");
+      const tokenInput = document.getElementById('token');
+      const companyInput = document.getElementById('companyId');
+      const loadBtn = document.getElementById('loadRules');
+      const authMessage = document.getElementById('authMessage');
+      const createForm = document.getElementById('createForm');
+      const createMessage = document.getElementById('createMessage');
+      const rulesMessage = document.getElementById('rulesMessage');
+      const rulesTableBody = document.querySelector('#rulesTable tbody');
+      const typeSelect = document.getElementById('ruleType');
+      const scheduleWrapper = document.getElementById('scheduleWrapper');
+      const scheduleInput = document.getElementById('ruleScheduleText');
 
       let cachedRules = [];
 
-      function setMessage(el, message, type = "success") {
+      function setMessage(el, message, type = 'success') {
         if (!message) {
-          el.style.display = "none";
-          el.textContent = "";
-          el.className = "message";
+          el.style.display = 'none';
+          el.textContent = '';
+          el.className = 'message';
           return;
         }
         el.textContent = message;
@@ -306,11 +302,11 @@
       function getAuthHeaders() {
         const token = tokenInput.value.trim();
         if (!token) {
-          throw new Error("Informe o token JWT.");
+          throw new Error('Informe o token JWT.');
         }
         return {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
         };
       }
 
@@ -326,67 +322,53 @@
 
       function renderRules(list) {
         cachedRules = list;
-        rulesTableBody.innerHTML = "";
+        rulesTableBody.innerHTML = '';
         if (!Array.isArray(list) || list.length === 0) {
-          const row = document.createElement("tr");
-          const cell = document.createElement("td");
+          const row = document.createElement('tr');
+          const cell = document.createElement('td');
           cell.colSpan = 7;
-          cell.textContent = "Nenhuma regra cadastrada ainda.";
-          cell.style.textAlign = "center";
+          cell.textContent = 'Nenhuma regra cadastrada ainda.';
+          cell.style.textAlign = 'center';
           row.appendChild(cell);
           rulesTableBody.appendChild(row);
           return;
         }
 
         for (const rule of list) {
-          const tr = document.createElement("tr");
-
+          const tr = document.createElement('tr');
           tr.innerHTML = `
           <td data-label="Nome">
             <strong>${rule.name}</strong><br />
             <small>${rule.companyId}</small>
           </td>
           <td data-label="Tipo">${rule.type}</td>
-          <td data-label="Status"><span class="status ${rule.status}">${
-            rule.status
-          }</span></td>
+          <td data-label="Status"><span class="status ${rule.status}">${rule.status}</span></td>
           <td data-label="Agendamento">
-            ${rule.scheduleCron || "-"}<br />
-            <small>${
-              rule.scheduleSummary || rule.metadata?.scheduleSummary || ""
-            }</small><br />
-            <small>${
-              rule.scheduleText || rule.metadata?.scheduleText || ""
-            }</small><br />
-            <small>last run: ${rule.lastRunAt || "-"}</small>
+            ${rule.scheduleCron || '-'}<br />
+            <small>${rule.scheduleSummary || rule.metadata?.scheduleSummary || ''}</small><br />
+            <small>${rule.scheduleText || rule.metadata?.scheduleText || ''}</small><br />
+            <small>last run: ${rule.lastRunAt || '-'}</small>
           </td>
-          <td data-label="Prompt"><pre>${rule.prompt || ""}</pre></td>
+          <td data-label="Prompt"><pre>${rule.prompt || ''}</pre></td>
           <td data-label="Resultado">
-            ${
-              rule.lastResult
-                ? `<pre>${JSON.stringify(rule.lastResult, null, 2)}</pre>`
-                : "-"
-            }
+            ${rule.lastResult ? `<pre>${JSON.stringify(rule.lastResult, null, 2)}</pre>` : '-'}
           </td>
-          <td data-label="Ações" class="actions"></td>
+          <td data-label="A��es" class="actions"></td>
         `;
 
-          const actionsCell = tr.querySelector(".actions");
+          const actionsCell = tr.querySelector('.actions');
+          const activateBtn = document.createElement('button');
+          activateBtn.textContent = rule.status === 'active' ? 'Desativar' : 'Ativar';
+          activateBtn.className = rule.status === 'active' ? 'secondary' : '';
+          activateBtn.addEventListener('click', () => toggleRule(rule));
 
-          const activateBtn = document.createElement("button");
-          activateBtn.textContent =
-            rule.status === "active" ? "Desativar" : "Ativar";
-          activateBtn.className = rule.status === "active" ? "secondary" : "";
-          activateBtn.addEventListener("click", () => toggleRule(rule));
-
-          const deleteBtn = document.createElement("button");
-          deleteBtn.textContent = "Excluir";
-          deleteBtn.className = "danger";
-          deleteBtn.addEventListener("click", () => deleteRule(rule));
+          const deleteBtn = document.createElement('button');
+          deleteBtn.textContent = 'Excluir';
+          deleteBtn.className = 'danger';
+          deleteBtn.addEventListener('click', () => deleteRule(rule));
 
           actionsCell.appendChild(activateBtn);
           actionsCell.appendChild(deleteBtn);
-
           rulesTableBody.appendChild(tr);
         }
       }
@@ -398,28 +380,26 @@
           const headers = getAuthHeaders();
           const companyId = companyInput.value.trim();
           const query = new URLSearchParams();
-          if (companyId) query.set("companyId", companyId);
-          const data = await fetchJson(`/rules?${query.toString()}`, {
-            headers,
-          });
+          if (companyId) query.set('companyId', companyId);
+          const data = await fetchJson(`/rules?${query.toString()}`, { headers });
           renderRules(data?.items ?? []);
-          setMessage(authMessage, "Regras carregadas com sucesso!", "success");
+          setMessage(authMessage, 'Regras carregadas com sucesso!', 'success');
         } catch (err) {
-          setMessage(authMessage, err.message, "error");
+          setMessage(authMessage, err.message, 'error');
         }
       }
 
       async function toggleRule(rule) {
         try {
           const headers = getAuthHeaders();
-          const endpoint = rule.status === "active" ? "deactivate" : "activate";
+          const endpoint = rule.status === 'active' ? 'deactivate' : 'activate';
           await fetchJson(`/rules/${rule.id}/${endpoint}`, {
-            method: "POST",
-            headers,
+            method: 'POST',
+            headers
           });
           await loadRules();
         } catch (err) {
-          setMessage(rulesMessage, err.message, "error");
+          setMessage(rulesMessage, err.message, 'error');
         }
       }
 
@@ -427,83 +407,68 @@
         if (!confirm(`Excluir a regra "${rule.name}"?`)) return;
         try {
           const headers = getAuthHeaders();
-          await fetchJson(`/rules/${rule.id}`, { method: "DELETE", headers });
+          await fetchJson(`/rules/${rule.id}`, { method: 'DELETE', headers });
           await loadRules();
         } catch (err) {
-          setMessage(rulesMessage, err.message, "error");
+          setMessage(rulesMessage, err.message, 'error');
         }
       }
 
-      createForm.addEventListener("submit", async (event) => {
+      createForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         setMessage(createMessage);
         try {
           const headers = getAuthHeaders();
-          const name = document.getElementById("ruleName").value.trim();
+          const name = document.getElementById('ruleName').value.trim();
           const type = typeSelect.value;
-          const prompt = document.getElementById("rulePrompt").value.trim();
+          const prompt = document.getElementById('rulePrompt').value.trim();
           const scheduleText = scheduleInput.value.trim();
-          const activate =
-            document.getElementById("activateToggle").value === "yes";
+          const activate = document.getElementById('activateToggle').value === 'yes';
           const bodyCompanyId = companyInput.value.trim() || undefined;
-          let metadata = {};
-          const metadataRaw = document
-            .getElementById("ruleMetadata")
-            .value.trim();
-          if (metadataRaw) {
-            try {
-              metadata = JSON.parse(metadataRaw);
-            } catch (err) {
-              throw new Error("Metadata precisa ser um JSON válido.");
-            }
-          }
 
           const payload = {
             name,
             type,
             prompt,
-            metadata,
             activate,
-            companyId: bodyCompanyId,
+            companyId: bodyCompanyId
           };
 
-          if (type === "schedule_report") {
-            if (!scheduleCron) {
-              throw new Error("Informe o cron para relatórios agendados.");
+          if (type === 'schedule_report') {
+            if (!scheduleText) {
+              throw new Error('Descreva quando a regra deve rodar.');
             }
-            payload.scheduleCron = scheduleCron;
+            payload.scheduleText = scheduleText;
           }
-          console.log(JSON.stringify(payload));
 
-          await fetchJson("/rules", {
-            method: "POST",
+          await fetchJson('/rules', {
+            method: 'POST',
             headers,
-            body: JSON.stringify(payload),
+            body: JSON.stringify(payload)
           });
 
-          setMessage(createMessage, "Regra criada com sucesso!", "success");
+          setMessage(createMessage, 'Regra criada com sucesso!', 'success');
           createForm.reset();
-          typeSelect.dispatchEvent(new Event("change"));
+          typeSelect.dispatchEvent(new Event('change'));
           await loadRules();
         } catch (err) {
-          setMessage(createMessage, err.message, "error");
+          setMessage(createMessage, err.message, 'error');
         }
       });
 
-      loadBtn.addEventListener("click", () => {
+      loadBtn.addEventListener('click', () => {
         loadRules();
       });
 
-      typeSelect.addEventListener("change", () => {
+      typeSelect.addEventListener('change', () => {
         const value = typeSelect.value;
-        cronWrapper.style.display =
-          value === "schedule_report" ? "block" : "none";
-        if (value !== "schedule_report") {
-          scheduleInput.value = "";
+        scheduleWrapper.style.display = value === 'schedule_report' ? 'block' : 'none';
+        if (value !== 'schedule_report') {
+          scheduleInput.value = '';
         }
       });
 
-      typeSelect.dispatchEvent(new Event("change"));
-    </script>
+      typeSelect.dispatchEvent(new Event('change'));
+    </script></script>
   </body>
 </html>
