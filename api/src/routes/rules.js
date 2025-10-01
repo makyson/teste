@@ -40,7 +40,6 @@ function mapRule(rule) {
     type: rule.type,
     status: rule.status,
     scheduleCron: rule.scheduleCron,
-    scheduleText: metadata.scheduleText ?? null,
     scheduleSummary: metadata.scheduleSummary ?? null,
     prompt: rule.prompt,
     cypher: rule.cypher,
@@ -62,25 +61,22 @@ async function generateRuleQueries({ text, companyId }) {
   return { cypher, sql };
 }
 
-function inferSqlParams(sql, provided) {
-  if (Array.isArray(provided) && provided.length) {
-    return provided;
-  }
-  if (typeof sql === 'string' && /\$1\b/.test(sql)) {
+function inferSqlParams(sql) {
+  if (typeof sql === 'string' && /\$1/.test(sql)) {
     return ['$COMPANY_ID'];
   }
   return [];
 }
 
-function toPlainObject(value, fallback = {}) {
-  if (value && typeof value === 'object' && !Array.isArray(value)) {
-    return value;
+async function buildScheduleFromPrompt(prompt) {
+  if (!prompt || !prompt.trim()) {
+    throw new Error('Descreva no prompt quando a regra deve rodar.');
   }
-  return fallback;
-}
-
-function mergeMetadata(base, extra) {
-  return { ...toPlainObject(base), ...toPlainObject(extra) };
+  const generated = await generateScheduleCron({ text: prompt });
+  if (!cron.validate(generated.cron)) {
+    throw new Error(`Express„o cron inv·lida gerada: ${generated.cron}`);
+  }
+  return generated;
 }
 
 export default async function registerRulesRoutes(fastify) {
@@ -104,7 +100,7 @@ export default async function registerRulesRoutes(fastify) {
       } catch (err) {
         if (err.code === 'FORBIDDEN_COMPANY') {
           reply.code(403);
-          return { code: 'FORBIDDEN', message: 'Acesso negado √† empresa informada.' };
+          return { code: 'FORBIDDEN', message: 'Acesso negado ‡ empresa informada.' };
         }
         throw err;
       }
@@ -120,12 +116,12 @@ export default async function registerRulesRoutes(fastify) {
       const rule = await getRuleById(request.params.id);
       if (!rule) {
         reply.code(404);
-        return { code: 'RULE_NOT_FOUND', message: 'Regra n√£o encontrada.' };
+        return { code: 'RULE_NOT_FOUND', message: 'Regra n„o encontrada.' };
       }
 
       if (!ensureOwnership(rule, request)) {
         reply.code(403);
-        return { code: 'FORBIDDEN', message: 'Voc√™ n√£o pode acessar regras de outra empresa.' };
+        return { code: 'FORBIDDEN', message: 'VocÍ n„o pode acessar regras de outra empresa.' };
       }
 
       return mapRule(rule);
@@ -141,8 +137,6 @@ export default async function registerRulesRoutes(fastify) {
             description: { type: 'string' },
             type: { type: 'string', enum: ['schedule_report', 'threshold_alert'] },
             prompt: { type: 'string', minLength: 5 },
-            scheduleText: { type: 'string' },
-            metadata: { type: 'object' },
             companyId: { type: 'string' },
             activate: { type: 'boolean' }
           }
@@ -154,8 +148,6 @@ export default async function registerRulesRoutes(fastify) {
         description,
         type,
         prompt,
-        scheduleText,
-        metadata: metadataBody = {},
         companyId: bodyCompanyId,
         activate = false
       } = request.body;
@@ -166,41 +158,26 @@ export default async function registerRulesRoutes(fastify) {
       } catch (err) {
         if (err.code === 'FORBIDDEN_COMPANY') {
           reply.code(403);
-          return { code: 'FORBIDDEN', message: 'Voc√™ n√£o pode criar regras para outra empresa.' };
+          return { code: 'FORBIDDEN', message: 'VocÍ n„o pode criar regras para outra empresa.' };
         }
         throw err;
       }
 
       let scheduleCron = null;
-      let scheduleSummary = null;
+      let metadata = {};
       if (type === 'schedule_report') {
-        if (!scheduleText || !scheduleText.trim()) {
-          reply.code(400);
-          return { code: 'SCHEDULE_REQUIRED', message: 'Descreva quando a regra deve rodar (ex.: "todos os dias √†s 8h").' };
-        }
-        let generated;
         try {
-          generated = await generateScheduleCron({ text: scheduleText });
+          const generated = await buildScheduleFromPrompt(prompt);
+          scheduleCron = generated.cron;
+          metadata = { scheduleSummary: generated.summary };
         } catch (err) {
           reply.code(400);
-          return { code: err.code || 'INVALID_SCHEDULE', message: err.message };
+          return { code: 'INVALID_SCHEDULE', message: err.message };
         }
-        if (!cron.validate(generated.cron)) {
-          reply.code(400);
-          return { code: 'INVALID_CRON', message: `Express√£o cron inv√°lida gerada: ${generated.cron}` };
-        }
-        scheduleCron = generated.cron;
-        scheduleSummary = generated.summary;
       }
 
-      const metadataBase = toPlainObject(metadataBody);
-      const metadata = mergeMetadata(metadataBase, {
-        scheduleText: scheduleText || undefined,
-        scheduleSummary
-      });
-
       const { cypher, sql } = await generateRuleQueries({ text: prompt, companyId });
-      const sqlParams = inferSqlParams(sql, metadata?.sqlParams);
+      const sqlParams = inferSqlParams(sql);
 
       const rule = await createRule({
         companyId,
@@ -216,7 +193,6 @@ export default async function registerRulesRoutes(fastify) {
       });
 
       let finalRule = rule;
-
       if (activate) {
         finalRule = await setRuleStatus(rule.id, 'active');
         if (fastify.ruleManager) {
@@ -232,55 +208,43 @@ export default async function registerRulesRoutes(fastify) {
       const rule = await getRuleById(request.params.id);
       if (!rule) {
         reply.code(404);
-        return { code: 'RULE_NOT_FOUND', message: 'Regra n√£o encontrada.' };
+        return { code: 'RULE_NOT_FOUND', message: 'Regra n„o encontrada.' };
       }
 
       if (!ensureOwnership(rule, request)) {
         reply.code(403);
-        return { code: 'FORBIDDEN', message: 'Voc√™ n√£o pode alterar regras de outra empresa.' };
+        return { code: 'FORBIDDEN', message: 'VocÍ n„o pode alterar regras de outra empresa.' };
       }
 
       const payload = request.body ?? {};
       const updateData = { ...payload };
-      const metadata = mergeMetadata(rule.metadata, payload.metadata);
-
-      if (payload.scheduleText || (payload.type === 'schedule_report' && !rule.scheduleCron)) {
-        const text = payload.scheduleText ?? metadata.scheduleText;
-        if (!text) {
-          reply.code(400);
-          return { code: 'SCHEDULE_REQUIRED', message: 'Descreva quando a regra deve rodar.' };
-        }
-        let generated;
-        try {
-          generated = await generateScheduleCron({ text });
-        } catch (err) {
-          reply.code(400);
-          return { code: err.code || 'INVALID_SCHEDULE', message: err.message };
-        }
-        if (!cron.validate(generated.cron)) {
-          reply.code(400);
-          return { code: 'INVALID_CRON', message: `Express√£o cron inv√°lida gerada: ${generated.cron}` };
-        }
-        updateData.scheduleCron = generated.cron;
-        metadata.scheduleText = text;
-        metadata.scheduleSummary = generated.summary;
-      }
+      const nextType = payload.type ?? rule.type;
+      const nextPrompt = payload.prompt ?? rule.prompt;
+      const metadata = { ...(rule.metadata ?? {}) };
 
       if (payload.prompt) {
-        let companyId;
-        try {
-          companyId = resolveCompanyId(request, payload.companyId ?? rule.companyId);
-        } catch (err) {
-          if (err.code === 'FORBIDDEN_COMPANY') {
-            reply.code(403);
-            return { code: 'FORBIDDEN', message: 'Voc√™ n√£o pode alterar a empresa da regra.' };
-          }
-          throw err;
-        }
-        const { cypher, sql } = await generateRuleQueries({ text: payload.prompt, companyId });
+        const { cypher, sql } = await generateRuleQueries({ text: nextPrompt, companyId: rule.companyId });
         updateData.cypher = cypher;
         updateData.sql = sql;
-        updateData.sqlParams = inferSqlParams(sql, payload.metadata?.sqlParams ?? rule.sqlParams);
+        updateData.sqlParams = inferSqlParams(sql);
+      }
+
+      if (nextType === 'schedule_report') {
+        if (!nextPrompt) {
+          reply.code(400);
+          return { code: 'SCHEDULE_REQUIRED', message: 'O prompt precisa indicar quando a regra deve rodar.' };
+        }
+        try {
+          const generated = await buildScheduleFromPrompt(nextPrompt);
+          updateData.scheduleCron = generated.cron;
+          metadata.scheduleSummary = generated.summary;
+        } catch (err) {
+          reply.code(400);
+          return { code: 'INVALID_SCHEDULE', message: err.message };
+        }
+      } else {
+        updateData.scheduleCron = null;
+        delete metadata.scheduleSummary;
       }
 
       updateData.metadata = metadata;
@@ -299,12 +263,12 @@ export default async function registerRulesRoutes(fastify) {
       const rule = await getRuleById(request.params.id);
       if (!rule) {
         reply.code(404);
-        return { code: 'RULE_NOT_FOUND', message: 'Regra n√£o encontrada.' };
+        return { code: 'RULE_NOT_FOUND', message: 'Regra n„o encontrada.' };
       }
 
       if (!ensureOwnership(rule, request)) {
         reply.code(403);
-        return { code: 'FORBIDDEN', message: 'Voc√™ n√£o pode alterar regras de outra empresa.' };
+        return { code: 'FORBIDDEN', message: 'VocÍ n„o pode alterar regras de outra empresa.' };
       }
 
       const updated = await setRuleStatus(rule.id, 'active');
@@ -318,12 +282,12 @@ export default async function registerRulesRoutes(fastify) {
       const rule = await getRuleById(request.params.id);
       if (!rule) {
         reply.code(404);
-        return { code: 'RULE_NOT_FOUND', message: 'Regra n√£o encontrada.' };
+        return { code: 'RULE_NOT_FOUND', message: 'Regra n„o encontrada.' };
       }
 
       if (!ensureOwnership(rule, request)) {
         reply.code(403);
-        return { code: 'FORBIDDEN', message: 'Voc√™ n√£o pode alterar regras de outra empresa.' };
+        return { code: 'FORBIDDEN', message: 'VocÍ n„o pode alterar regras de outra empresa.' };
       }
 
       const updated = await setRuleStatus(rule.id, 'inactive');
@@ -337,12 +301,12 @@ export default async function registerRulesRoutes(fastify) {
       const rule = await getRuleById(request.params.id);
       if (!rule) {
         reply.code(404);
-        return { code: 'RULE_NOT_FOUND', message: 'Regra n√£o encontrada.' };
+        return { code: 'RULE_NOT_FOUND', message: 'Regra n„o encontrada.' };
       }
 
       if (!ensureOwnership(rule, request)) {
         reply.code(403);
-        return { code: 'FORBIDDEN', message: 'Voc√™ n√£o pode alterar regras de outra empresa.' };
+        return { code: 'FORBIDDEN', message: 'VocÍ n„o pode alterar regras de outra empresa.' };
       }
 
       await deleteRule(rule.id);
