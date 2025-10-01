@@ -60,7 +60,7 @@ Regras de geração (obrigatórias):
 7) Preserve nomes de colunas existentes: id, device_id, site_id, company_id, kwh, avg_power, min_freq, max_freq, pf_avg (snake_case).
 8) Quando for comparar "ano/mês/dia específicos", prefira filtros por igualdade de mês/ano ou por faixa (ex.: BETWEEN).
 9) Gere **sempre os dois**: Cypher e SQL. Não explique, apenas forneça os campos no JSON.
-10) Nunca escreva consultas do tipo `WITH (SELECT ...) AS alias`. Use CTEs nomeadas (ex.: `WITH total AS (...), top AS (...) SELECT ... FROM total CROSS JOIN top`).
+10) Nunca escreva consultas do tipo \`WITH (SELECT ...) AS alias\`. Use CTEs nomeadas (ex.: \`WITH total AS (...), top AS (...) SELECT ... FROM total CROSS JOIN top\`).
 `.trim();
 
 const fewShots = [
