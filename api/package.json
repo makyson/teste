@@ -13,6 +13,8 @@
     "fastify": "^4.26.2",
     "mqtt": "^5.3.5",
     "neo4j-driver": "^5.18.0",
-    "pg": "^8.11.5"
+    "pg": "^8.11.5",
+    "@fastify/websocket": "^9.0.1",
+    "node-cron": "^3.0.3"
   }
 }

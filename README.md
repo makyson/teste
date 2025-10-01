@@ -46,3 +46,49 @@ Além da ingestão via MQTT, a API expõe o endpoint autenticado `POST /companie
 
 O script `scripts/month_fill.ps1` demonstra como autenticar, gerar e enviar amostras sequenciais para este endpoint usando PowerShell.
      main
+
+
+## Regras inteligentes automatizadas
+
+O serviço agora permite persistir, gerar e executar regras em cima do NLQ: relatórios agendados e alertas contínuos. A tabela `nlq_rules` fica no TimescaleDB (veja `sql/02_nlq_rules.sql`).
+
+### Como funciona
+
+1. A cada criação/edição de regra (`POST /rules`, `PATCH /rules/:id`) o texto enviado é passado pelo Gemini para gerar Cypher e SQL.
+2. O SQL é validado, salvo junto com a regra e pode ser executado tanto sob demanda quanto de forma automática.
+3. Um gerenciador em memória (node-cron) ativa jobs agendados (`schedule_report`) e monitora regras de alerta (`threshold_alert`).
+4. Resultados (ou alertas) são persistidos (`last_run_at`, `last_result`) e enviados em tempo real por WebSocket.
+
+### Endpoints REST
+
+- `GET /rules` – lista regras da empresa do token (filtro opcional por status).
+- `GET /rules/:id` – consulta detalhes da regra.
+- `POST /rules` – cria uma regra (campos: `name`, `type`, `prompt`, `scheduleCron`, `metadata`, `activate`).
+- `PATCH /rules/:id` – altera descrição, cron, prompt (regenera queries) ou metadados.
+- `POST /rules/:id/activate` / `POST /rules/:id/deactivate` – liga/desliga execução automática.
+- `DELETE /rules/:id` – remove a regra.
+
+Todas as rotas exigem JWT e respeitam o `companyId` do token.
+
+### Notificações WebSocket
+
+- Conecte em `ws://<host>:3000/ws?token=<JWT>` (o token é o mesmo das rotas REST).
+- O servidor entrega mensagens JSON com `type` (`rule.report` ou `rule.alert`), `ruleId`, `rows` e metadados.
+- As conexões são segregadas por empresa: cada socket só recebe eventos da própria companhia.
+
+### Execução das regras
+
+- **Relatório agendado (`schedule_report`)**: forneça `scheduleCron` no formato padrão cron (UTC). Ex.: `0 8 * * *` para 08:00 todos os dias.
+- **Alerta contínuo (`threshold_alert`)**: cadastre a condição no prompt/metadata. O motor executa as regras ativas a cada minuto; se o SQL retornar linhas, um evento `rule.alert` é disparado.
+- Use `metadata` para guardar configurações extras (ex.: lista de devices, cooldown customizado).
+
+### Atualização de schema
+
+Se já possui o ambiente rodando, aplique `sql/02_nlq_rules.sql` no banco Timescale ou rode o `setup.sh` novamente para provisionar a tabela `nlq_rules`.
+
+## WebSocket e jobs adicionais
+
+- Dependências novas: `@fastify/websocket` (canal em tempo real) e `node-cron` (agendamentos).
+- As mensagens em tempo real são úteis para dashboards/centros de operações consumirem relatórios (8h) ou alertas de tensão > 50 mV por 5 minutos, por exemplo.
+- O gerenciador de regras para automaticamente durante o shutdown (`SIGINT`/`SIGTERM`).
+
