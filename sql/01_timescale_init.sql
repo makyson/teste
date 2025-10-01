@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS telemetry_raw (
 
 SELECT create_hypertable('telemetry_raw', 'ts', if_not_exists => TRUE);
 
+
 CREATE INDEX IF NOT EXISTS idx_telemetry_raw_company_ts
     ON telemetry_raw (company_id, ts DESC);
 CREATE INDEX IF NOT EXISTS idx_telemetry_raw_device_ts
