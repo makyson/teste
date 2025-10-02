@@ -777,7 +777,16 @@
                 style="justify-content: space-between; align-items: center"
               >
                 <h2 id="deviceTitle">Dispositivo</h2>
-                <button class="link" id="closeDeviceDetail">Fechar</button>
+                <div style="display: flex; gap: 8px; align-items: center">
+                  <button
+                    class="primary hidden"
+                    id="exportMetricsBtn"
+                    title="Exportar CSV do intervalo selecionado"
+                  >
+                    Exportar CSV
+                  </button>
+                  <button class="link" id="closeDeviceDetail">Fechar</button>
+                </div>
               </div>
 
               <!-- Filtros -->
@@ -943,6 +952,7 @@
         selectedDevice: null,
         deviceLive: {},
         charts: { voltage: null, current: null, frequency: null, pf: null },
+        lastMetrics: { points: [], deviceId: null, start: null, end: null, bucket: null },
       };
 
       const loginView = document.getElementById("loginView");
@@ -991,6 +1001,7 @@
       const reloadDevicesBtn = document.getElementById("reloadDevicesBtn");
       const deviceDetailCard = document.getElementById("deviceDetailCard");
       const deviceTitle = document.getElementById("deviceTitle");
+      const exportMetricsBtn = document.getElementById("exportMetricsBtn");
       const closeDeviceDetail = document.getElementById("closeDeviceDetail");
       const metricsStart = document.getElementById("metricsStart");
       const metricsEnd = document.getElementById("metricsEnd");
@@ -1305,6 +1316,7 @@
         state.selectedDevice = deviceId;
         deviceTitle.textContent = `Dispositivo ${deviceId}`;
         deviceDetailCard.classList.remove("hidden");
+        if (exportMetricsBtn) exportMetricsBtn.classList.add("hidden");
         updateMetricsRangeInputs();
         loadDeviceMetrics();
         updateLiveTelemetry();
@@ -1312,6 +1324,7 @@
       function closeDevice() {
         state.selectedDevice = null;
         deviceDetailCard.classList.add("hidden");
+        if (exportMetricsBtn) exportMetricsBtn.classList.add("hidden");
       }
 
       function updateMetricsRangeInputs() {
@@ -1339,7 +1352,19 @@
           const data = await apiFetch(
             `/devices/${state.selectedDevice}/metrics?${params.toString()}`
           );
-          renderMetricsChart(data.points || []);
+          const points = Array.isArray(data?.points) ? data.points : [];
+          state.lastMetrics = {
+            points,
+            deviceId: state.selectedDevice,
+            start: start.toISOString(),
+            end: end.toISOString(),
+            bucket: metricsBucket.value,
+          };
+          renderMetricsChart(points);
+          if (exportMetricsBtn) {
+            if (points.length) exportMetricsBtn.classList.remove("hidden");
+            else exportMetricsBtn.classList.add("hidden");
+          }
         } catch (err) {
           setMessage(devicesMessage, err.message, "error");
         }
@@ -1363,6 +1388,42 @@
         assign(current, iData);
         assign(frequency, fData);
         assign(pf, pfData);
+      }
+
+      function exportMetricsCSV() {
+        const { points, deviceId, start, end, bucket } = state.lastMetrics || {};
+        if (!points || !points.length) {
+          alert("Não há dados para exportar.");
+          return;
+        }
+        const headers = [
+          "bucket",
+          "avgVoltage",
+          "avgCurrent",
+          "avgFrequency",
+          "avgPowerFactor",
+        ];
+        const rows = points.map((p) => [
+          p.bucket ?? "",
+          p.avgVoltage ?? "",
+          p.avgCurrent ?? "",
+          p.avgFrequency ?? "",
+          p.avgPowerFactor ?? "",
+        ]);
+        const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+        const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+        const a = document.createElement("a");
+        const startTag = (start || "").replace(/[:T]/g, "-").slice(0, 19);
+        const endTag = (end || "").replace(/[:T]/g, "-").slice(0, 19);
+        const fileName = `metrics_${deviceId || "device"}_${bucket || "bucket"}_${startTag}_${endTag}.csv`;
+        a.href = URL.createObjectURL(blob);
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+          URL.revokeObjectURL(a.href);
+          a.remove();
+        }, 0);
       }
 
       function addStreamEvent(event) {
@@ -1844,6 +1905,7 @@
       reloadDevicesBtn.addEventListener("click", loadDevices);
       closeDeviceDetail.addEventListener("click", closeDevice);
       applyMetricsBtn.addEventListener("click", loadDeviceMetrics);
+      if (exportMetricsBtn) exportMetricsBtn.addEventListener("click", exportMetricsCSV);
 
       (function autoLoginFromStorage() {
         const storedToken = localStorage.getItem("nlq_token");
