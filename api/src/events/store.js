@@ -2,15 +2,6 @@ const MAX_EVENTS_PER_COMPANY = 200;
 
 const eventsByCompany = new Map();
 
-function cloneEvent(value) {
-  try {
-    return JSON.parse(JSON.stringify(value));
-  } catch (err) {
-    if (!value || typeof value !== 'object') return null;
-    return { ...value };
-  }
-}
-
 function ensureBucket(companyId) {
   if (!companyId) return null;
   if (!eventsByCompany.has(companyId)) {
@@ -27,8 +18,7 @@ export function recordEvent(companyId, event) {
   const bucket = ensureBucket(companyId);
   if (!bucket) return;
 
-  const payload = cloneEvent(event);
-  if (!payload) return;
+  const payload = { ...event };
   bucket.unshift(payload);
   if (bucket.length > MAX_EVENTS_PER_COMPANY) {
     bucket.length = MAX_EVENTS_PER_COMPANY;
@@ -49,7 +39,7 @@ export function listEvents(companyId, { type, limit } = {}) {
     result = result.slice(0, value);
   }
 
-  return result.map((evt) => cloneEvent(evt)).filter(Boolean);
+  return result.map((evt) => ({ ...evt }));
 }
 
 export function clearCompanyEvents(companyId) {
@@ -60,4 +50,3 @@ export function clearCompanyEvents(companyId) {
 export function clearAllEvents() {
   eventsByCompany.clear();
 }
-
