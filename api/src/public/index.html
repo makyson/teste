@@ -4,17 +4,11 @@
     <meta charset="utf-8" />
     <title>Energy NLQ Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-    <!-- Fonte -->
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
-
-    <!-- Libs (ordem importa): Chart.js + adapter de data -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-
     <style>
       :root {
         color-scheme: light dark;
@@ -30,6 +24,7 @@
         font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
           "Segoe UI", sans-serif;
       }
+
       * {
         box-sizing: border-box;
       }
@@ -39,17 +34,21 @@
         margin: 0;
         min-height: 100vh;
       }
+
       a {
         color: var(--accent);
       }
+
       .hidden {
         display: none !important;
       }
+
       header {
         background: #0f172a;
         color: #fff;
         padding: 24px;
       }
+
       header h1 {
         margin: 0 0 4px 0;
         font-size: 24px;
@@ -58,10 +57,12 @@
         margin: 0;
         color: rgba(255, 255, 255, 0.75);
       }
+
       main {
         display: flex;
         min-height: calc(100vh - 120px);
       }
+
       nav {
         width: 240px;
         padding: 24px;
@@ -69,6 +70,7 @@
         background: rgba(255, 255, 255, 0.6);
         backdrop-filter: blur(6px);
       }
+
       nav button {
         display: block;
         width: 100%;
@@ -83,18 +85,22 @@
         cursor: pointer;
         transition: background 0.2s ease;
       }
+
       nav button.active {
         background: rgba(37, 99, 235, 0.15);
         color: var(--accent-dark);
       }
+
       nav button:hover {
         background: rgba(37, 99, 235, 0.1);
       }
+
       section {
         flex: 1;
         padding: 32px;
         overflow-y: auto;
       }
+
       .card {
         background: var(--card);
         border-radius: 16px;
@@ -103,6 +109,7 @@
         border: 1px solid var(--border);
         box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
       }
+
       h2 {
         margin-top: 0;
         font-size: 20px;
@@ -110,11 +117,13 @@
       h3 {
         margin-top: 0;
       }
+
       label {
         font-weight: 600;
         display: block;
         margin-bottom: 6px;
       }
+
       input[type="text"],
       input[type="password"],
       input[type="datetime-local"],
@@ -128,6 +137,7 @@
         transition: border 0.2s ease;
         margin-bottom: 16px;
       }
+
       input:focus,
       textarea:focus,
       select:focus {
@@ -135,10 +145,12 @@
         border-color: var(--accent);
         box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
       }
+
       textarea {
         resize: vertical;
         min-height: 120px;
       }
+
       button.primary {
         background: var(--accent);
         color: #fff;
@@ -149,15 +161,18 @@
         cursor: pointer;
         transition: background 0.2s ease;
       }
+
       button.primary:hover {
         background: var(--accent-dark);
       }
+
       button.link {
         background: transparent;
         border: none;
         color: var(--accent);
         cursor: pointer;
       }
+
       button.danger {
         background: var(--danger);
         color: #fff;
@@ -166,11 +181,13 @@
         border-radius: 8px;
         cursor: pointer;
       }
+
       table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 12px;
       }
+
       th,
       td {
         border-bottom: 1px solid var(--border);
@@ -178,12 +195,14 @@
         text-align: left;
         font-size: 14px;
       }
+
       th {
         background: rgba(15, 23, 42, 0.03);
         text-transform: uppercase;
         font-size: 12px;
         letter-spacing: 0.05em;
       }
+
       pre {
         background: #0f172a;
         color: #e2e8f0;
@@ -193,6 +212,7 @@
         overflow: auto;
         font-size: 13px;
       }
+
       .badge {
         display: inline-flex;
         align-items: center;
@@ -201,6 +221,7 @@
         font-size: 12px;
         font-weight: 600;
       }
+
       .badge.active {
         background: rgba(22, 163, 74, 0.16);
         color: #166534;
@@ -209,12 +230,14 @@
         background: rgba(220, 38, 38, 0.15);
         color: #991b1b;
       }
+
       .message {
         padding: 12px 16px;
         border-radius: 10px;
         margin-bottom: 16px;
         display: none;
       }
+
       .message.success {
         background: rgba(22, 163, 74, 0.12);
         color: #166534;
@@ -225,6 +248,7 @@
         color: #991b1b;
         display: block;
       }
+
       .flex {
         display: flex;
         gap: 16px;
@@ -235,12 +259,14 @@
       .grow {
         flex: 1;
       }
+
       .events-list {
         max-height: 420px;
         overflow-y: auto;
         display: grid;
         gap: 12px;
       }
+
       .event-item {
         border: 1px solid var(--border);
         border-radius: 16px;
@@ -268,15 +294,18 @@
       .event-item.card-generic {
         border-left: 4px solid rgba(15, 23, 42, 0.3);
       }
+
       .event-item h4 {
         margin: 0 0 6px 0;
       }
+
       .chips {
         display: flex;
         gap: 6px;
         flex-wrap: wrap;
         margin-bottom: 12px;
       }
+
       .chip {
         background: rgba(37, 99, 235, 0.12);
         color: var(--accent-dark);
@@ -284,12 +313,14 @@
         border-radius: 999px;
         font-size: 12px;
       }
+
       canvas {
         background: #fff;
         border-radius: 12px;
         border: 1px solid var(--border);
         padding: 12px;
       }
+
       @media (max-width: 980px) {
         main {
           flex-direction: column;
@@ -318,6 +349,7 @@
       <form id="loginForm">
         <label for="loginUser">Usuário</label>
         <input id="loginUser" type="text" autocomplete="username" required />
+
         <label for="loginPass">Senha</label>
         <input
           id="loginPass"
@@ -325,8 +357,10 @@
           autocomplete="current-password"
           required
         />
+
         <label for="loginCompany">Empresa (opcional)</label>
         <input id="loginCompany" type="text" placeholder="company-1" />
+
         <button class="primary" type="submit">Entrar</button>
       </form>
       <div id="loginMessage" class="message"></div>
@@ -342,7 +376,9 @@
             <h1>Energy NLQ Dashboard</h1>
             <p id="companyLabel">Empresa:</p>
           </div>
-          <div><button class="primary" id="logoutBtn">Sair</button></div>
+          <div>
+            <button class="primary" id="logoutBtn">Sair</button>
+          </div>
         </div>
       </header>
       <main>
@@ -378,6 +414,7 @@
                     </select>
                   </div>
                 </div>
+
                 <label for="rulePrompt"
                   >Prompt (explique a consulta e quando rodar)</label
                 >
@@ -389,6 +426,7 @@
                   >Para relatórios agendados, descreva o horário/período no
                   próprio prompt.</small
                 >
+
                 <div style="display: flex; gap: 12px; align-items: center">
                   <button class="primary" type="submit">Salvar regra</button>
                   <button class="link" type="button" id="ruleResetBtn">
@@ -478,7 +516,6 @@
                 <h2 id="deviceTitle">Dispositivo</h2>
                 <button class="link" id="closeDeviceDetail">Fechar</button>
               </div>
-
               <div class="flex flex-wrap" style="gap: 16px">
                 <div class="grow">
                   <label>Início</label>
@@ -500,7 +537,6 @@
                   <button class="primary" id="applyMetricsBtn">Aplicar</button>
                 </div>
               </div>
-
               <div class="flex flex-wrap" style="gap: 16px; margin-top: 12px">
                 <div
                   class="card"
@@ -540,7 +576,6 @@
     </div>
 
     <script>
-      /* ================= Utils ================= */
       const SI_PREFIXES = [
         { exp: 12, prefix: "T" },
         { exp: 9, prefix: "G" },
@@ -552,6 +587,7 @@
         { exp: -9, prefix: "n" },
         { exp: -12, prefix: "p" },
       ];
+
       function formatSI(
         value,
         unit = "",
@@ -566,9 +602,13 @@
           return "-";
         const num = Number(value);
         if (!Number.isFinite(num)) return "-";
-        if (num === 0) return unit ? `0 ${unit}` : "0";
+        if (num === 0) {
+          return unit ? `0 ${unit}` : "0";
+        }
+
         let exp = Math.floor(Math.log10(Math.abs(num)) / 3) * 3;
         exp = Math.max(clampMinExp, Math.min(clampMaxExp, exp));
+
         let chosen = SI_PREFIXES.find((p) => p.exp === exp);
         if (!chosen) {
           const ordered = [...SI_PREFIXES].sort((a, b) => b.exp - a.exp);
@@ -576,12 +616,14 @@
             ordered.find((p) => exp >= p.exp) || ordered[ordered.length - 1];
           exp = chosen.exp;
         }
+
         const scaled = num / 10 ** exp;
         const absScaled = Math.abs(scaled);
         let decimals = maxDecimals;
         if (absScaled >= 100) decimals = 0;
         else if (absScaled >= 10) decimals = Math.min(decimals, 1);
         else decimals = Math.min(decimals, 3);
+
         const valueStr = scaled.toLocaleString("pt-BR", {
           maximumFractionDigits: decimals,
         });
@@ -589,34 +631,19 @@
           ? `${valueStr} ${chosen.prefix}${unit}`
           : `${valueStr} ${chosen.prefix}`.trim();
       }
+
       const fmtV = (v) => formatSI(v, "V");
       const fmtA = (v) => formatSI(v, "A");
       const fmtHz = (v) => formatSI(v, "Hz");
+
       function formatTimestamp(value) {
         if (!value) return "-";
-        const d = new Date(value);
-        return Number.isNaN(d.getTime())
+        const date = new Date(value);
+        return Number.isNaN(date.getTime())
           ? String(value)
-          : d.toLocaleString("pt-BR");
-      }
-      function currentTimeUnit() {
-        const sel = document.getElementById("metricsBucket");
-        const v = sel ? sel.value : "hour";
-        if (v === "minute") return "minute";
-        if (v === "day") return "day";
-        return "hour";
-      }
-      function toLocalInputValue(date) {
-        const pad = (n) => String(n).padStart(2, "0");
-        const y = date.getFullYear();
-        const m = pad(date.getMonth() + 1);
-        const d = pad(date.getDate());
-        const hh = pad(date.getHours());
-        const mm = pad(date.getMinutes());
-        return `${y}-${m}-${d}T${hh}:${mm}`;
+          : date.toLocaleString("pt-BR");
       }
 
-      /* ================= Estado ================= */
       const state = {
         token: null,
         companyId: null,
@@ -630,19 +657,20 @@
         chart: null,
       };
 
-      /* ================= DOM ================= */
       const loginView = document.getElementById("loginView");
       const dashboard = document.getElementById("dashboard");
       const loginForm = document.getElementById("loginForm");
       const loginMessage = document.getElementById("loginMessage");
       const companyLabel = document.getElementById("companyLabel");
       const logoutBtn = document.getElementById("logoutBtn");
+
       const navButtons = Array.from(document.querySelectorAll("nav button"));
       const sections = {
         rules: document.getElementById("rulesSection"),
         stream: document.getElementById("streamSection"),
         devices: document.getElementById("devicesSection"),
       };
+
       const ruleForm = document.getElementById("ruleForm");
       const ruleFormMessage = document.getElementById("ruleFormMessage");
       const rulesMessage = document.getElementById("rulesMessage");
@@ -654,8 +682,10 @@
       const ruleResetBtn = document.getElementById("ruleResetBtn");
       const ruleTypeSelect = document.getElementById("ruleType");
       const scheduleHint = document.getElementById("scheduleHint");
+
       const streamList = document.getElementById("streamList");
       const streamFilters = document.getElementById("streamFilters");
+
       const devicesMessage = document.getElementById("devicesMessage");
       const devicesTableBody = document.querySelector("#devicesTable tbody");
       const reloadDevicesBtn = document.getElementById("reloadDevicesBtn");
@@ -672,12 +702,10 @@
       const liveFrequency = document.getElementById("liveFrequency");
       const livePF = document.getElementById("livePF");
 
-      /* ================= Chart ================= */
       (function initMetricsChart() {
         const canvas = document.getElementById("metricsChart");
         if (!canvas) return;
         const ctx = canvas.getContext("2d");
-
         state.chart = new Chart(ctx, {
           type: "bar",
           data: {
@@ -685,11 +713,10 @@
             datasets: [
               {
                 label: "Tensão média",
-                data: [], // {x: Date, y: number}
-                backgroundColor: "rgba(37,99,235,.4)",
-                borderColor: "rgba(37,99,235,1)",
+                data: [],
+                backgroundColor: "rgba(37, 99, 235, 0.4)",
+                borderColor: "rgba(37, 99, 235, 1)",
                 borderWidth: 1,
-                parsing: false,
               },
             ],
           },
@@ -697,82 +724,31 @@
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-              x: {
-                type: "time",
-                time: {
-                  unit: currentTimeUnit(),
-                  displayFormats: {
-                    minute: "dd/MM HH:mm",
-                    hour: "dd/MM HH:mm",
-                    day: "dd/MM",
-                  },
-                },
-                ticks: {
-                  source: "data",
-                  autoSkip: true,
-                  autoSkipPadding: 12,
-                  maxRotation: 0,
-                  maxTicksLimit: 8,
-                  callback(value) {
-                    try {
-                      const d = new Date(this.getLabelForValue(value));
-                      const unit = this.chart.options.scales.x.time.unit;
-                      return new Intl.DateTimeFormat("pt-BR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        ...(unit !== "day"
-                          ? { hour: "2-digit", minute: "2-digit" }
-                          : {}),
-                      }).format(d);
-                    } catch {
-                      return value;
-                    }
-                  },
-                },
-                grid: { display: false },
-              },
               y: {
                 beginAtZero: true,
                 ticks: {
-                  callback(v) {
-                    return fmtV(v);
+                  callback(value) {
+                    return fmtV(value);
                   },
                 },
               },
             },
             plugins: {
-              legend: { labels: { boxWidth: 12 } },
               tooltip: {
                 callbacks: {
-                  title(items) {
-                    const x = items[0]?.parsed?.x;
-                    if (!x) return "";
-                    return new Intl.DateTimeFormat("pt-BR", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }).format(new Date(x));
-                  },
-                  label(ctx) {
-                    const v = ctx.parsed?.y;
-                    return ` ${fmtV(v)}`;
+                  label(context) {
+                    const label = context.dataset.label
+                      ? `${context.dataset.label}: `
+                      : "";
+                    return label + fmtV(context.parsed.y);
                   },
                 },
               },
             },
           },
         });
-
-        metricsBucket.addEventListener("change", () => {
-          if (!state.chart) return;
-          state.chart.options.scales.x.time.unit = currentTimeUnit();
-          state.chart.update();
-        });
       })();
 
-      /* ================= Helpers UI ================= */
       function setMessage(el, msg, type = "success") {
         if (!msg) {
           el.className = "message";
@@ -784,12 +760,14 @@
         el.style.display = "block";
         el.textContent = msg;
       }
+
       function saveSession(data) {
         state.token = data.token;
         state.companyId = data.companyId;
         localStorage.setItem("nlq_token", data.token);
         localStorage.setItem("nlq_company", data.companyId);
       }
+
       function clearSession() {
         state.token = null;
         state.companyId = null;
@@ -800,6 +778,7 @@
           state.ws = null;
         }
       }
+
       async function apiFetch(path, options = {}) {
         if (!state.token) throw new Error("Token não definido");
         const headers = Object.assign(
@@ -809,6 +788,7 @@
           },
           options.headers || {}
         );
+
         const response = await fetch(path, { ...options, headers });
         if (!response.ok) {
           const text = await response.text();
@@ -818,7 +798,6 @@
         return response.json();
       }
 
-      /* ================= Regras ================= */
       async function loadRules() {
         try {
           const data = await apiFetch("/rules");
@@ -828,44 +807,53 @@
           setMessage(rulesMessage, err.message, "error");
         }
       }
+
       function renderRules() {
         rulesTableBody.innerHTML = "";
         if (!state.rules.length) {
-          const tr = document.createElement("tr");
-          const td = document.createElement("td");
-          td.colSpan = 6;
-          td.textContent = "Nenhuma regra cadastrada.";
-          td.style.textAlign = "center";
-          tr.appendChild(td);
-          rulesTableBody.appendChild(tr);
+          const row = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.colSpan = 6;
+          cell.textContent = "Nenhuma regra cadastrada.";
+          cell.style.textAlign = "center";
+          row.appendChild(cell);
+          rulesTableBody.appendChild(row);
           return;
         }
+
         for (const rule of state.rules) {
           const tr = document.createElement("tr");
           const summary = rule.scheduleSummary || "-";
+
           tr.innerHTML = `
-            <td><strong>${rule.name}</strong><br/><small>${
+          <td><strong>${rule.name}</strong><br/><small>${
             rule.companyId
           }</small></td>
-            <td>${rule.type}</td>
-            <td><span class="badge ${rule.status}">${rule.status}</span></td>
-            <td>${rule.scheduleCron || "-"}<br/><small>${summary}</small></td>
-            <td><pre>${rule.prompt || ""}</pre></td>
-            <td></td>`;
+          <td>${rule.type}</td>
+          <td><span class="badge ${rule.status}">${rule.status}</span></td>
+          <td>${rule.scheduleCron || "-"}<br/><small>${summary}</small></td>
+          <td><pre>${rule.prompt || ""}</pre></td>
+          <td></td>
+        `;
+
           const actionsCell = tr.lastElementChild;
+
           const detailBtn = document.createElement("button");
           detailBtn.className = "link";
           detailBtn.textContent = "Ver detalhes";
           detailBtn.addEventListener("click", () => showRuleDetail(rule.id));
+
           const toggleBtn = document.createElement("button");
           toggleBtn.className = "primary";
           toggleBtn.textContent =
             rule.status === "active" ? "Desativar" : "Ativar";
           toggleBtn.addEventListener("click", () => toggleRule(rule));
+
           const deleteBtn = document.createElement("button");
           deleteBtn.className = "danger";
           deleteBtn.textContent = "Excluir";
           deleteBtn.addEventListener("click", () => deleteRule(rule));
+
           actionsCell.append(
             detailBtn,
             document.createElement("br"),
@@ -876,33 +864,38 @@
           rulesTableBody.appendChild(tr);
         }
       }
+
       async function showRuleDetail(id) {
         const rule = state.rules.find((r) => r.id === id);
         if (!rule) return;
         state.selectedRule = rule;
-        ruleDetailContent.innerHTML = `
-          <p><strong>ID:</strong> ${rule.id}</p>
-          <p><strong>Tipo:</strong> ${rule.type}</p>
-          <p><strong>Status:</strong> ${rule.status}</p>
-          <p><strong>Schedule:</strong> ${rule.scheduleCron || "-"} (${
+
+        const content = `
+        <p><strong>ID:</strong> ${rule.id}</p>
+        <p><strong>Tipo:</strong> ${rule.type}</p>
+        <p><strong>Status:</strong> ${rule.status}</p>
+        <p><strong>Schedule:</strong> ${rule.scheduleCron || "-"} (${
           rule.scheduleSummary || "-"
         })</p>
-          <p><strong>Última execução:</strong> ${
-            rule.lastRunAt || "-"
-          } | <strong>Disparo:</strong> ${rule.lastTriggeredAt || "-"}</p>
-          <h3>SQL</h3><pre>${rule.sql || ""}</pre>
-          <h3>Cypher</h3><pre>${rule.cypher || ""}</pre>
-          <h3>Último resultado</h3><pre>${JSON.stringify(
-            rule.lastResult ?? "-",
-            null,
-            2
-          )}</pre>`;
+        <p><strong>Última execução:</strong> ${
+          rule.lastRunAt || "-"
+        } | <strong>Disparo:</strong> ${rule.lastTriggeredAt || "-"}</p>
+        <h3>SQL</h3>
+        <pre>${rule.sql || ""}</pre>
+        <h3>Cypher</h3>
+        <pre>${rule.cypher || ""}</pre>
+        <h3>Último resultado</h3>
+        <pre>${JSON.stringify(rule.lastResult ?? "-", null, 2)}</pre>
+      `;
+        ruleDetailContent.innerHTML = content;
         ruleDetailCard.classList.remove("hidden");
       }
+
       function hideRuleDetail() {
         state.selectedRule = null;
         ruleDetailCard.classList.add("hidden");
       }
+
       async function toggleRule(rule) {
         try {
           const endpoint = rule.status === "active" ? "deactivate" : "activate";
@@ -912,6 +905,7 @@
           setMessage(rulesMessage, err.message, "error");
         }
       }
+
       async function deleteRule(rule) {
         if (!confirm(`Excluir a regra "${rule.name}"?`)) return;
         try {
@@ -923,7 +917,6 @@
         }
       }
 
-      /* ================= Dispositivos ================= */
       async function loadDevices() {
         try {
           const data = await apiFetch("/devices");
@@ -950,36 +943,40 @@
           setMessage(devicesMessage, err.message, "error");
         }
       }
+
       function renderDevices() {
         devicesTableBody.innerHTML = "";
         if (!state.devices?.length) {
-          const tr = document.createElement("tr");
-          const td = document.createElement("td");
-          td.colSpan = 6;
-          td.textContent = "Nenhum dispositivo encontrado.";
-          td.style.textAlign = "center";
-          tr.appendChild(td);
-          devicesTableBody.appendChild(tr);
+          const row = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.colSpan = 6;
+          cell.textContent = "Nenhum dispositivo encontrado.";
+          cell.style.textAlign = "center";
+          row.appendChild(cell);
+          devicesTableBody.appendChild(row);
           return;
         }
-        for (const d of state.devices) {
+
+        for (const device of state.devices) {
           const tr = document.createElement("tr");
           tr.innerHTML = `
-            <td>${d.id}</td>
-            <td>${formatTimestamp(d.lastTs)}</td>
-            <td>${fmtV(d.voltage)}</td>
-            <td>${fmtA(d.current)}</td>
-            <td>${fmtHz(d.frequency)}</td>
-            <td></td>`;
+          <td>${device.id}</td>
+          <td>${formatTimestamp(device.lastTs)}</td>
+          <td>${fmtV(device.voltage)}</td>
+          <td>${fmtA(device.current)}</td>
+          <td>${fmtHz(device.frequency)}</td>
+          <td></td>
+        `;
           const actionCell = tr.lastElementChild;
           const viewBtn = document.createElement("button");
           viewBtn.className = "primary";
           viewBtn.textContent = "Ver detalhes";
-          viewBtn.addEventListener("click", () => openDevice(d.id));
+          viewBtn.addEventListener("click", () => openDevice(device.id));
           actionCell.appendChild(viewBtn);
           devicesTableBody.appendChild(tr);
         }
       }
+
       function openDevice(deviceId) {
         state.selectedDevice = deviceId;
         deviceTitle.textContent = `Dispositivo ${deviceId}`;
@@ -988,16 +985,19 @@
         loadDeviceMetrics();
         updateLiveTelemetry();
       }
+
       function closeDevice() {
         state.selectedDevice = null;
         deviceDetailCard.classList.add("hidden");
       }
+
       function updateMetricsRangeInputs() {
         const end = new Date();
         const start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
-        metricsEnd.value = toLocalInputValue(end);
-        metricsStart.value = toLocalInputValue(start);
+        metricsEnd.value = end.toISOString().slice(0, 16);
+        metricsStart.value = start.toISOString().slice(0, 16);
       }
+
       async function loadDeviceMetrics() {
         if (!state.selectedDevice) return;
         const start = metricsStart.value ? new Date(metricsStart.value) : null;
@@ -1006,92 +1006,167 @@
           setMessage(devicesMessage, "Intervalo inválido.", "error");
           return;
         }
+
         const params = new URLSearchParams({
           start: start.toISOString(),
           end: end.toISOString(),
           bucket: metricsBucket.value,
         });
+
         try {
           const data = await apiFetch(
             `/devices/${state.selectedDevice}/metrics?${params.toString()}`
           );
-          console.log("metrics points", data.points);
-          if (!data.points?.length)
-            setMessage(
-              devicesMessage,
-              "Sem pontos no período/agrupamento selecionado.",
-              "error"
-            );
-          else setMessage(devicesMessage);
           renderMetricsChart(data.points || []);
         } catch (err) {
           setMessage(devicesMessage, err.message, "error");
         }
       }
+
       function renderMetricsChart(points = []) {
-        const sorted = [...points].sort(
-          (a, b) => new Date(a.bucket) - new Date(b.bucket)
-        );
-        const data = sorted.map((p) => ({
-          x: new Date(p.bucket),
-          y: Number(p?.avgVoltage ?? 0),
-        }));
+        const labels = points.map((p) => p.bucket);
+        const data = points.map((p) => Number(p?.avgVoltage ?? 0));
         if (!state.chart) return;
-        state.chart.options.scales.x.time.unit = currentTimeUnit();
+        state.chart.data.labels = labels;
         state.chart.data.datasets[0].data = data;
         state.chart.update();
       }
 
-      /* ================= Stream ================= */
       function addStreamEvent(event) {
         state.events.unshift(event);
         if (state.events.length > 200) state.events.pop();
         renderStream();
       }
+
+      function normalizeEvent(event) {
+        const nowIso = new Date().toISOString();
+        if (!event || typeof event !== "object") {
+          return {
+            title: "Evento desconhecido",
+            timestamp: nowIso,
+            summary: "Payload não reconhecido.",
+            details: JSON.stringify(event, null, 2),
+            category: "Sistema",
+            style: "card-system",
+          };
+        }
+
+        if (event.type === "device.telemetry") {
+          return {
+            title: event.deviceId
+              ? `Telemetria - ${event.deviceId}`
+              : "Telemetria",
+            timestamp: event.sample?.ts || nowIso,
+            summary: "Nova leitura recebida do dispositivo.",
+            details: JSON.stringify(event.sample ?? event, null, 2),
+            category: "Telemetria",
+            style: "card-device",
+          };
+        }
+
+        if (event.type === "rule.report" || event.type === "rule.alert") {
+          const rows = Array.isArray(event.rows) ? event.rows : [];
+          const summary = rows.length
+            ? `${rows.length} linha(s) retornadas.`
+            : "Nenhum dado retornado.";
+          return {
+            title:
+              event.type === "rule.alert"
+                ? `Alerta - ${event.name ?? event.ruleId}`
+                : `Relatório - ${event.name ?? event.ruleId}`,
+            timestamp: event.generatedAt || nowIso,
+            summary,
+            details: JSON.stringify(
+              rows.length ? rows : event.metadata ?? event,
+              null,
+              2
+            ),
+            category: event.type === "rule.alert" ? "Alerta" : "Relatório",
+            style: event.type === "rule.alert" ? "card-alert" : "card-report",
+          };
+        }
+
+        if (event.type === "system") {
+          return {
+            title: "Sistema",
+            timestamp: nowIso,
+            summary: event.message || "Evento do sistema.",
+            details: JSON.stringify(event, null, 2),
+            category: "Sistema",
+            style: "card-system",
+          };
+        }
+
+        return {
+          title: event.type ? `Evento ${event.type}` : "Evento",
+          timestamp: event.generatedAt || nowIso,
+          summary: "Conteúdo capturado das mensagens em tempo real.",
+          details: JSON.stringify(event, null, 2),
+          category: event.type || "Evento",
+          style: "card-generic",
+        };
+      }
+
       function renderStream() {
         streamList.innerHTML = "";
         const filters = Array.from(new Set(state.events.map((e) => e.type)));
         streamFilters.innerHTML = "";
-        filters.forEach((t) => {
+        filters.forEach((type) => {
           const chip = document.createElement("span");
           chip.className = "chip";
-          chip.textContent = t;
+          chip.textContent = type;
           streamFilters.appendChild(chip);
         });
-        state.events.forEach((e) => {
+
+        state.events.forEach((event) => {
           const item = document.createElement("div");
           item.className = "event-item";
-          item.innerHTML = `<h4>${e.type} — ${
-            e.generatedAt || e.sample?.ts || new Date().toISOString()
-          }</h4><pre>${JSON.stringify(e, null, 2)}</pre>`;
+          item.innerHTML = `
+          <h4>${event.type} — ${
+            event.generatedAt || event.sample?.ts || new Date().toISOString()
+          }</h4>
+          <pre>${JSON.stringify(event, null, 2)}</pre>
+        `;
           streamList.appendChild(item);
         });
       }
+
       function updateLiveTelemetry() {
-        const id = state.selectedDevice;
-        const latest = id ? state.deviceLive[id] : null;
-        const s = latest?.sample ?? latest ?? null;
-        if (!s) {
-          liveTs.textContent =
-            liveVoltage.textContent =
-            liveCurrent.textContent =
-            liveFrequency.textContent =
-            livePF.textContent =
-              "-";
+        const deviceId = state.selectedDevice;
+        const latestEntry = deviceId ? state.deviceLive[deviceId] : null;
+        const sample = latestEntry?.sample ?? latestEntry ?? null;
+
+        const tsEl = document.getElementById("liveTs");
+        const voltageEl = document.getElementById("liveVoltage");
+        const currentEl = document.getElementById("liveCurrent");
+        const freqEl = document.getElementById("liveFrequency");
+        const pfEl = document.getElementById("livePF");
+
+        if (!sample) {
+          if (tsEl) tsEl.textContent = "-";
+          if (voltageEl) voltageEl.textContent = "-";
+          if (currentEl) currentEl.textContent = "-";
+          if (freqEl) freqEl.textContent = "-";
+          if (pfEl) pfEl.textContent = "-";
           return;
         }
-        liveTs.textContent = formatTimestamp(s.ts ?? s.timestamp);
-        liveVoltage.textContent = fmtV(s.voltage);
-        liveCurrent.textContent = fmtA(s.current);
-        liveFrequency.textContent = fmtHz(s.frequency);
-        const pf = s.power_factor ?? s.powerFactor;
-        livePF.textContent =
-          pf ?? pf === 0
-            ? Number(pf).toLocaleString("pt-BR", { maximumFractionDigits: 3 })
-            : "-";
+
+        if (tsEl)
+          tsEl.textContent = formatTimestamp(sample.ts ?? sample.timestamp);
+        if (voltageEl) voltageEl.textContent = fmtV(sample.voltage);
+        if (currentEl) currentEl.textContent = fmtA(sample.current);
+        if (freqEl) freqEl.textContent = fmtHz(sample.frequency);
+        if (pfEl) {
+          const pf = sample.power_factor ?? sample.powerFactor;
+          pfEl.textContent =
+            pf === null || pf === undefined
+              ? "-"
+              : Number(pf).toLocaleString("pt-BR", {
+                  maximumFractionDigits: 3,
+                });
+        }
       }
 
-      /* ================= WS ================= */
       function connectWebSocket() {
         if (!state.token) return;
         const protocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -1099,30 +1174,39 @@
         if (state.ws) state.ws.close();
         const ws = new WebSocket(wsUrl);
         state.ws = ws;
-        ws.onopen = () =>
+
+        ws.onopen = () => {
           addStreamEvent({ type: "system", message: "WebSocket conectado." });
+        };
+
         ws.onclose = () => {
           addStreamEvent({
             type: "system",
             message: "WebSocket desconectado.",
           });
-          if (state.token) setTimeout(connectWebSocket, 3000);
+          if (state.token) {
+            setTimeout(connectWebSocket, 3000);
+          }
         };
+
         ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
             addStreamEvent(data);
             if (data.type === "device.telemetry" && data.deviceId) {
               state.deviceLive[data.deviceId] = data;
-              if (state.selectedDevice === data.deviceId) updateLiveTelemetry();
-            } else if (data.type && data.type.startsWith("rule.")) loadRules();
+              if (state.selectedDevice === data.deviceId) {
+                updateLiveTelemetry();
+              }
+            } else if (data.type && data.type.startsWith("rule.")) {
+              loadRules();
+            }
           } catch (err) {
             console.error("Falha ao tratar evento WS", err);
           }
         };
       }
 
-      /* ================= Navegação & Auth ================= */
       function showDashboard() {
         loginView.classList.add("hidden");
         dashboard.classList.remove("hidden");
@@ -1131,19 +1215,20 @@
         loadDevices();
         connectWebSocket();
       }
+
       function showLogin() {
         dashboard.classList.add("hidden");
         loginView.classList.remove("hidden");
       }
 
-      loginForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
+      loginForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
         setMessage(loginMessage);
         const username = document.getElementById("loginUser").value.trim();
         const password = document.getElementById("loginPass").value.trim();
         const companyId = document.getElementById("loginCompany").value.trim();
         try {
-          const resp = await fetch("/auth/login", {
+          const response = await fetch("/auth/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -1152,11 +1237,11 @@
               companyId: companyId || undefined,
             }),
           });
-          if (!resp.ok) {
-            const text = await resp.text();
-            throw new Error(text || resp.statusText);
+          if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || response.statusText);
           }
-          const data = await resp.json();
+          const data = await response.json();
           saveSession(data);
           showDashboard();
         } catch (err) {
@@ -1190,8 +1275,8 @@
         ruleTypeSelect.dispatchEvent(new Event("change"));
       });
 
-      ruleForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
+      ruleForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
         setMessage(ruleFormMessage);
         const payload = {
           name: document.getElementById("ruleName").value.trim(),
@@ -1199,6 +1284,7 @@
           prompt: document.getElementById("rulePrompt").value.trim(),
           activate: document.getElementById("ruleActivate").value === "yes",
         };
+
         try {
           await apiFetch("/rules", {
             method: "POST",
@@ -1215,16 +1301,17 @@
 
       closeRuleDetail.addEventListener("click", hideRuleDetail);
       reloadRulesBtn.addEventListener("click", loadRules);
+
       reloadDevicesBtn.addEventListener("click", loadDevices);
       closeDeviceDetail.addEventListener("click", closeDevice);
       applyMetricsBtn.addEventListener("click", loadDeviceMetrics);
 
       (function autoLoginFromStorage() {
-        const t = localStorage.getItem("nlq_token");
-        const c = localStorage.getItem("nlq_company");
-        if (t && c) {
-          state.token = t;
-          state.companyId = c;
+        const storedToken = localStorage.getItem("nlq_token");
+        const storedCompany = localStorage.getItem("nlq_company");
+        if (storedToken && storedCompany) {
+          state.token = storedToken;
+          state.companyId = storedCompany;
           showDashboard();
         }
       })();
