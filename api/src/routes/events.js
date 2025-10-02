@@ -1,4 +1,4 @@
-import { listEvents } from '../events/store.js';
+import { listEvents, clearCompanyEvents, clearAllEvents } from '../events/store.js';
 
 function resolveCompanyId(request, explicit) {
   const tokenCompany = request.user?.companyId;
@@ -74,3 +74,6 @@ export default async function registerEventsRoutes(fastify) {
     });
   });
 }
+
+
+

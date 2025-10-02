@@ -1,6 +1,25 @@
 import cron from 'node-cron';
 import { runSql } from '../db/timescale.js';
 import { recordEvent } from '../events/store.js';
+function normalizeRow(row) {
+  if (!row || typeof row !== 'object') return row;
+  const out = {};
+  for (const key of Object.keys(row)) {
+    const v = row[key];
+    if (v instanceof Date) out[key] = v.toISOString();
+    else if (typeof v === 'number' && !Number.isFinite(v)) out[key] = null;
+    else if (v && typeof v === 'object') {
+      try { out[key] = JSON.parse(JSON.stringify(v)); }
+      catch { out[key] = String(v); }
+    } else out[key] = v;
+  }
+  return out;
+}
+
+function normalizeRows(rows) {
+  if (!Array.isArray(rows)) return [];
+  return rows.map((r) => normalizeRow(r));
+}
 import {
   listRules,
   getRuleById,
@@ -113,17 +132,17 @@ export function createRuleManager({ log, hub }) {
       const params = buildSqlParams(rule);
       const result = await runSql(rule.sql, params);
       const rows = Array.isArray(result?.rows) ? result.rows : [];
-      const trimmed = prepareResult(rows);
+      const trimmed = prepareResult(rows);\n      const normalized = normalizeRows(trimmed);
       const triggered = rule.type === 'threshold_alert' ? rows.length > 0 : true;
 
       await recordRuleExecution({
         id: rule.id,
-        lastResult: triggered ? trimmed : [],
+        lastResult: triggered ? normalized : [],
         triggered
       });
 
       if (triggered) {
-        broadcastResult(rule, trimmed);
+        broadcastResult(rule, normalized);
       }
     } catch (err) {
       log.error({ err, ruleId }, 'Falha ao executar regra');
@@ -205,4 +224,5 @@ export function createRuleManager({ log, hub }) {
     broadcastResult
   };
 }
+
 
