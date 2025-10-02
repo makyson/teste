@@ -113,6 +113,7 @@ export async function generateScheduleCron({ text }) {
 
   let parsed;
   try {
+    console.log(combined);
     parsed = JSON.parse(combined);
   } catch {
     throw new Error("Gemini não retornou JSON válido para o cron.");
