@@ -263,10 +263,10 @@
     <h2>Autenticação</h2>
     <form id="loginForm">
       <label for="loginUser">Usuário</label>
-      <input id="loginUser" type="text" required />
+      <input id="loginUser" type="text" autocomplete="username" required />
 
       <label for="loginPass">Senha</label>
-      <input id="loginPass" type="password" required />
+      <input id="loginPass" type="password" autocomplete="current-password" required />
 
       <label for="loginCompany">Empresa (opcional)</label>
       <input id="loginCompany" type="text" placeholder="company-1" />
@@ -442,6 +442,57 @@
   </div>
 
   <script>
+    const SI_PREFIXES = [
+      { exp: 12, prefix: 'T' },
+      { exp: 9, prefix: 'G' },
+      { exp: 6, prefix: 'M' },
+      { exp: 3, prefix: 'k' },
+      { exp: 0, prefix: '' },
+      { exp: -3, prefix: 'm' },
+      { exp: -6, prefix: 'µ' },
+      { exp: -9, prefix: 'n' },
+      { exp: -12, prefix: 'p' }
+    ];
+
+    function formatSI(value, unit = '', { maxDecimals = 3, clampMinExp = -12, clampMaxExp = 12 } = {}) {
+      if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return '-';
+      const num = Number(value);
+      if (!Number.isFinite(num)) return '-';
+      if (num === 0) {
+        return unit ? `0 ${unit}` : '0';
+      }
+
+      let exp = Math.floor(Math.log10(Math.abs(num)) / 3) * 3;
+      exp = Math.max(clampMinExp, Math.min(clampMaxExp, exp));
+
+      let chosen = SI_PREFIXES.find((p) => p.exp === exp);
+      if (!chosen) {
+        const ordered = [...SI_PREFIXES].sort((a, b) => b.exp - a.exp);
+        chosen = ordered.find((p) => exp >= p.exp) || ordered[ordered.length - 1];
+        exp = chosen.exp;
+      }
+
+      const scaled = num / 10 ** exp;
+      const absScaled = Math.abs(scaled);
+      let decimals = maxDecimals;
+      if (absScaled >= 100) decimals = 0;
+      else if (absScaled >= 10) decimals = Math.min(decimals, 1);
+      else decimals = Math.min(decimals, 3);
+
+      const valueStr = scaled.toLocaleString('pt-BR', { maximumFractionDigits: decimals });
+      return unit ? `${valueStr} ${chosen.prefix}${unit}` : `${valueStr} ${chosen.prefix}`.trim();
+    }
+
+    const fmtV = (v) => formatSI(v, 'V');
+    const fmtA = (v) => formatSI(v, 'A');
+    const fmtHz = (v) => formatSI(v, 'Hz');
+
+    function formatTimestamp(value) {
+      if (!value) return '-';
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString('pt-BR');
+    }
+
     const state = {
       token: null,
       companyId: null,
@@ -500,7 +551,51 @@
     const liveFrequency = document.getElementById('liveFrequency');
     const livePF = document.getElementById('livePF');
 
-    const metricsCtx = document.getElementById('metricsChart').getContext('2d');
+    (function initMetricsChart() {
+      const canvas = document.getElementById('metricsChart');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      state.chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: 'Tensão média',
+              data: [],
+              backgroundColor: 'rgba(37, 99, 235, 0.4)',
+              borderColor: 'rgba(37, 99, 235, 1)',
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback(value) {
+                  return fmtV(value);
+                }
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label(context) {
+                  const label = context.dataset.label ? `${context.dataset.label}: ` : '';
+                  return label + fmtV(context.parsed.y);
+                }
+              }
+            }
+          }
+        }
+      });
+    })();
+
 
     function setMessage(el, msg, type = 'success') {
       if (!msg) {
@@ -658,6 +753,20 @@
       try {
         const data = await apiFetch('/devices');
         state.devices = data.items || [];
+        for (const device of state.devices) {
+          const sample = {
+            ts: device.lastTs,
+            voltage: device.voltage,
+            current: device.current,
+            frequency: device.frequency,
+            power_factor: device.powerFactor ?? device.power_factor ?? null
+          };
+          const existing = state.deviceLive[device.id];
+          const existingTs = existing?.sample?.ts ?? existing?.ts ?? null;
+          if (!existingTs || (sample.ts && new Date(sample.ts) > new Date(existingTs))) {
+            state.deviceLive[device.id] = { sample };
+          }
+        }
         renderDevices();
       } catch (err) {
         setMessage(devicesMessage, err.message, 'error');
@@ -666,7 +775,7 @@
 
     function renderDevices() {
       devicesTableBody.innerHTML = '';
-      if (!state.devices.length) {
+      if (!state.devices?.length) {
         const row = document.createElement('tr');
         const cell = document.createElement('td');
         cell.colSpan = 6;
@@ -681,10 +790,10 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${device.id}</td>
-          <td>${device.lastTs ?? '-'}</td>
-          <td>${device.voltage ?? '-'}</td>
-          <td>${device.current ?? '-'}</td>
-          <td>${device.frequency ?? '-'}</td>
+          <td>${formatTimestamp(device.lastTs)}</td>
+          <td>${fmtV(device.voltage)}</td>
+          <td>${fmtA(device.current)}</td>
+          <td>${fmtHz(device.frequency)}</td>
           <td></td>
         `;
         const actionCell = tr.lastElementChild;
@@ -741,36 +850,13 @@
       }
     }
 
-    function renderMetricsChart(points) {
+    function renderMetricsChart(points = []) {
       const labels = points.map((p) => p.bucket);
-      const dataset = points.map((p) => p.avgVoltage || 0);
-
-      if (!state.chart) {
-        state.chart = new Chart(metricsCtx, {
-          type: 'bar',
-          data: {
-            labels,
-            datasets: [
-              {
-                label: 'Média de tensão (V)',
-                data: dataset,
-                backgroundColor: 'rgba(37, 99, 235, 0.4)',
-                borderColor: 'rgba(37, 99, 235, 1)',
-                borderWidth: 1
-              }
-            ]
-          },
-          options: {
-            scales: {
-              y: { beginAtZero: true }
-            }
-          }
-        });
-      } else {
-        state.chart.data.labels = labels;
-        state.chart.data.datasets[0].data = dataset;
-        state.chart.update();
-      }
+      const data = points.map((p) => Number(p?.avgVoltage ?? 0));
+      if (!state.chart) return;
+      state.chart.data.labels = labels;
+      state.chart.data.datasets[0].data = data;
+      state.chart.update();
     }
 
     function addStreamEvent(event) {
@@ -785,7 +871,7 @@
         return {
           title: 'Evento desconhecido',
           timestamp: nowIso,
-          summary: 'Payload n�o reconhecido.',
+          summary: 'Payload não reconhecido.',
           details: JSON.stringify(event, null, 2),
           category: 'Sistema',
           style: 'card-system'
@@ -807,11 +893,11 @@
         const rows = Array.isArray(event.rows) ? event.rows : [];
         const summary = rows.length ? `${rows.length} linha(s) retornadas.` : 'Nenhum dado retornado.';
         return {
-          title: event.type === 'rule.alert' ? `Alerta - ${event.name ?? event.ruleId}` : `Relat�rio - ${event.name ?? event.ruleId}`,
+          title: event.type === 'rule.alert' ? `Alerta - ${event.name ?? event.ruleId}` : `Relatório - ${event.name ?? event.ruleId}`,
           timestamp: event.generatedAt || nowIso,
           summary,
           details: JSON.stringify(rows.length ? rows : (event.metadata ?? event), null, 2),
-          category: event.type === 'rule.alert' ? 'Alerta' : 'Relat�rio',
+          category: event.type === 'rule.alert' ? 'Alerta' : 'Relatório',
           style: event.type === 'rule.alert' ? 'card-alert' : 'card-report'
         };
       }
@@ -830,7 +916,7 @@
       return {
         title: event.type ? `Evento ${event.type}` : 'Evento',
         timestamp: event.generatedAt || nowIso,
-        summary: 'Conte�do capturado das mensagens em tempo real.',
+        summary: 'Conteúdo capturado das mensagens em tempo real.',
         details: JSON.stringify(event, null, 2),
         category: event.type || 'Evento',
         style: 'card-generic'
@@ -861,21 +947,32 @@
 
     function updateLiveTelemetry() {
       const deviceId = state.selectedDevice;
-      if (!deviceId) return;
-      const latest = state.deviceLive[deviceId];
-      if (!latest) {
-        liveTs.textContent = '-';
-        liveVoltage.textContent = '-';
-        liveCurrent.textContent = '-';
-        liveFrequency.textContent = '-';
-        livePF.textContent = '-';
+      const latestEntry = deviceId ? state.deviceLive[deviceId] : null;
+      const sample = latestEntry?.sample ?? latestEntry ?? null;
+
+      const tsEl = document.getElementById('liveTs');
+      const voltageEl = document.getElementById('liveVoltage');
+      const currentEl = document.getElementById('liveCurrent');
+      const freqEl = document.getElementById('liveFrequency');
+      const pfEl = document.getElementById('livePF');
+
+      if (!sample) {
+        if (tsEl) tsEl.textContent = '-';
+        if (voltageEl) voltageEl.textContent = '-';
+        if (currentEl) currentEl.textContent = '-';
+        if (freqEl) freqEl.textContent = '-';
+        if (pfEl) pfEl.textContent = '-';
         return;
       }
-      liveTs.textContent = latest.sample?.ts || '-';
-      liveVoltage.textContent = latest.sample?.voltage ?? '-';
-      liveCurrent.textContent = latest.sample?.current ?? '-';
-      liveFrequency.textContent = latest.sample?.frequency ?? '-';
-      livePF.textContent = latest.sample?.power_factor ?? '-';
+
+      if (tsEl) tsEl.textContent = formatTimestamp(sample.ts ?? sample.timestamp);
+      if (voltageEl) voltageEl.textContent = fmtV(sample.voltage);
+      if (currentEl) currentEl.textContent = fmtA(sample.current);
+      if (freqEl) freqEl.textContent = fmtHz(sample.frequency);
+      if (pfEl) {
+        const pf = sample.power_factor ?? sample.powerFactor;
+        pfEl.textContent = pf === null || pf === undefined ? '-' : Number(pf).toLocaleString('pt-BR', { maximumFractionDigits: 3 });
+      }
     }
 
     function connectWebSocket() {
