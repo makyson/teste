@@ -68,8 +68,8 @@ for ($ts = $Start; $ts -lt $end; $ts = $ts.AddMinutes($IntervalMinutes)) {
     $payloadObj = [ordered]@{
         logical_id   = $DeviceId
         ts           = $ts.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
-        voltage      = [Math]::Round(220 + (Get-Random -Minimum -5.0 -Maximum 5.0), 2)
-        current      = [Math]::Round(5   + (Get-Random -Minimum -1.5 -Maximum 1.5), 2)
+        voltage      = ([Math]::Round(220 + (Get-Random -Minimum -5.0 -Maximum 5.0), 2) / 1000)
+        current      = ([Math]::Round(5   + (Get-Random -Minimum -1.5 -Maximum 1.5), 2) /1000)
         frequency    = [Math]::Round(60  + (Get-Random -Minimum -0.4 -Maximum 0.4), 2)
         power_factor = [Math]::Round(0.92 + (Get-Random -Minimum -0.05 -Maximum 0.05), 2)
     }
