@@ -1,248 +1,348 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8" />
-  <title>Energy NLQ Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" defer></script>
-  <style>
-    :root {
-      color-scheme: light dark;
-      --bg: #f5f7fb;
-      --fg: #1f2933;
-      --card: #ffffff;
-      --border: #d9e0f0;
-      --accent: #2563eb;
-      --accent-dark: #1d4ed8;
-      --danger: #dc2626;
-      --success: #15803d;
-      --muted: #64748b;
-      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
+  <head>
+    <meta charset="utf-8" />
+    <title>Energy NLQ Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+      defer
+    ></script>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f5f7fb;
+        --fg: #1f2933;
+        --card: #ffffff;
+        --border: #d9e0f0;
+        --accent: #2563eb;
+        --accent-dark: #1d4ed8;
+        --danger: #dc2626;
+        --success: #15803d;
+        --muted: #64748b;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
 
-    * { box-sizing: border-box; }
-    body {
-      background: var(--bg);
-      color: var(--fg);
-      margin: 0;
-      min-height: 100vh;
-    }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        margin: 0;
+        min-height: 100vh;
+      }
 
-    a { color: var(--accent); }
+      a {
+        color: var(--accent);
+      }
 
-    .hidden { display: none !important; }
+      .hidden {
+        display: none !important;
+      }
 
-    header {
-      background: #0f172a;
-      color: #fff;
-      padding: 24px;
-    }
+      header {
+        background: #0f172a;
+        color: #fff;
+        padding: 24px;
+      }
 
-    header h1 { margin: 0 0 4px 0; font-size: 24px; }
-    header p { margin: 0; color: rgba(255,255,255,0.75); }
+      header h1 {
+        margin: 0 0 4px 0;
+        font-size: 24px;
+      }
+      header p {
+        margin: 0;
+        color: rgba(255, 255, 255, 0.75);
+      }
 
-    main {
-      display: flex;
-      min-height: calc(100vh - 120px);
-    }
+      main {
+        display: flex;
+        min-height: calc(100vh - 120px);
+      }
 
-    nav {
-      width: 240px;
-      padding: 24px;
-      border-right: 1px solid var(--border);
-      background: rgba(255,255,255,0.6);
-      backdrop-filter: blur(6px);
-    }
+      nav {
+        width: 240px;
+        padding: 24px;
+        border-right: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(6px);
+      }
 
-    nav button {
-      display: block;
-      width: 100%;
-      text-align: left;
-      padding: 12px 16px;
-      border: none;
-      margin-bottom: 8px;
-      border-radius: 10px;
-      background: transparent;
-      color: var(--fg);
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
+      nav button {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 12px 16px;
+        border: none;
+        margin-bottom: 8px;
+        border-radius: 10px;
+        background: transparent;
+        color: var(--fg);
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease;
+      }
 
-    nav button.active {
-      background: rgba(37, 99, 235, 0.15);
-      color: var(--accent-dark);
-    }
+      nav button.active {
+        background: rgba(37, 99, 235, 0.15);
+        color: var(--accent-dark);
+      }
 
-    nav button:hover { background: rgba(37, 99, 235, 0.1); }
+      nav button:hover {
+        background: rgba(37, 99, 235, 0.1);
+      }
 
-    section {
-      flex: 1;
-      padding: 32px;
-      overflow-y: auto;
-    }
+      section {
+        flex: 1;
+        padding: 32px;
+        overflow-y: auto;
+      }
 
-    .card {
-      background: var(--card);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 24px;
-      border: 1px solid var(--border);
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
-    }
+      .card {
+        background: var(--card);
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 24px;
+        border: 1px solid var(--border);
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+      }
 
-    h2 { margin-top: 0; font-size: 20px; }
-    h3 { margin-top: 0; }
+      h2 {
+        margin-top: 0;
+        font-size: 20px;
+      }
+      h3 {
+        margin-top: 0;
+      }
 
-    label {
-      font-weight: 600;
-      display: block;
-      margin-bottom: 6px;
-    }
+      label {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 6px;
+      }
 
-    input[type="text"],
-    input[type="password"],
-    input[type="datetime-local"],
-    textarea,
-    select {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1px solid var(--border);
-      font-size: 14px;
-      transition: border 0.2s ease;
-      margin-bottom: 16px;
-    }
+      input[type="text"],
+      input[type="password"],
+      input[type="datetime-local"],
+      textarea,
+      select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        font-size: 14px;
+        transition: border 0.2s ease;
+        margin-bottom: 16px;
+      }
 
-    input:focus,
-    textarea:focus,
-    select:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
-    }
+      input:focus,
+      textarea:focus,
+      select:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+      }
 
-    textarea { resize: vertical; min-height: 120px; }
+      textarea {
+        resize: vertical;
+        min-height: 120px;
+      }
 
-    button.primary {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      padding: 10px 18px;
-      border-radius: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
+      button.primary {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s ease;
+      }
 
-    button.primary:hover { background: var(--accent-dark); }
+      button.primary:hover {
+        background: var(--accent-dark);
+      }
 
-    button.link {
-      background: transparent;
-      border: none;
-      color: var(--accent);
-      cursor: pointer;
-    }
+      button.link {
+        background: transparent;
+        border: none;
+        color: var(--accent);
+        cursor: pointer;
+      }
 
-    button.danger {
-      background: var(--danger);
-      color: #fff;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+      button.danger {
+        background: var(--danger);
+        color: #fff;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+      }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-    }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+      }
 
-    th, td {
-      border-bottom: 1px solid var(--border);
-      padding: 12px 10px;
-      text-align: left;
-      font-size: 14px;
-    }
+      th,
+      td {
+        border-bottom: 1px solid var(--border);
+        padding: 12px 10px;
+        text-align: left;
+        font-size: 14px;
+      }
 
-    th { background: rgba(15,23,42,0.03); text-transform: uppercase; font-size: 12px; letter-spacing: 0.05em; }
+      th {
+        background: rgba(15, 23, 42, 0.03);
+        text-transform: uppercase;
+        font-size: 12px;
+        letter-spacing: 0.05em;
+      }
 
-    pre {
-      background: #0f172a;
-      color: #e2e8f0;
-      padding: 12px;
-      border-radius: 10px;
-      max-height: 220px;
-      overflow: auto;
-      font-size: 13px;
-    }
+      pre {
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 12px;
+        border-radius: 10px;
+        max-height: 220px;
+        overflow: auto;
+        font-size: 13px;
+      }
 
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
-    }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+      }
 
-    .badge.active { background: rgba(22, 163, 74, 0.16); color: #166534; }
-    .badge.inactive { background: rgba(220, 38, 38, 0.15); color: #991b1b; }
+      .badge.active {
+        background: rgba(22, 163, 74, 0.16);
+        color: #166534;
+      }
+      .badge.inactive {
+        background: rgba(220, 38, 38, 0.15);
+        color: #991b1b;
+      }
 
-    .message {
-      padding: 12px 16px;
-      border-radius: 10px;
-      margin-bottom: 16px;
-      display: none;
-    }
+      .message {
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-bottom: 16px;
+        display: none;
+      }
 
-    .message.success { background: rgba(22, 163, 74, 0.12); color: #166534; display: block; }
-    .message.error { background: rgba(220, 38, 38, 0.12); color: #991b1b; display: block; }
-    .message.info { background: rgba(37, 99, 235, 0.12); color: #1d4ed8; display: block; }
+      .message.success {
+        background: rgba(22, 163, 74, 0.12);
+        color: #166534;
+        display: block;
+      }
+      .message.error {
+        background: rgba(220, 38, 38, 0.12);
+        color: #991b1b;
+        display: block;
+      }
+      .message.info {
+        background: rgba(37, 99, 235, 0.12);
+        color: #1d4ed8;
+        display: block;
+      }
 
-    .flex { display: flex; gap: 16px; }
-    .flex-wrap { flex-wrap: wrap; }
-    .grow { flex: 1; }
+      .flex {
+        display: flex;
+        gap: 16px;
+      }
+      .flex-wrap {
+        flex-wrap: wrap;
+      }
+      .grow {
+        flex: 1;
+      }
 
-    .events-list {
-      max-height: 420px;
-      overflow-y: auto;
-      display: grid;
-      gap: 12px;
-    }
+      .events-list {
+        max-height: 420px;
+        overflow-y: auto;
+        display: grid;
+        gap: 12px;
+      }
 
-    .event-item {
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
-      background: #fff;
-      box-shadow: 0 12px 28px rgba(15,23,42,0.06);
-      transition: transform 0.15s ease, box-shadow 0.2s ease;
-    }
-    .event-item:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 18px 36px rgba(15,23,42,0.1);
-    }
-    .event-item.card-device { border-left: 4px solid #2563eb; }
-    .event-item.card-report { border-left: 4px solid #16a34a; }
-    .event-item.card-alert { border-left: 4px solid #dc2626; }
-    .event-item.card-system { border-left: 4px solid #64748b; }
-    .event-item.card-nlq { border-left: 4px solid #2563eb; }
-    .event-item.card-generic { border-left: 4px solid rgba(15, 23, 42, 0.3); }
-    .mini-table-wrapper { margin-top: 12px; overflow-x: auto; }
-    .mini-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .mini-table th, .mini-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; }
-    .mini-table tbody tr:nth-child(even) { background: rgba(15, 23, 42, 0.03); }
-    .mini-table tfoot td { font-style: italic; color: var(--muted); }
-    .nlq-form textarea { resize: vertical; min-height: 64px; }
-    .nlq-actions { display: flex; justify-content: flex-end; gap: 12px; }
-    .nlq-actions button { min-width: 140px; }
+      .event-item {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        background: #fff;
+        box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+        transition: transform 0.15s ease, box-shadow 0.2s ease;
+      }
+      .event-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 36px rgba(15, 23, 42, 0.1);
+      }
+      .event-item.card-device {
+        border-left: 4px solid #2563eb;
+      }
+      .event-item.card-report {
+        border-left: 4px solid #16a34a;
+      }
+      .event-item.card-alert {
+        border-left: 4px solid #dc2626;
+      }
+      .event-item.card-system {
+        border-left: 4px solid #64748b;
+      }
+      .event-item.card-nlq {
+        border-left: 4px solid #2563eb;
+      }
+      .event-item.card-generic {
+        border-left: 4px solid rgba(15, 23, 42, 0.3);
+      }
+      .mini-table-wrapper {
+        margin-top: 12px;
+        overflow-x: auto;
+      }
+      .mini-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      .mini-table th,
+      .mini-table td {
+        padding: 6px 8px;
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+      }
+      .mini-table tbody tr:nth-child(even) {
+        background: rgba(15, 23, 42, 0.03);
+      }
+      .mini-table tfoot td {
+        font-style: italic;
+        color: var(--muted);
+      }
+      .nlq-form textarea {
+        resize: vertical;
+        min-height: 64px;
+      }
+      .nlq-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+      .nlq-actions button {
+        min-width: 140px;
+      }
 
-    .event-item h4 {
-      margin: 0 0 6px 0;
-    }
+      .event-item h4 {
+        margin: 0 0 6px 0;
+      }
 
       .metrics-grid {
         display: grid;
@@ -258,1279 +358,1356 @@
         height: 100%;
       }
 
-    .chips {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
+      .chips {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
 
-    .chip {
-      background: rgba(37, 99, 235, 0.12);
-      color: var(--accent-dark);
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-    }
+      .chip {
+        background: rgba(37, 99, 235, 0.12);
+        color: var(--accent-dark);
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+      }
 
-    canvas { background: #fff; border-radius: 12px; border: 1px solid var(--border); padding: 12px; }
+      canvas {
+        background: #fff;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        padding: 12px;
+      }
 
-    @media (max-width: 980px) {
-      main { flex-direction: column; }
-      nav { width: 100%; display: flex; overflow-x: auto; border-right: none; border-bottom: 1px solid var(--border); }
-      nav button { flex: 1; text-align: center; }
-    }
-  </style>
-</head>
-<body>
-  <div id="loginView" class="card" style="max-width: 420px; margin: 120px auto;">
-    <h2>AutenticaÃ§Ã£o</h2>
-    <form id="loginForm">
-      <label for="loginUser">UsuÃ¡rio</label>
-      <input id="loginUser" type="text" autocomplete="username" required />
+      @media (max-width: 980px) {
+        main {
+          flex-direction: column;
+        }
+        nav {
+          width: 100%;
+          display: flex;
+          overflow-x: auto;
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+        }
+        nav button {
+          flex: 1;
+          text-align: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="loginView"
+      class="card"
+      style="max-width: 420px; margin: 120px auto"
+    >
+      <h2>AutenticaÃ§Ã£o</h2>
+      <form id="loginForm">
+        <label for="loginUser">UsuÃ¡rio</label>
+        <input id="loginUser" type="text" autocomplete="username" required />
 
-      <label for="loginPass">Senha</label>
-      <input id="loginPass" type="password" autocomplete="current-password" required />
+        <label for="loginPass">Senha</label>
+        <input
+          id="loginPass"
+          type="password"
+          autocomplete="current-password"
+          required
+        />
 
-      <label for="loginCompany">Empresa (opcional)</label>
-      <input id="loginCompany" type="text" placeholder="company-1" />
+        <label for="loginCompany">Empresa (opcional)</label>
+        <input id="loginCompany" type="text" placeholder="company-1" />
 
-      <button class="primary" type="submit">Entrar</button>
-    </form>
-    <div id="loginMessage" class="message"></div>
-  </div>
+        <button class="primary" type="submit">Entrar</button>
+      </form>
+      <div id="loginMessage" class="message"></div>
+    </div>
 
-  <div id="dashboard" class="hidden">
-    <header>
-      <div class="flex flex-wrap" style="justify-content: space-between; align-items: center; gap: 12px;">
-        <div>
-          <h1>Energy NLQ Dashboard</h1>
-          <p id="companyLabel">Empresa:</p>
+    <div id="dashboard" class="hidden">
+      <header>
+        <div
+          class="flex flex-wrap"
+          style="justify-content: space-between; align-items: center; gap: 12px"
+        >
+          <div>
+            <h1>Energy NLQ Dashboard</h1>
+            <p id="companyLabel">Empresa:</p>
+          </div>
+          <div>
+            <button class="primary" id="logoutBtn">Sair</button>
+          </div>
         </div>
-        <div>
-          <button class="primary" id="logoutBtn">Sair</button>
-        </div>
-      </div>
-    </header>
-    <main>
-      <nav>
-        <button class="active" data-section="rules">Regras</button>
-        <button data-section="stream">Streaming</button>
-        <button data-section="devices">Dispositivos</button>
-      </nav>
-      <section>
-        <div id="rulesSection">
-          <div class="card">
-            <h2>Nova regra</h2>
-            <form id="ruleForm">
-              <div class="flex flex-wrap">
+      </header>
+      <main>
+        <nav>
+          <button class="active" data-section="rules">Regras</button>
+          <button data-section="stream">Streaming</button>
+          <button data-section="devices">Dispositivos</button>
+        </nav>
+        <section>
+          <div id="rulesSection">
+            <div class="card">
+              <h2>Nova regra</h2>
+              <form id="ruleForm">
+                <div class="flex flex-wrap">
+                  <div class="grow">
+                    <label for="ruleName">Nome</label>
+                    <input id="ruleName" type="text" required />
+                  </div>
+                  <div style="width: 240px">
+                    <label for="ruleType">Tipo</label>
+                    <select id="ruleType">
+                      <option value="schedule_report">
+                        RelatÃ³rio agendado
+                      </option>
+                      <option value="threshold_alert">Alerta contÃ­nuo</option>
+                    </select>
+                  </div>
+                  <div style="width: 200px">
+                    <label for="ruleActivate">Ativar?</label>
+                    <select id="ruleActivate">
+                      <option value="yes">Sim</option>
+                      <option value="no" selected>NÃ£o</option>
+                    </select>
+                  </div>
+                </div>
+
+                <label for="rulePrompt"
+                  >Prompt (explique a consulta e quando rodar)</label
+                >
+                <textarea
+                  id="rulePrompt"
+                  placeholder="Ex.: Todo dia Ã s 08h me avise os 10 dispositivos com maior consumo nas Ãºltimas 24 horas"
+                ></textarea>
+                <small id="scheduleHint" class="hint"
+                  >Para relatÃ³rios agendados, descreva o horÃ¡rio/perÃ­odo no
+                  prÃ³prio prompt.</small
+                >
+
+                <div style="display: flex; gap: 12px; align-items: center">
+                  <button class="primary" type="submit">Salvar regra</button>
+                  <button class="link" type="button" id="ruleResetBtn">
+                    Limpar
+                  </button>
+                </div>
+              </form>
+              <div id="ruleFormMessage" class="message"></div>
+            </div>
+
+            <div class="card">
+              <div
+                class="flex"
+                style="justify-content: space-between; align-items: center"
+              >
+                <h2>Regras cadastradas</h2>
+                <div>
+                  <button class="primary" id="reloadRulesBtn">Atualizar</button>
+                </div>
+              </div>
+              <div id="rulesMessage" class="message"></div>
+              <table id="rulesTable">
+                <thead>
+                  <tr>
+                    <th>Nome</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                    <th>Agendamento</th>
+                    <th>Prompt</th>
+                    <th>AÃ§Ãµes</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+
+            <div class="card hidden" id="ruleDetailCard">
+              <div
+                class="flex"
+                style="justify-content: space-between; align-items: center"
+              >
+                <h2>Detalhes da regra</h2>
+                <button class="link" id="closeRuleDetail">Fechar</button>
+              </div>
+              <div id="ruleDetailContent"></div>
+            </div>
+          </div>
+
+          <div id="streamSection" class="hidden">
+            <div class="card">
+              <h2>Pergunta rápida NLQ</h2>
+              <form id="nlqForm" class="nlq-form">
+                <label for="nlqText"
+                  >Faça uma pergunta sobre os seus dados</label
+                >
+                <textarea
+                  id="nlqText"
+                  rows="2"
+                  placeholder="Ex.: qual o meu consumo máximo e quais os top 2 equipamentos dela?"
+                ></textarea>
+                <div class="nlq-actions">
+                  <button type="submit" class="primary" id="nlqSubmit">
+                    Perguntar
+                  </button>
+                </div>
+              </form>
+              <div id="nlqMessage" class="message"></div>
+            </div>
+            <div class="card">
+              <h2>Eventos em tempo real</h2>
+              <div class="chips" id="streamFilters"></div>
+              <div id="streamList" class="events-list"></div>
+            </div>
+          </div>
+
+          <div id="devicesSection" class="hidden">
+            <div class="card">
+              <div
+                class="flex"
+                style="justify-content: space-between; align-items: center"
+              >
+                <h2>Dispositivos monitorados</h2>
+                <button class="primary" id="reloadDevicesBtn">Atualizar</button>
+              </div>
+              <div id="devicesMessage" class="message"></div>
+              <table id="devicesTable">
+                <thead>
+                  <tr>
+                    <th>Device</th>
+                    <th>Ãltima leitura</th>
+                    <th>Voltage</th>
+                    <th>Current</th>
+                    <th>Frequency</th>
+                    <th>AÃ§Ãµes</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+
+            <div id="deviceDetailCard" class="card hidden">
+              <div
+                class="flex"
+                style="justify-content: space-between; align-items: center"
+              >
+                <h2 id="deviceTitle">Dispositivo</h2>
+                <button class="link" id="closeDeviceDetail">Fechar</button>
+              </div>
+              <div class="flex flex-wrap" style="gap: 16px">
                 <div class="grow">
-                  <label for="ruleName">Nome</label>
-                  <input id="ruleName" type="text" required />
+                  <label>InÃ­cio</label>
+                  <input id="metricsStart" type="datetime-local" />
                 </div>
-                <div style="width: 240px;">
-                  <label for="ruleType">Tipo</label>
-                  <select id="ruleType">
-                    <option value="schedule_report">RelatÃ³rio agendado</option>
-                    <option value="threshold_alert">Alerta contÃ­nuo</option>
+                <div class="grow">
+                  <label>Fim</label>
+                  <input id="metricsEnd" type="datetime-local" />
+                </div>
+                <div style="width: 220px">
+                  <label>Agrupar por</label>
+                  <select id="metricsBucket">
+                    <option value="hour" selected>Hora</option>
+                    <option value="minute">Minuto</option>
+                    <option value="day">Dia</option>
                   </select>
                 </div>
-                <div style="width: 200px;">
-                  <label for="ruleActivate">Ativar?</label>
-                  <select id="ruleActivate">
-                    <option value="yes">Sim</option>
-                    <option value="no" selected>NÃ£o</option>
-                  </select>
+                <div style="align-self: flex-end">
+                  <button class="primary" id="applyMetricsBtn">Aplicar</button>
                 </div>
               </div>
-
-              <label for="rulePrompt">Prompt (explique a consulta e quando rodar)</label>
-              <textarea id="rulePrompt" placeholder="Ex.: Todo dia Ã s 08h me avise os 10 dispositivos com maior consumo nas Ãºltimas 24 horas"></textarea>
-              <small id="scheduleHint" class="hint">Para relatÃ³rios agendados, descreva o horÃ¡rio/perÃ­odo no prÃ³prio prompt.</small>
-
-              <div style="display:flex; gap: 12px; align-items:center;">
-                <button class="primary" type="submit">Salvar regra</button>
-                <button class="link" type="button" id="ruleResetBtn">Limpar</button>
-              </div>
-            </form>
-            <div id="ruleFormMessage" class="message"></div>
-          </div>
-
-          <div class="card">
-            <div class="flex" style="justify-content: space-between; align-items: center;">
-              <h2>Regras cadastradas</h2>
-              <div>
-                <button class="primary" id="reloadRulesBtn">Atualizar</button>
-              </div>
-            </div>
-            <div id="rulesMessage" class="message"></div>
-            <table id="rulesTable">
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th>Tipo</th>
-                  <th>Status</th>
-                  <th>Agendamento</th>
-                  <th>Prompt</th>
-                  <th>AÃ§Ãµes</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-
-          <div class="card hidden" id="ruleDetailCard">
-            <div class="flex" style="justify-content: space-between; align-items:center;">
-              <h2>Detalhes da regra</h2>
-              <button class="link" id="closeRuleDetail">Fechar</button>
-            </div>
-            <div id="ruleDetailContent"></div>
-          </div>
-        </div>
-
-        <div id="streamSection" class="hidden">
-          <div class="card">
-            <h2>Pergunta rápida NLQ</h2>
-            <form id="nlqForm" class="nlq-form">
-              <label for="nlqText">Faça uma pergunta sobre os seus dados</label>
-              <textarea id="nlqText" rows="2" placeholder="Ex.: qual o meu consumo máximo e quais os top 2 equipamentos dela?"></textarea>
-              <div class="nlq-actions">
-                <button type="submit" class="primary" id="nlqSubmit">Perguntar</button>
-              </div>
-            </form>
-            <div id="nlqMessage" class="message"></div>
-          </div>
-          <div class="card">
-            <h2>Eventos em tempo real</h2>
-            <div class="chips" id="streamFilters"></div>
-            <div id="streamList" class="events-list"></div>
-          </div>
-        </div>
-
-        <div id="devicesSection" class="hidden">
-          <div class="card">
-            <div class="flex" style="justify-content: space-between; align-items:center;">
-              <h2>Dispositivos monitorados</h2>
-              <button class="primary" id="reloadDevicesBtn">Atualizar</button>
-            </div>
-            <div id="devicesMessage" class="message"></div>
-            <table id="devicesTable">
-              <thead>
-                <tr>
-                  <th>Device</th>
-                  <th>Ãltima leitura</th>
-                  <th>Voltage</th>
-                  <th>Current</th>
-                  <th>Frequency</th>
-                  <th>AÃ§Ãµes</th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-
-          <div id="deviceDetailCard" class="card hidden">
-            <div class="flex" style="justify-content: space-between; align-items:center;">
-              <h2 id="deviceTitle">Dispositivo</h2>
-              <button class="link" id="closeDeviceDetail">Fechar</button>
-            </div>
-            <div class="flex flex-wrap" style="gap: 16px;">
-              <div class="grow">
-                <label>InÃ­cio</label>
-                <input id="metricsStart" type="datetime-local" />
-              </div>
-              <div class="grow">
-                <label>Fim</label>
-                <input id="metricsEnd" type="datetime-local" />
-              </div>
-              <div style="width:220px;">
-                <label>Agrupar por</label>
-                <select id="metricsBucket">
-                  <option value="hour" selected>Hora</option>
-                  <option value="minute">Minuto</option>
-                  <option value="day">Dia</option>
-                </select>
-              </div>
-              <div style="align-self: flex-end;">
-                <button class="primary" id="applyMetricsBtn">Aplicar</button>
-              </div>
-            </div>
-            <div class="flex flex-wrap" style="gap: 16px; margin-top: 12px;">
-              <div class="card" style="flex:1; min-width:240px; background: rgba(37,99,235,0.08); border-color: rgba(37,99,235,0.2);">
-                <h3>Ãltima leitura em tempo real</h3>
-                <div id="liveTelemetry">
-                  <p><strong>TS:</strong> <span id="liveTs">-</span></p>
-                  <p><strong>Voltage:</strong> <span id="liveVoltage">-</span></p>
-                  <p><strong>Current:</strong> <span id="liveCurrent">-</span></p>
-                  <p><strong>Frequency:</strong> <span id="liveFrequency">-</span></p>
-                  <p><strong>Power Factor:</strong> <span id="livePF">-</span></p>
+              <div class="flex flex-wrap" style="gap: 16px; margin-top: 12px">
+                <div
+                  class="card"
+                  style="
+                    flex: 1;
+                    min-width: 240px;
+                    background: rgba(37, 99, 235, 0.08);
+                    border-color: rgba(37, 99, 235, 0.2);
+                  "
+                >
+                  <h3>Ãltima leitura em tempo real</h3>
+                  <div id="liveTelemetry">
+                    <p><strong>TS:</strong> <span id="liveTs">-</span></p>
+                    <p>
+                      <strong>Voltage:</strong> <span id="liveVoltage">-</span>
+                    </p>
+                    <p>
+                      <strong>Current:</strong> <span id="liveCurrent">-</span>
+                    </p>
+                    <p>
+                      <strong>Frequency:</strong>
+                      <span id="liveFrequency">-</span>
+                    </p>
+                    <p>
+                      <strong>Power Factor:</strong> <span id="livePF">-</span>
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div class="card" style="flex:2; min-width:300px;">
-                <h3>Tendências recentes</h3>
-                <div class="metrics-grid">
-                  <div class="mini-chart">
-                    <canvas id="voltageChart" height="180"></canvas>
-                  </div>
-                  <div class="mini-chart">
-                    <canvas id="currentChart" height="180"></canvas>
-                  </div>
-                  <div class="mini-chart">
-                    <canvas id="frequencyChart" height="180"></canvas>
-                  </div>
-                  <div class="mini-chart">
-                    <canvas id="powerFactorChart" height="180"></canvas>
+                <div class="card" style="flex: 2; min-width: 300px">
+                  <h3>Tendências recentes</h3>
+                  <div class="metrics-grid">
+                    <div class="mini-chart">
+                      <canvas id="voltageChart" height="180"></canvas>
+                    </div>
+                    <div class="mini-chart">
+                      <canvas id="currentChart" height="180"></canvas>
+                    </div>
+                    <div class="mini-chart">
+                      <canvas id="frequencyChart" height="180"></canvas>
+                    </div>
+                    <div class="mini-chart">
+                      <canvas id="powerFactorChart" height="180"></canvas>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-    </main>
-  </div>
+        </section>
+      </main>
+    </div>
 
-  <script>
-    const state = {
-      token: null,
-      companyId: null,
-      ws: null,
-      events: [],
-      rules: [],
-      devices: [],
-      selectedRule: null,
-      selectedDevice: null,
-      deviceLive: {},
-      charts: {}
-    };
+    <script>
+      const state = {
+        token: null,
+        companyId: null,
+        ws: null,
+        events: [],
+        rules: [],
+        devices: [],
+        selectedRule: null,
+        selectedDevice: null,
+        deviceLive: {},
+        charts: {}
+      };
 
-    const loginView = document.getElementById('loginView');
-    const dashboard = document.getElementById('dashboard');
-    const loginForm = document.getElementById('loginForm');
-    const loginMessage = document.getElementById('loginMessage');
-    const companyLabel = document.getElementById('companyLabel');
-    const logoutBtn = document.getElementById('logoutBtn');
+      const loginView = document.getElementById('loginView');
+      const dashboard = document.getElementById('dashboard');
+      const loginForm = document.getElementById('loginForm');
+      const loginMessage = document.getElementById('loginMessage');
+      const companyLabel = document.getElementById('companyLabel');
+      const logoutBtn = document.getElementById('logoutBtn');
 
-    const navButtons = Array.from(document.querySelectorAll('nav button'));
-    const sections = {
-      rules: document.getElementById('rulesSection'),
-      stream: document.getElementById('streamSection'),
-      devices: document.getElementById('devicesSection')
-    };
+      const navButtons = Array.from(document.querySelectorAll('nav button'));
+      const sections = {
+        rules: document.getElementById('rulesSection'),
+        stream: document.getElementById('streamSection'),
+        devices: document.getElementById('devicesSection')
+      };
 
-    const ruleForm = document.getElementById('ruleForm');
-    const ruleFormMessage = document.getElementById('ruleFormMessage');
-    const rulesMessage = document.getElementById('rulesMessage');
-    const rulesTableBody = document.querySelector('#rulesTable tbody');
-    const reloadRulesBtn = document.getElementById('reloadRulesBtn');
-    const ruleDetailCard = document.getElementById('ruleDetailCard');
-    const ruleDetailContent = document.getElementById('ruleDetailContent');
-    const closeRuleDetail = document.getElementById('closeRuleDetail');
-    const ruleResetBtn = document.getElementById('ruleResetBtn');
-    const ruleTypeSelect = document.getElementById('ruleType');
-    const scheduleHint = document.getElementById('scheduleHint');
+      const ruleForm = document.getElementById('ruleForm');
+      const ruleFormMessage = document.getElementById('ruleFormMessage');
+      const rulesMessage = document.getElementById('rulesMessage');
+      const rulesTableBody = document.querySelector('#rulesTable tbody');
+      const reloadRulesBtn = document.getElementById('reloadRulesBtn');
+      const ruleDetailCard = document.getElementById('ruleDetailCard');
+      const ruleDetailContent = document.getElementById('ruleDetailContent');
+      const closeRuleDetail = document.getElementById('closeRuleDetail');
+      const ruleResetBtn = document.getElementById('ruleResetBtn');
+      const ruleTypeSelect = document.getElementById('ruleType');
+      const scheduleHint = document.getElementById('scheduleHint');
 
-    const streamList = document.getElementById('streamList');
-    const streamFilters = document.getElementById('streamFilters');
-    const nlqForm = document.getElementById('nlqForm');
-    const nlqText = document.getElementById('nlqText');
-    const nlqSubmit = document.getElementById('nlqSubmit');
-    const nlqMessage = document.getElementById('nlqMessage');
+      const streamList = document.getElementById('streamList');
+      const streamFilters = document.getElementById('streamFilters');
+      const nlqForm = document.getElementById('nlqForm');
+      const nlqText = document.getElementById('nlqText');
+      const nlqSubmit = document.getElementById('nlqSubmit');
+      const nlqMessage = document.getElementById('nlqMessage');
 
-    const devicesMessage = document.getElementById('devicesMessage');
-    const devicesTableBody = document.querySelector('#devicesTable tbody');
-    const reloadDevicesBtn = document.getElementById('reloadDevicesBtn');
-    const deviceDetailCard = document.getElementById('deviceDetailCard');
-    const deviceTitle = document.getElementById('deviceTitle');
-    const closeDeviceDetail = document.getElementById('closeDeviceDetail');
-    const metricsStart = document.getElementById('metricsStart');
-    const metricsEnd = document.getElementById('metricsEnd');
-    const metricsBucket = document.getElementById('metricsBucket');
-    const applyMetricsBtn = document.getElementById('applyMetricsBtn');
-    const liveTs = document.getElementById('liveTs');
-    const liveVoltage = document.getElementById('liveVoltage');
-    const liveCurrent = document.getElementById('liveCurrent');
-    const liveFrequency = document.getElementById('liveFrequency');
-    const livePF = document.getElementById('livePF');
-    const metricContexts = {
-      voltage: document.getElementById('voltageChart')?.getContext('2d'),
-      current: document.getElementById('currentChart')?.getContext('2d'),
-      frequency: document.getElementById('frequencyChart')?.getContext('2d'),
-      powerFactor: document.getElementById('powerFactorChart')?.getContext('2d')
-    };
+      const devicesMessage = document.getElementById('devicesMessage');
+      const devicesTableBody = document.querySelector('#devicesTable tbody');
+      const reloadDevicesBtn = document.getElementById('reloadDevicesBtn');
+      const deviceDetailCard = document.getElementById('deviceDetailCard');
+      const deviceTitle = document.getElementById('deviceTitle');
+      const closeDeviceDetail = document.getElementById('closeDeviceDetail');
+      const metricsStart = document.getElementById('metricsStart');
+      const metricsEnd = document.getElementById('metricsEnd');
+      const metricsBucket = document.getElementById('metricsBucket');
+      const applyMetricsBtn = document.getElementById('applyMetricsBtn');
+      const liveTs = document.getElementById('liveTs');
+      const liveVoltage = document.getElementById('liveVoltage');
+      const liveCurrent = document.getElementById('liveCurrent');
+      const liveFrequency = document.getElementById('liveFrequency');
+      const livePF = document.getElementById('livePF');
+      const metricContexts = {
+        voltage: document.getElementById('voltageChart')?.getContext('2d'),
+        current: document.getElementById('currentChart')?.getContext('2d'),
+        frequency: document.getElementById('frequencyChart')?.getContext('2d'),
+        powerFactor: document.getElementById('powerFactorChart')?.getContext('2d')
+      };
 
-    const measurementConfigs = {
-      voltage: { unit: 'V', allowScale: true },
-      current: { unit: 'A', allowScale: true },
-      frequency: { unit: 'Hz', allowScale: true },
-      powerFactor: { unit: '', allowScale: false, maxDecimals: 3 },
-      default: { unit: '', allowScale: false, maxDecimals: 2 }
-    };
+      const measurementConfigs = {
+        voltage: { unit: 'V', allowScale: true },
+        current: { unit: 'A', allowScale: true },
+        frequency: { unit: 'Hz', allowScale: true },
+        powerFactor: { unit: '', allowScale: false, maxDecimals: 3 },
+        default: { unit: '', allowScale: false, maxDecimals: 2 }
+      };
 
-    const scaleSteps = [
-      { threshold: 1e9, divisor: 1e9, prefix: 'G' },
-      { threshold: 1e6, divisor: 1e6, prefix: 'M' },
-      { threshold: 1e3, divisor: 1e3, prefix: 'k' },
-      { threshold: 1, divisor: 1, prefix: '' },
-      { threshold: 1e-3, divisor: 1e-3, prefix: 'm' },
-      { threshold: 1e-6, divisor: 1e-6, prefix: 'u' }
-    ];
+      const scaleSteps = [
+        { threshold: 1e9, divisor: 1e9, prefix: 'G' },
+        { threshold: 1e6, divisor: 1e6, prefix: 'M' },
+        { threshold: 1e3, divisor: 1e3, prefix: 'k' },
+        { threshold: 1, divisor: 1, prefix: '' },
+        { threshold: 1e-3, divisor: 1e-3, prefix: 'm' },
+        { threshold: 1e-6, divisor: 1e-6, prefix: 'u' }
+      ];
 
-    function formatTimestamp(value) {
-      if (!value) return '-';
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) {
+      function formatTimestamp(value) {
+        if (!value) return '-';
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+          return String(value);
+        }
+        return date.toLocaleString('pt-BR');
+      }
+
+      function formatMeasurement(rawValue, type = 'default') {
+        if (rawValue === null || rawValue === undefined || rawValue === '') {
+          return '-';
+        }
+        const numeric = Number(rawValue);
+        if (!Number.isFinite(numeric)) {
+          return '-';
+        }
+        const config = measurementConfigs[type] || measurementConfigs.default;
+        if (!config.allowScale) {
+          return numeric.toLocaleString('pt-BR', { maximumFractionDigits: config.maxDecimals ?? 2 });
+        }
+        const absValue = Math.abs(numeric);
+        let selected = scaleSteps.find((step) => absValue >= step.threshold);
+        if (!selected) {
+          selected = scaleSteps.find((step) => step.prefix === '') || scaleSteps[scaleSteps.length - 1];
+        }
+        const scaled = numeric / selected.divisor;
+        const absScaled = Math.abs(scaled);
+        let maxDecimals = 3;
+        if (absScaled >= 100) {
+          maxDecimals = 0;
+        } else if (absScaled >= 10) {
+          maxDecimals = 1;
+        } else if (absScaled >= 1) {
+          maxDecimals = 2;
+        }
+        const valueStr = scaled.toLocaleString('pt-BR', { maximumFractionDigits: maxDecimals });
+        const unitLabel = `${selected.prefix}${config.unit}`.trim();
+        return unitLabel ? `${valueStr} ${unitLabel}` : valueStr;
+      }
+
+      function extractSampleField(sample, keys) {
+        if (!sample) return undefined;
+        for (const key of keys) {
+          if (sample[key] !== undefined && sample[key] !== null) {
+            return sample[key];
+          }
+          const altKey = key.includes('_')
+            ? key.replace(/_([a-z])/g, (_, char) => char.toUpperCase())
+            : key.replace(/[A-Z]/g, (match) => `_${match.toLowerCase()}`);
+          if (sample[altKey] !== undefined && sample[altKey] !== null) {
+            return sample[altKey];
+          }
+        }
+        return undefined;
+      }
+
+      function clearLiveTelemetry() {
+        liveTs.textContent = '-';
+        liveVoltage.textContent = '-';
+        liveCurrent.textContent = '-';
+        liveFrequency.textContent = '-';
+        livePF.textContent = '-';
+      }
+
+      function inferMeasurementTypeByKey(key) {
+        if (!key) return null;
+        const normalized = String(key).toLowerCase();
+        if (normalized.includes('voltage') || normalized.includes('tens')) return 'voltage';
+        if (normalized.includes('current') || normalized.includes('corr')) return 'current';
+        if (normalized.includes('freq')) return 'frequency';
+        if (normalized.includes('power_factor')) return 'powerFactor';
+        return null;
+      }
+
+      function formatCellDisplay(value, key) {
+        if (value === null || value === undefined || value === '') {
+          return '-';
+        }
+        const measurementType = inferMeasurementTypeByKey(key);
+        if (measurementType) {
+          return formatMeasurement(value, measurementType);
+        }
+        if (typeof value === 'number') {
+          return value.toLocaleString('pt-BR', { maximumFractionDigits: 3 });
+        }
         return String(value);
       }
-      return date.toLocaleString('pt-BR');
-    }
 
-    function formatMeasurement(rawValue, type = 'default') {
-      if (rawValue === null || rawValue === undefined || rawValue === '') {
-        return '-';
-      }
-      const numeric = Number(rawValue);
-      if (!Number.isFinite(numeric)) {
-        return '-';
-      }
-      const config = measurementConfigs[type] || measurementConfigs.default;
-      if (!config.allowScale) {
-        return numeric.toLocaleString('pt-BR', { maximumFractionDigits: config.maxDecimals ?? 2 });
-      }
-      const absValue = Math.abs(numeric);
-      let selected = scaleSteps.find((step) => absValue >= step.threshold);
-      if (!selected) {
-        selected = scaleSteps.find((step) => step.prefix === '') || scaleSteps[scaleSteps.length - 1];
-      }
-      const scaled = numeric / selected.divisor;
-      const absScaled = Math.abs(scaled);
-      let maxDecimals = 3;
-      if (absScaled >= 100) {
-        maxDecimals = 0;
-      } else if (absScaled >= 10) {
-        maxDecimals = 1;
-      } else if (absScaled >= 1) {
-        maxDecimals = 2;
-      }
-      const valueStr = scaled.toLocaleString('pt-BR', { maximumFractionDigits: maxDecimals });
-      const unitLabel = `${selected.prefix}${config.unit}`.trim();
-      return unitLabel ? `${valueStr} ${unitLabel}` : valueStr;
-    }
 
-    function extractSampleField(sample, keys) {
-      if (!sample) return undefined;
-      for (const key of keys) {
-        if (sample[key] !== undefined && sample[key] !== null) {
-          return sample[key];
+      function setMessage(el, msg, type = 'success') {
+        if (!msg) {
+          el.className = 'message';
+          el.style.display = 'none';
+          el.textContent = '';
+          return;
         }
-        const altKey = key.includes('_')
-          ? key.replace(/_([a-z])/g, (_, char) => char.toUpperCase())
-          : key.replace(/[A-Z]/g, (match) => `_${match.toLowerCase()}`);
-        if (sample[altKey] !== undefined && sample[altKey] !== null) {
-          return sample[altKey];
+        el.className = `message ${type}`;
+        el.style.display = 'block';
+        el.textContent = msg;
+      }
+
+      function saveSession(data) {
+        state.token = data.token;
+        state.companyId = data.companyId;
+        localStorage.setItem('nlq_token', data.token);
+        localStorage.setItem('nlq_company', data.companyId);
+      }
+
+      function clearSession() {
+        state.token = null;
+        state.companyId = null;
+        localStorage.removeItem('nlq_token');
+        localStorage.removeItem('nlq_company');
+        if (state.ws) {
+          state.ws.close();
+          state.ws = null;
         }
       }
-      return undefined;
-    }
 
-    function clearLiveTelemetry() {
-      liveTs.textContent = '-';
-      liveVoltage.textContent = '-';
-      liveCurrent.textContent = '-';
-      liveFrequency.textContent = '-';
-      livePF.textContent = '-';
-    }
-
-    function inferMeasurementTypeByKey(key) {
-      if (!key) return null;
-      const normalized = String(key).toLowerCase();
-      if (normalized.includes('voltage') || normalized.includes('tens')) return 'voltage';
-      if (normalized.includes('current') || normalized.includes('corr')) return 'current';
-      if (normalized.includes('freq')) return 'frequency';
-      if (normalized.includes('power_factor')) return 'powerFactor';
-      return null;
-    }
-
-    function formatCellDisplay(value, key) {
-      if (value === null || value === undefined || value === '') {
-        return '-';
-      }
-      const measurementType = inferMeasurementTypeByKey(key);
-      if (measurementType) {
-        return formatMeasurement(value, measurementType);
-      }
-      if (typeof value === 'number') {
-        return value.toLocaleString('pt-BR', { maximumFractionDigits: 3 });
-      }
-      return String(value);
-    }
-
-
-    function setMessage(el, msg, type = 'success') {
-      if (!msg) {
-        el.className = 'message';
-        el.style.display = 'none';
-        el.textContent = '';
-        return;
-      }
-      el.className = `message ${type}`;
-      el.style.display = 'block';
-      el.textContent = msg;
-    }
-
-    function saveSession(data) {
-      state.token = data.token;
-      state.companyId = data.companyId;
-      localStorage.setItem('nlq_token', data.token);
-      localStorage.setItem('nlq_company', data.companyId);
-    }
-
-    function clearSession() {
-      state.token = null;
-      state.companyId = null;
-      localStorage.removeItem('nlq_token');
-      localStorage.removeItem('nlq_company');
-      if (state.ws) {
-        state.ws.close();
-        state.ws = null;
-      }
-    }
-
-    async function apiFetch(path, options = {}) {
-      if (!state.token) throw new Error('Token nÃ£o definido');
-      const headers = Object.assign({
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${state.token}`
-      }, options.headers || {});
-
-      const response = await fetch(path, { ...options, headers });
-      if (!response.ok) {
-        const text = await response.text();
-        throw new Error(text || response.statusText);
-      }
-      if (response.status === 204) return null;
-      return response.json();
-    }
-
-    async function loadRules() {
-      try {
-        const data = await apiFetch('/rules');
-        state.rules = data.items || [];
-        renderRules();
-      } catch (err) {
-        setMessage(rulesMessage, err.message, 'error');
-      }
-    }
-
-    function renderRules() {
-      rulesTableBody.innerHTML = '';
-      if (!state.rules.length) {
-        const row = document.createElement('tr');
-        const cell = document.createElement('td');
-        cell.colSpan = 6;
-        cell.textContent = 'Nenhuma regra cadastrada.';
-        cell.style.textAlign = 'center';
-        row.appendChild(cell);
-        rulesTableBody.appendChild(row);
-        return;
-      }
-
-      for (const rule of state.rules) {
-        const tr = document.createElement('tr');
-        const summary = rule.scheduleSummary || '-';
-
-        tr.innerHTML = `
-          <td><strong>${rule.name}</strong><br/><small>${rule.companyId}</small></td>
-          <td>${rule.type}</td>
-          <td><span class="badge ${rule.status}">${rule.status}</span></td>
-          <td>${rule.scheduleCron || '-'}<br/><small>${summary}</small></td>
-          <td><pre>${rule.prompt || ''}</pre></td>
-          <td></td>
-        `;
-
-        const actionsCell = tr.lastElementChild;
-
-        const detailBtn = document.createElement('button');
-        detailBtn.className = 'link';
-        detailBtn.textContent = 'Ver detalhes';
-        detailBtn.addEventListener('click', () => showRuleDetail(rule.id));
-
-        const toggleBtn = document.createElement('button');
-        toggleBtn.className = 'primary';
-        toggleBtn.textContent = rule.status === 'active' ? 'Desativar' : 'Ativar';
-        toggleBtn.addEventListener('click', () => toggleRule(rule));
-
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'danger';
-        deleteBtn.textContent = 'Excluir';
-        deleteBtn.addEventListener('click', () => deleteRule(rule));
-
-        actionsCell.append(detailBtn, document.createElement('br'), toggleBtn, document.createElement('br'), deleteBtn);
-        rulesTableBody.appendChild(tr);
-      }
-    }
-
-    async function showRuleDetail(id) {
-      const rule = state.rules.find((r) => r.id === id);
-      if (!rule) return;
-      state.selectedRule = rule;
-
-      const content = `
-        <p><strong>ID:</strong> ${rule.id}</p>
-        <p><strong>Tipo:</strong> ${rule.type}</p>
-        <p><strong>Status:</strong> ${rule.status}</p>
-        <p><strong>Schedule:</strong> ${rule.scheduleCron || '-'} (${rule.scheduleSummary || '-'})</p>
-        <p><strong>Ãltima execuÃ§Ã£o:</strong> ${rule.lastRunAt || '-'} | <strong>Disparo:</strong> ${rule.lastTriggeredAt || '-'}</p>
-        <h3>SQL</h3>
-        <pre>${rule.sql || ''}</pre>
-        <h3>Cypher</h3>
-        <pre>${rule.cypher || ''}</pre>
-        <h3>Ãltimo resultado</h3>
-        <pre>${JSON.stringify(rule.lastResult ?? '-', null, 2)}</pre>
-      `;
-      ruleDetailContent.innerHTML = content;
-      ruleDetailCard.classList.remove('hidden');
-    }
-
-    function hideRuleDetail() {
-      state.selectedRule = null;
-      ruleDetailCard.classList.add('hidden');
-    }
-
-    async function toggleRule(rule) {
-      try {
-        const endpoint = rule.status === 'active' ? 'deactivate' : 'activate';
-        await apiFetch(`/rules/${rule.id}/${endpoint}`, { method: 'POST' });
-        await loadRules();
-      } catch (err) {
-        setMessage(rulesMessage, err.message, 'error');
-      }
-    }
-
-    async function deleteRule(rule) {
-      if (!confirm(`Excluir a regra "${rule.name}"?`)) return;
-      try {
-        await apiFetch(`/rules/${rule.id}`, { method: 'DELETE' });
-        hideRuleDetail();
-        await loadRules();
-      } catch (err) {
-        setMessage(rulesMessage, err.message, 'error');
-      }
-    }
-
-    async function loadDevices() {
-      try {
-        const data = await apiFetch('/devices');
-        state.devices = data.items || [];
-        for (const device of state.devices) {
-          const sample = {
-            ts: device.lastTs,
-            voltage: device.voltage,
-            current: device.current,
-            frequency: device.frequency,
-            power_factor: device.powerFactor ?? device.power_factor ?? null
-          };
-          const existing = state.deviceLive[device.id];
-          const existingTs = existing?.sample?.ts ?? existing?.ts ?? null;
-          if (!existingTs || (sample.ts && new Date(sample.ts) > new Date(existingTs))) {
-            state.deviceLive[device.id] = { sample };
-          }
-        }
-        renderDevices();
-        updateLiveTelemetry();
-      } catch (err) {
-        setMessage(devicesMessage, err.message, 'error');
-      }
-    }
-
-    function renderDevices() {
-      devicesTableBody.innerHTML = '';
-      if (!state.devices.length) {
-        const row = document.createElement('tr');
-        const cell = document.createElement('td');
-        cell.colSpan = 6;
-        cell.textContent = 'Nenhum dispositivo encontrado.';
-        cell.style.textAlign = 'center';
-        row.appendChild(cell);
-        devicesTableBody.appendChild(row);
-        return;
-      }
-
-      for (const device of state.devices) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${device.id}</td>
-          <td>${formatTimestamp(device.lastTs)}</td>
-          <td>${formatMeasurement(device.voltage, 'voltage')}</td>
-          <td>${formatMeasurement(device.current, 'current')}</td>
-          <td>${formatMeasurement(device.frequency, 'frequency')}</td>
-          <td></td>
-        `;
-        const actionCell = tr.lastElementChild;
-        const viewBtn = document.createElement('button');
-        viewBtn.className = 'primary';
-        viewBtn.textContent = 'Ver detalhes';
-        viewBtn.addEventListener('click', () => openDevice(device.id));
-        actionCell.appendChild(viewBtn);
-        devicesTableBody.appendChild(tr);
-      }
-    }
-    function openDevice(deviceId) {
-      state.selectedDevice = deviceId;
-      deviceTitle.textContent = `Dispositivo ${deviceId}`;
-      deviceDetailCard.classList.remove('hidden');
-
-      const device = state.devices.find((d) => d.id === deviceId);
-      if (device) {
-        state.deviceLive[deviceId] = {
-          sample: {
-            ts: device.lastTs,
-            voltage: device.voltage,
-            current: device.current,
-            frequency: device.frequency,
-            power_factor: device.powerFactor ?? device.power_factor ?? device.powerFactor
-          }
-        };
-      }
-
-      updateMetricsRangeInputs();
-      loadDeviceMetrics();
-      updateLiveTelemetry();
-    }
-
-
-    function closeDevice() {
-      state.selectedDevice = null;
-      deviceDetailCard.classList.add('hidden');
-    }
-
-    function updateMetricsRangeInputs() {
-      const end = new Date();
-      const start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
-      metricsEnd.value = end.toISOString().slice(0, 16);
-      metricsStart.value = start.toISOString().slice(0, 16);
-    }
-
-    async function loadDeviceMetrics() {
-      if (!state.selectedDevice) return;
-      const start = metricsStart.value ? new Date(metricsStart.value) : null;
-      const end = metricsEnd.value ? new Date(metricsEnd.value) : null;
-      if (!start || !end || start >= end) {
-        setMessage(devicesMessage, 'Intervalo invÃ¡lido.', 'error');
-        return;
-      }
-
-      const params = new URLSearchParams({
-        start: start.toISOString(),
-        end: end.toISOString(),
-        bucket: metricsBucket.value
-      });
-
-      try {
-        const data = await apiFetch(`/devices/${state.selectedDevice}/metrics?${params.toString()}`);
-        renderMetricCharts(data.points || []);
-      } catch (err) {
-        setMessage(devicesMessage, err.message, 'error');
-      }
-    }
-
-    async function loadStreamHistory() {
-      try {
-        let rules = Array.isArray(state.rules) ? state.rules : [];
-        if (!rules.length) {
-          const data = await apiFetch('/rules');
-          rules = data.items || [];
-          state.rules = rules;
-        }
-        let devices = Array.isArray(state.devices) ? state.devices : [];
-        if (!devices.length) {
-          const data = await apiFetch('/devices');
-          devices = data.items || [];
-          state.devices = devices;
-        }
-
-        const events = [];
-
-        for (const rule of rules) {
-          if (rule?.lastResult && typeof rule.lastResult === 'object') {
-            events.push({
-              ...rule.lastResult,
-              type: rule.lastResult.type || 'rule.report',
-              ruleId: rule.id,
-              name: rule.name,
-              companyId: rule.companyId,
-              generatedAt: rule.lastResult.generatedAt || rule.lastRunAt,
-              metadata: {
-                ...rule.lastResult.metadata,
-                scheduleSummary: rule.scheduleSummary || rule.metadata?.scheduleSummary
-              }
-            });
-          }
-        }
-
-        for (const device of devices) {
-          const sample = {
-            ts: device.lastTs,
-            voltage: device.voltage,
-            current: device.current,
-            frequency: device.frequency,
-            power_factor: device.powerFactor ?? device.power_factor ?? null
-          };
-          if (sample.ts || sample.voltage != null || sample.current != null || sample.frequency != null) {
-            events.push({
-              type: 'device.telemetry',
-              deviceId: device.id,
-              sample
-            });
-          }
-          const existing = state.deviceLive[device.id];
-          const existingTs = existing?.sample?.ts ?? existing?.ts ?? null;
-          if (!existingTs || (sample.ts && new Date(sample.ts) > new Date(existingTs))) {
-            state.deviceLive[device.id] = { sample };
-          }
-        }
-
-        const normalized = events
-          .map((ev) => normalizeEvent(ev))
-          .sort((a, b) => {
-            const aTime = Date.parse(a.timestampIso || a.raw?.generatedAt || a.raw?.sample?.ts || 0);
-            const bTime = Date.parse(b.timestampIso || b.raw?.generatedAt || b.raw?.sample?.ts || 0);
-            return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
-          });
-
-        state.events = normalized;
-        renderStream();
-        updateLiveTelemetry();
-      } catch (err) {
-        console.error('Falha ao carregar histórico do streaming', err);
-      }
-    }
-
-    async function handleNlqSubmit(event) {
-      event.preventDefault();
-      if (!nlqText) return;
-      const question = nlqText.value.trim();
-      if (!question) {
-        setMessage(nlqMessage, 'Escreva uma pergunta antes de enviar.', 'error');
-        nlqText.focus();
-        return;
-      }
-      setMessage(nlqMessage, 'Consultando...', 'info');
-      if (nlqSubmit) nlqSubmit.disabled = true;
-      try {
-        const payload = {
-          text: question,
-          companyId: state.companyId || undefined
-        };
-        const result = await apiFetch('/nlq/query', {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
-        setMessage(nlqMessage, 'Resposta recebida!', 'success');
-        addStreamEvent({
-          type: 'nlq.answer',
-          question,
-          ...result,
-          timestamp: new Date().toISOString()
-        });
-        nlqText.value = '';
-      } catch (err) {
-        setMessage(nlqMessage, err.message || 'Falha ao processar pergunta.', 'error');
-      } finally {
-        if (nlqSubmit) nlqSubmit.disabled = false;
-      }
-    }
-
-
-    const metricChartConfigs = {
-      voltage: {
-        measurement: 'voltage',
-        datasets: [
-          { key: 'avgVoltage', label: 'Tensão média', borderColor: 'rgba(37, 99, 235, 1)', backgroundColor: 'rgba(37, 99, 235, 0.15)' },
-          { key: 'maxVoltage', label: 'Tensão máx.', borderColor: 'rgba(220, 38, 38, 1)', backgroundColor: 'rgba(220, 38, 38, 0.12)' },
-          { key: 'minVoltage', label: 'Tensão mín.', borderColor: 'rgba(34, 197, 94, 1)', backgroundColor: 'rgba(34, 197, 94, 0.12)' }
-        ]
-      },
-      current: {
-        measurement: 'current',
-        datasets: [
-          { key: 'avgCurrent', label: 'Corrente média', borderColor: 'rgba(16, 185, 129, 1)', backgroundColor: 'rgba(16, 185, 129, 0.15)' }
-        ]
-      },
-      frequency: {
-        measurement: 'frequency',
-        datasets: [
-          { key: 'avgFrequency', label: 'Frequência média', borderColor: 'rgba(249, 115, 22, 1)', backgroundColor: 'rgba(249, 115, 22, 0.15)' }
-        ]
-      },
-      powerFactor: {
-        measurement: 'powerFactor',
-        datasets: [
-          { key: 'avgPowerFactor', label: 'Fator de potência médio', borderColor: 'rgba(139, 92, 246, 1)', backgroundColor: 'rgba(139, 92, 246, 0.15)' }
-        ]
-      }
-    };
-
-    function createChartOptions(measurementType) {
-      const options = {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: { intersect: false, mode: 'index' },
-        scales: {
-          x: {
-            ticks: { maxRotation: 45, minRotation: 45 }
-          },
-          y: {
-            beginAtZero: measurementType !== 'powerFactor',
-            ticks: {
-              callback(value) {
-                return formatMeasurement(value, measurementType);
-              }
-            }
-          }
-        },
-        plugins: {
-          legend: { display: true },
-          tooltip: {
-            callbacks: {
-              label(context) {
-                const label = context.dataset.label ? `${context.dataset.label}: ` : '';
-                return `${label}${formatMeasurement(context.parsed.y, measurementType)}`;
-              }
-            }
-          }
-        }
-      };
-
-      if (measurementType === 'powerFactor') {
-        options.scales.y.suggestedMin = 0;
-        options.scales.y.suggestedMax = 1;
-      }
-
-      return options;
-    }
-
-    function renderMetricCharts(points = []) {
-      const labels = points.map((p) => p.bucket);
-      Object.entries(metricChartConfigs).forEach(([key, config]) => {
-        const ctx = metricContexts[key];
-        if (!ctx) return;
-
-        const datasets = config.datasets.map((dataset) => ({
-          ...dataset,
-          type: 'line',
-          fill: false,
-          tension: 0.3,
-          borderWidth: 2,
-          pointRadius: 2,
-          data: points.map((p) => Number(p?.[dataset.key] ?? 0))
-        }));
-
-        const existing = state.charts[key];
-        if (!existing) {
-          state.charts[key] = new Chart(ctx, {
-            type: 'line',
-            data: { labels, datasets },
-            options: createChartOptions(config.measurement)
-          });
-        } else {
-          existing.data.labels = labels;
-          existing.data.datasets.forEach((dataset, index) => {
-            dataset.data = datasets[index]?.data ?? [];
-          });
-          existing.update();
-        }
-      });
-    }
-
-    function addStreamEvent(event) {
-      const normalized = normalizeEvent(event);
-      state.events.unshift(normalized);
-      if (state.events.length > 200) state.events.pop();
-      renderStream();
-    }
-
-        function escapeHtml(value) {
-      return String(value ?? '-')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/'/g, '&#39;')
-        .replace(/"/g, '&quot;');
-    }
-
-    function prettifyKey(key) {
-      const map = {
-        device_id: 'Dispositivo',
-        daily_kwh: 'Energia (kWh)',
-        total_kwh: 'Energia total (kWh)',
-        consumption: 'Consumo',
-        voltage: 'Tensão',
-        current: 'Corrente',
-        frequency: 'Frequência',
-        power_factor: 'Fator de potência',
-        max_voltage: 'Tensão máx.',
-        min_voltage: 'Tensão mín.',
-        avg_voltage: 'Tensão média',
-        avg_current: 'Corrente média',
-        avg_frequency: 'Frequência média',
-        avg_power_factor: 'Fator de potência médio',
-        total_ms: 'Tempo total (ms)',
-        answer: 'Resposta'
-      };
-      return map[key] || key.replace(/_/g, ' ');
-    }
-
-    function formatValue(value, key) {
-      return formatCellDisplay(value, key);
-    }
-
-    function summarizeRow(row) {
-      if (!row || typeof row !== 'object') return '-';
-      const entries = Object.entries(row).slice(0, 3);
-      return entries
-        .map(([key, value]) => `${prettifyKey(key)}: ${formatValue(value, key)}`)
-        .join('  ');
-    }
-
-    function normalizeEvent(event) {
-      const nowIso = new Date().toISOString();
-      const wrap = (override) => ({
-        timestampIso: override.timestampIso || nowIso,
-        timestamp: formatTimestamp(override.timestampIso || nowIso),
-        summary: override.summary || 'Evento recebido.',
-        rows: Array.isArray(override.rows) ? override.rows : [],
-        details: override.details || JSON.stringify(override.raw ?? event, null, 2),
-        category: override.category || 'Sistema',
-        style: override.style || 'card-system',
-        title: override.title || 'Evento',
-        raw: override.raw ?? event,
-        type: override.type || event?.type || 'evento'
-      });
-
-      if (!event || typeof event !== 'object') {
-        return wrap({
-          title: 'Evento desconhecido',
-          summary: 'Payload não reconhecido.'
-        });
-      }
-
-      if (event.type === 'device.telemetry') {
-        const sample = event.sample ?? {};
-        const timestampIso = sample.ts || nowIso;
-        const summaryParts = [
-          sample.voltage != null ? `Tensão: ${formatMeasurement(sample.voltage, 'voltage')}` : null,
-          sample.current != null ? `Corrente: ${formatMeasurement(sample.current, 'current')}` : null,
-          sample.frequency != null ? `Frequência: ${formatMeasurement(sample.frequency, 'frequency')}` : null
-        ].filter(Boolean);
-
-        return wrap({
-          type: event.type,
-          title: event.deviceId ? `Dispositivo ${event.deviceId}` : 'Telemetria',
-          timestampIso,
-          summary: summaryParts.length ? summaryParts.join(' · ') : 'Nova leitura recebida do dispositivo.',
-          details: JSON.stringify(sample, null, 2),
-          category: 'Telemetria',
-          style: 'card-device',
-          raw: event
-        });
-      }
-
-      if (event.type === 'rule.report' || event.type === 'rule.alert') {
-        const rows = Array.isArray(event.rows) ? event.rows : [];
-        const summaryBase = rows.length
-          ? `${rows.length} linha(s). Destaque: ${summarizeRow(rows[0])}`
-          : 'Nenhum dado retornado.';
-        const schedule = event.metadata?.scheduleSummary || event.scheduleSummary
-          ? ` · ${event.metadata?.scheduleSummary || event.scheduleSummary}`
-          : '';
-        const timestampIso = event.generatedAt || nowIso;
-
-        return wrap({
-          type: event.type,
-          title: event.type === 'rule.alert' ? `Alerta · ${event.name ?? event.ruleId}` : `Relatório · ${event.name ?? event.ruleId}`,
-          timestampIso,
-          summary: summaryBase + schedule,
-          rows,
-          details: JSON.stringify(rows.length ? rows : (event.metadata ?? event), null, 2),
-          category: event.type === 'rule.alert' ? 'Alerta' : 'Relatório',
-          style: event.type === 'rule.alert' ? 'card-alert' : 'card-report',
-          raw: event
-        });
-      }
-
-      if (event.type === 'nlq.answer') {
-        const rows = Array.isArray(event.rows) && event.rows.length ? event.rows : Array.isArray(event.graphRows) ? event.graphRows : [];
-        const timestampIso = event.timestamp || nowIso;
-        return wrap({
-          type: 'nlq.answer',
-          title: 'Resposta NLQ',
-          timestampIso,
-          summary: event.answer || 'Resposta gerada.',
-          rows,
-          details: JSON.stringify({
-            pergunta: event.question || '(sem texto)',
-            resposta: event.answer,
-            sql: event.sql,
-            cypher: event.cypher,
-            totalMs: event.totalMs,
-            source: event.source,
-            sqlError: event.sqlError,
-            graphError: event.graphError
-          }, null, 2),
-          category: 'NLQ',
-          style: 'card-nlq',
-          raw: event
-        });
-      }
-
-      if (event.type === 'system') {
-        return wrap({
-          type: event.type,
-          title: 'Sistema',
-          timestampIso: nowIso,
-          summary: event.message || 'Evento do sistema.',
-          details: JSON.stringify(event, null, 2),
-          category: 'Sistema',
-          style: 'card-system',
-          raw: event
-        });
-      }
-
-      const timestampIso = event.generatedAt || event.timestamp || nowIso;
-      return wrap({
-        type: event.type || 'evento',
-        title: event.type ? `Evento ${event.type}` : 'Evento',
-        timestampIso,
-        summary: 'Conteúdo capturado das mensagens em tempo real.',
-        details: JSON.stringify(event, null, 2),
-        category: event.type || 'Evento',
-        style: 'card-generic',
-        raw: event
-      });
-    }
-
-    function renderRowsTable(rows) {
-      if (!Array.isArray(rows) || rows.length === 0) return '';
-      const headers = Object.keys(rows[0]);
-      const head = headers.map((h) => `<th>${escapeHtml(prettifyKey(h))}</th>`).join('');
-      const body = rows
-        .slice(0, 5)
-        .map((row) => {
-          const cells = headers
-            .map((h) => `<td>${escapeHtml(formatCellDisplay(row[h], h))}</td>`).join('');
-          return `<tr>${cells}</tr>`;
-        })
-        .join('');
-      const more = rows.length > 5
-        ? `<tfoot><tr><td colspan="${headers.length}" style="font-style:italic; color: var(--muted);">+${rows.length - 5} linha(s) extras</td></tr></tfoot>`
-        : '';
-      return `<div class="mini-table-wrapper"><table class="mini-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody>${more}</table></div>`;
-    }
-
-    function renderStream() {
-      streamList.innerHTML = '';
-      streamFilters.innerHTML = '';
-
-      state.events.forEach((event) => {
-        const item = document.createElement('div');
-        item.className = `event-item ${event.style || ''}`.trim();
-
-        const detailHtml = event.rows && event.rows.length
-          ? renderRowsTable(event.rows)
-          : event.details
-            ? `<pre>${escapeHtml(event.details)}</pre>`
-            : '';
-
-        item.innerHTML = `
-          <div class="flex" style="justify-content: space-between; align-items:center;">
-            <div>
-              <h4 style="margin:0">${escapeHtml(event.title)}</h4>
-              <small style="color: var(--muted);">${escapeHtml(event.timestamp)}</small>
-            </div>
-            <span class="chip">${escapeHtml(event.category || '')}</span>
-          </div>
-          <p style="margin: 10px 0 6px; color: var(--muted);">${escapeHtml(event.summary || '')}</p>
-          ${detailHtml}
-        `;
-        streamList.appendChild(item);
-      });
-    }
-    function updateLiveTelemetry() {
-      const deviceId = state.selectedDevice;
-      if (!deviceId) {
-        clearLiveTelemetry();
-        return;
-      }
-      const latestEntry = state.deviceLive[deviceId];
-      if (!latestEntry) {
-        clearLiveTelemetry();
-        return;
-      }
-      const sample = latestEntry.sample ?? latestEntry;
-      liveTs.textContent = formatTimestamp(extractSampleField(sample, ['ts', 'timestamp']));
-      liveVoltage.textContent = formatMeasurement(extractSampleField(sample, ['voltage']), 'voltage');
-      liveCurrent.textContent = formatMeasurement(extractSampleField(sample, ['current']), 'current');
-      liveFrequency.textContent = formatMeasurement(extractSampleField(sample, ['frequency']), 'frequency');
-      livePF.textContent = formatMeasurement(extractSampleField(sample, ['power_factor', 'powerFactor']), 'powerFactor');
-    }
-
-    }
-
-    function connectWebSocket() {
-      if (!state.token) return;
-      const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-      const wsUrl = `${protocol}://${window.location.host}/ws?token=${state.token}`;
-      if (state.ws) state.ws.close();
-      const ws = new WebSocket(wsUrl);
-      state.ws = ws;
-
-      ws.onopen = () => {
-        addStreamEvent({ type: 'system', message: 'WebSocket conectado.' });
-      };
-
-      ws.onclose = () => {
-        addStreamEvent({ type: 'system', message: 'WebSocket desconectado.' });
-        if (state.token) {
-          setTimeout(connectWebSocket, 3000);
-        }
-      };
-
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          addStreamEvent(data);
-          if (data.type === 'device.telemetry' && data.deviceId) {
-            state.deviceLive[data.deviceId] = data;
-            if (state.selectedDevice === data.deviceId) {
-              updateLiveTelemetry();
-            }
-          } else if (data.type && data.type.startsWith('rule.')) {
-            loadRules();
-          }
-        } catch (err) {
-          console.error('Falha ao tratar evento WS', err);
-        }
-      };
-    }
-
-    async function showDashboard() {
-      loginView.classList.add('hidden');
-      dashboard.classList.remove('hidden');
-      companyLabel.textContent = `Empresa: ${state.companyId}`;
-      await Promise.all([loadRules(), loadDevices()]);
-      await loadStreamHistory();
-      connectWebSocket();
-    }
-
-    function showLogin() {
-      dashboard.classList.add('hidden');
-      loginView.classList.remove('hidden');
-    }
-
-    loginForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      setMessage(loginMessage);
-      const username = document.getElementById('loginUser').value.trim();
-      const password = document.getElementById('loginPass').value.trim();
-      const companyId = document.getElementById('loginCompany').value.trim();
-      try {
-        const response = await fetch('/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password, companyId: companyId || undefined })
-        });
+      async function apiFetch(path, options = {}) {
+        if (!state.token) throw new Error('Token nÃ£o definido');
+        const headers = Object.assign({
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${state.token}`
+        }, options.headers || {});
+
+        const response = await fetch(path, { ...options, headers });
         if (!response.ok) {
           const text = await response.text();
           throw new Error(text || response.statusText);
         }
-        const data = await response.json();
-        saveSession(data);
-        await showDashboard();
-      } catch (err) {
-        setMessage(loginMessage, err.message, 'error');
+        if (response.status === 204) return null;
+        return response.json();
       }
-    });
 
-    logoutBtn.addEventListener('click', () => {
-      clearSession();
-      showLogin();
-    });
-
-    navButtons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        navButtons.forEach((b) => b.classList.remove('active'));
-        btn.classList.add('active');
-        Object.values(sections).forEach((sec) => sec.classList.add('hidden'));
-        const target = sections[btn.dataset.section];
-        if (target) target.classList.remove('hidden');
-        if (btn.dataset.section === 'stream') {
-          loadStreamHistory();
+      async function loadRules() {
+        try {
+          const data = await apiFetch('/rules');
+          state.rules = data.items || [];
+          renderRules();
+        } catch (err) {
+          setMessage(rulesMessage, err.message, 'error');
         }
-      });
-    });
+      }
 
-    ruleTypeSelect.addEventListener('change', () => {
-      scheduleHint.style.display = ruleTypeSelect.value === 'schedule_report' ? 'block' : 'none';
-    });
-    ruleTypeSelect.dispatchEvent(new Event('change'));
+      function renderRules() {
+        rulesTableBody.innerHTML = '';
+        if (!state.rules.length) {
+          const row = document.createElement('tr');
+          const cell = document.createElement('td');
+          cell.colSpan = 6;
+          cell.textContent = 'Nenhuma regra cadastrada.';
+          cell.style.textAlign = 'center';
+          row.appendChild(cell);
+          rulesTableBody.appendChild(row);
+          return;
+        }
 
-    ruleResetBtn.addEventListener('click', () => {
-      ruleForm.reset();
-      scheduleHint.style.display = 'block';
-      ruleTypeSelect.dispatchEvent(new Event('change'));
-    });
+        for (const rule of state.rules) {
+          const tr = document.createElement('tr');
+          const summary = rule.scheduleSummary || '-';
 
-    if (nlqForm) {
-      nlqForm.addEventListener('submit', handleNlqSubmit);
-    }
+          tr.innerHTML = `
+            <td><strong>${rule.name}</strong><br/><small>${rule.companyId}</small></td>
+            <td>${rule.type}</td>
+            <td><span class="badge ${rule.status}">${rule.status}</span></td>
+            <td>${rule.scheduleCron || '-'}<br/><small>${summary}</small></td>
+            <td><pre>${rule.prompt || ''}</pre></td>
+            <td></td>
+          `;
 
-    ruleForm.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      setMessage(ruleFormMessage);
-      const payload = {
-        name: document.getElementById('ruleName').value.trim(),
-        type: ruleTypeSelect.value,
-        prompt: document.getElementById('rulePrompt').value.trim(),
-        activate: document.getElementById('ruleActivate').value === 'yes'
+          const actionsCell = tr.lastElementChild;
+
+          const detailBtn = document.createElement('button');
+          detailBtn.className = 'link';
+          detailBtn.textContent = 'Ver detalhes';
+          detailBtn.addEventListener('click', () => showRuleDetail(rule.id));
+
+          const toggleBtn = document.createElement('button');
+          toggleBtn.className = 'primary';
+          toggleBtn.textContent = rule.status === 'active' ? 'Desativar' : 'Ativar';
+          toggleBtn.addEventListener('click', () => toggleRule(rule));
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'danger';
+          deleteBtn.textContent = 'Excluir';
+          deleteBtn.addEventListener('click', () => deleteRule(rule));
+
+          actionsCell.append(detailBtn, document.createElement('br'), toggleBtn, document.createElement('br'), deleteBtn);
+          rulesTableBody.appendChild(tr);
+        }
+      }
+
+      async function showRuleDetail(id) {
+        const rule = state.rules.find((r) => r.id === id);
+        if (!rule) return;
+        state.selectedRule = rule;
+
+        const content = `
+          <p><strong>ID:</strong> ${rule.id}</p>
+          <p><strong>Tipo:</strong> ${rule.type}</p>
+          <p><strong>Status:</strong> ${rule.status}</p>
+          <p><strong>Schedule:</strong> ${rule.scheduleCron || '-'} (${rule.scheduleSummary || '-'})</p>
+          <p><strong>Ãltima execuÃ§Ã£o:</strong> ${rule.lastRunAt || '-'} | <strong>Disparo:</strong> ${rule.lastTriggeredAt || '-'}</p>
+          <h3>SQL</h3>
+          <pre>${rule.sql || ''}</pre>
+          <h3>Cypher</h3>
+          <pre>${rule.cypher || ''}</pre>
+          <h3>Ãltimo resultado</h3>
+          <pre>${JSON.stringify(rule.lastResult ?? '-', null, 2)}</pre>
+        `;
+        ruleDetailContent.innerHTML = content;
+        ruleDetailCard.classList.remove('hidden');
+      }
+
+      function hideRuleDetail() {
+        state.selectedRule = null;
+        ruleDetailCard.classList.add('hidden');
+      }
+
+      async function toggleRule(rule) {
+        try {
+          const endpoint = rule.status === 'active' ? 'deactivate' : 'activate';
+          await apiFetch(`/rules/${rule.id}/${endpoint}`, { method: 'POST' });
+          await loadRules();
+        } catch (err) {
+          setMessage(rulesMessage, err.message, 'error');
+        }
+      }
+
+      async function deleteRule(rule) {
+        if (!confirm(`Excluir a regra "${rule.name}"?`)) return;
+        try {
+          await apiFetch(`/rules/${rule.id}`, { method: 'DELETE' });
+          hideRuleDetail();
+          await loadRules();
+        } catch (err) {
+          setMessage(rulesMessage, err.message, 'error');
+        }
+      }
+
+      async function loadDevices() {
+        try {
+          const data = await apiFetch('/devices');
+          state.devices = data.items || [];
+          for (const device of state.devices) {
+            const sample = {
+              ts: device.lastTs,
+              voltage: device.voltage,
+              current: device.current,
+              frequency: device.frequency,
+              power_factor: device.powerFactor ?? device.power_factor ?? null
+            };
+            const existing = state.deviceLive[device.id];
+            const existingTs = existing?.sample?.ts ?? existing?.ts ?? null;
+            if (!existingTs || (sample.ts && new Date(sample.ts) > new Date(existingTs))) {
+              state.deviceLive[device.id] = { sample };
+            }
+          }
+          renderDevices();
+          updateLiveTelemetry();
+        } catch (err) {
+          setMessage(devicesMessage, err.message, 'error');
+        }
+      }
+
+      function renderDevices() {
+        devicesTableBody.innerHTML = '';
+        if (!state.devices.length) {
+          const row = document.createElement('tr');
+          const cell = document.createElement('td');
+          cell.colSpan = 6;
+          cell.textContent = 'Nenhum dispositivo encontrado.';
+          cell.style.textAlign = 'center';
+          row.appendChild(cell);
+          devicesTableBody.appendChild(row);
+          return;
+        }
+
+        for (const device of state.devices) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${device.id}</td>
+            <td>${formatTimestamp(device.lastTs)}</td>
+            <td>${formatMeasurement(device.voltage, 'voltage')}</td>
+            <td>${formatMeasurement(device.current, 'current')}</td>
+            <td>${formatMeasurement(device.frequency, 'frequency')}</td>
+            <td></td>
+          `;
+          const actionCell = tr.lastElementChild;
+          const viewBtn = document.createElement('button');
+          viewBtn.className = 'primary';
+          viewBtn.textContent = 'Ver detalhes';
+          viewBtn.addEventListener('click', () => openDevice(device.id));
+          actionCell.appendChild(viewBtn);
+          devicesTableBody.appendChild(tr);
+        }
+      }
+      function openDevice(deviceId) {
+        state.selectedDevice = deviceId;
+        deviceTitle.textContent = `Dispositivo ${deviceId}`;
+        deviceDetailCard.classList.remove('hidden');
+
+        const device = state.devices.find((d) => d.id === deviceId);
+        if (device) {
+          state.deviceLive[deviceId] = {
+            sample: {
+              ts: device.lastTs,
+              voltage: device.voltage,
+              current: device.current,
+              frequency: device.frequency,
+              power_factor: device.powerFactor ?? device.power_factor ?? device.powerFactor
+            }
+          };
+        }
+
+        updateMetricsRangeInputs();
+        loadDeviceMetrics();
+        updateLiveTelemetry();
+      }
+
+
+      function closeDevice() {
+        state.selectedDevice = null;
+        deviceDetailCard.classList.add('hidden');
+      }
+
+      function updateMetricsRangeInputs() {
+        const end = new Date();
+        const start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
+        metricsEnd.value = end.toISOString().slice(0, 16);
+        metricsStart.value = start.toISOString().slice(0, 16);
+      }
+
+      async function loadDeviceMetrics() {
+        if (!state.selectedDevice) return;
+        const start = metricsStart.value ? new Date(metricsStart.value) : null;
+        const end = metricsEnd.value ? new Date(metricsEnd.value) : null;
+        if (!start || !end || start >= end) {
+          setMessage(devicesMessage, 'Intervalo invÃ¡lido.', 'error');
+          return;
+        }
+
+        const params = new URLSearchParams({
+          start: start.toISOString(),
+          end: end.toISOString(),
+          bucket: metricsBucket.value
+        });
+
+        try {
+          const data = await apiFetch(`/devices/${state.selectedDevice}/metrics?${params.toString()}`);
+          renderMetricCharts(data.points || []);
+        } catch (err) {
+          setMessage(devicesMessage, err.message, 'error');
+        }
+      }
+
+      async function loadStreamHistory() {
+        try {
+          let rules = Array.isArray(state.rules) ? state.rules : [];
+          if (!rules.length) {
+            const data = await apiFetch('/rules');
+            rules = data.items || [];
+            state.rules = rules;
+          }
+          let devices = Array.isArray(state.devices) ? state.devices : [];
+          if (!devices.length) {
+            const data = await apiFetch('/devices');
+            devices = data.items || [];
+            state.devices = devices;
+          }
+
+          const events = [];
+
+          for (const rule of rules) {
+            if (rule?.lastResult && typeof rule.lastResult === 'object') {
+              events.push({
+                ...rule.lastResult,
+                type: rule.lastResult.type || 'rule.report',
+                ruleId: rule.id,
+                name: rule.name,
+                companyId: rule.companyId,
+                generatedAt: rule.lastResult.generatedAt || rule.lastRunAt,
+                metadata: {
+                  ...rule.lastResult.metadata,
+                  scheduleSummary: rule.scheduleSummary || rule.metadata?.scheduleSummary
+                }
+              });
+            }
+          }
+
+          for (const device of devices) {
+            const sample = {
+              ts: device.lastTs,
+              voltage: device.voltage,
+              current: device.current,
+              frequency: device.frequency,
+              power_factor: device.powerFactor ?? device.power_factor ?? null
+            };
+            if (sample.ts || sample.voltage != null || sample.current != null || sample.frequency != null) {
+              events.push({
+                type: 'device.telemetry',
+                deviceId: device.id,
+                sample
+              });
+            }
+            const existing = state.deviceLive[device.id];
+            const existingTs = existing?.sample?.ts ?? existing?.ts ?? null;
+            if (!existingTs || (sample.ts && new Date(sample.ts) > new Date(existingTs))) {
+              state.deviceLive[device.id] = { sample };
+            }
+          }
+
+          const normalized = events
+            .map((ev) => normalizeEvent(ev))
+            .sort((a, b) => {
+              const aTime = Date.parse(a.timestampIso || a.raw?.generatedAt || a.raw?.sample?.ts || 0);
+              const bTime = Date.parse(b.timestampIso || b.raw?.generatedAt || b.raw?.sample?.ts || 0);
+              return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
+            });
+
+          state.events = normalized;
+          renderStream();
+          updateLiveTelemetry();
+        } catch (err) {
+          console.error('Falha ao carregar histórico do streaming', err);
+        }
+      }
+
+      async function handleNlqSubmit(event) {
+        event.preventDefault();
+        if (!nlqText) return;
+        const question = nlqText.value.trim();
+        if (!question) {
+          setMessage(nlqMessage, 'Escreva uma pergunta antes de enviar.', 'error');
+          nlqText.focus();
+          return;
+        }
+        setMessage(nlqMessage, 'Consultando...', 'info');
+        if (nlqSubmit) nlqSubmit.disabled = true;
+        try {
+          const payload = {
+            text: question,
+            companyId: state.companyId || undefined
+          };
+          const result = await apiFetch('/nlq/query', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          setMessage(nlqMessage, 'Resposta recebida!', 'success');
+          addStreamEvent({
+            type: 'nlq.answer',
+            question,
+            ...result,
+            timestamp: new Date().toISOString()
+          });
+          nlqText.value = '';
+        } catch (err) {
+          setMessage(nlqMessage, err.message || 'Falha ao processar pergunta.', 'error');
+        } finally {
+          if (nlqSubmit) nlqSubmit.disabled = false;
+        }
+      }
+
+
+      const metricChartConfigs = {
+        voltage: {
+          measurement: 'voltage',
+          datasets: [
+            { key: 'avgVoltage', label: 'Tensão média', borderColor: 'rgba(37, 99, 235, 1)', backgroundColor: 'rgba(37, 99, 235, 0.15)' },
+            { key: 'maxVoltage', label: 'Tensão máx.', borderColor: 'rgba(220, 38, 38, 1)', backgroundColor: 'rgba(220, 38, 38, 0.12)' },
+            { key: 'minVoltage', label: 'Tensão mín.', borderColor: 'rgba(34, 197, 94, 1)', backgroundColor: 'rgba(34, 197, 94, 0.12)' }
+          ]
+        },
+        current: {
+          measurement: 'current',
+          datasets: [
+            { key: 'avgCurrent', label: 'Corrente média', borderColor: 'rgba(16, 185, 129, 1)', backgroundColor: 'rgba(16, 185, 129, 0.15)' }
+          ]
+        },
+        frequency: {
+          measurement: 'frequency',
+          datasets: [
+            { key: 'avgFrequency', label: 'Frequência média', borderColor: 'rgba(249, 115, 22, 1)', backgroundColor: 'rgba(249, 115, 22, 0.15)' }
+          ]
+        },
+        powerFactor: {
+          measurement: 'powerFactor',
+          datasets: [
+            { key: 'avgPowerFactor', label: 'Fator de potência médio', borderColor: 'rgba(139, 92, 246, 1)', backgroundColor: 'rgba(139, 92, 246, 0.15)' }
+          ]
+        }
       };
 
-      try {
-        await apiFetch('/rules', {
-          method: 'POST',
-          body: JSON.stringify(payload)
+      function createChartOptions(measurementType) {
+        const options = {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { intersect: false, mode: 'index' },
+          scales: {
+            x: {
+              ticks: { maxRotation: 45, minRotation: 45 }
+            },
+            y: {
+              beginAtZero: measurementType !== 'powerFactor',
+              ticks: {
+                callback(value) {
+                  return formatMeasurement(value, measurementType);
+                }
+              }
+            }
+          },
+          plugins: {
+            legend: { display: true },
+            tooltip: {
+              callbacks: {
+                label(context) {
+                  const label = context.dataset.label ? `${context.dataset.label}: ` : '';
+                  return `${label}${formatMeasurement(context.parsed.y, measurementType)}`;
+                }
+              }
+            }
+          }
+        };
+
+        if (measurementType === 'powerFactor') {
+          options.scales.y.suggestedMin = 0;
+          options.scales.y.suggestedMax = 1;
+        }
+
+        return options;
+      }
+
+      function renderMetricCharts(points = []) {
+        const labels = points.map((p) => p.bucket);
+        Object.entries(metricChartConfigs).forEach(([key, config]) => {
+          const ctx = metricContexts[key];
+          if (!ctx) return;
+
+          const datasets = config.datasets.map((dataset) => ({
+            ...dataset,
+            type: 'line',
+            fill: false,
+            tension: 0.3,
+            borderWidth: 2,
+            pointRadius: 2,
+            data: points.map((p) => Number(p?.[dataset.key] ?? 0))
+          }));
+
+          const existing = state.charts[key];
+          if (!existing) {
+            state.charts[key] = new Chart(ctx, {
+              type: 'line',
+              data: { labels, datasets },
+              options: createChartOptions(config.measurement)
+            });
+          } else {
+            existing.data.labels = labels;
+            existing.data.datasets.forEach((dataset, index) => {
+              dataset.data = datasets[index]?.data ?? [];
+            });
+            existing.update();
+          }
         });
-        setMessage(ruleFormMessage, 'Regra criada com sucesso!', 'success');
+      }
+
+      function addStreamEvent(event) {
+        const normalized = normalizeEvent(event);
+        state.events.unshift(normalized);
+        if (state.events.length > 200) state.events.pop();
+        renderStream();
+      }
+
+          function escapeHtml(value) {
+        return String(value ?? '-')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/'/g, '&#39;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function prettifyKey(key) {
+        const map = {
+          device_id: 'Dispositivo',
+          daily_kwh: 'Energia (kWh)',
+          total_kwh: 'Energia total (kWh)',
+          consumption: 'Consumo',
+          voltage: 'Tensão',
+          current: 'Corrente',
+          frequency: 'Frequência',
+          power_factor: 'Fator de potência',
+          max_voltage: 'Tensão máx.',
+          min_voltage: 'Tensão mín.',
+          avg_voltage: 'Tensão média',
+          avg_current: 'Corrente média',
+          avg_frequency: 'Frequência média',
+          avg_power_factor: 'Fator de potência médio',
+          total_ms: 'Tempo total (ms)',
+          answer: 'Resposta'
+        };
+        return map[key] || key.replace(/_/g, ' ');
+      }
+
+      function formatValue(value, key) {
+        return formatCellDisplay(value, key);
+      }
+
+      function summarizeRow(row) {
+        if (!row || typeof row !== 'object') return '-';
+        const entries = Object.entries(row).slice(0, 3);
+        return entries
+          .map(([key, value]) => `${prettifyKey(key)}: ${formatValue(value, key)}`)
+          .join('  ');
+      }
+
+      function normalizeEvent(event) {
+        const nowIso = new Date().toISOString();
+        const wrap = (override) => ({
+          timestampIso: override.timestampIso || nowIso,
+          timestamp: formatTimestamp(override.timestampIso || nowIso),
+          summary: override.summary || 'Evento recebido.',
+          rows: Array.isArray(override.rows) ? override.rows : [],
+          details: override.details || JSON.stringify(override.raw ?? event, null, 2),
+          category: override.category || 'Sistema',
+          style: override.style || 'card-system',
+          title: override.title || 'Evento',
+          raw: override.raw ?? event,
+          type: override.type || event?.type || 'evento'
+        });
+
+        if (!event || typeof event !== 'object') {
+          return wrap({
+            title: 'Evento desconhecido',
+            summary: 'Payload não reconhecido.'
+          });
+        }
+
+        if (event.type === 'device.telemetry') {
+          const sample = event.sample ?? {};
+          const timestampIso = sample.ts || nowIso;
+          const summaryParts = [
+            sample.voltage != null ? `Tensão: ${formatMeasurement(sample.voltage, 'voltage')}` : null,
+            sample.current != null ? `Corrente: ${formatMeasurement(sample.current, 'current')}` : null,
+            sample.frequency != null ? `Frequência: ${formatMeasurement(sample.frequency, 'frequency')}` : null
+          ].filter(Boolean);
+
+          return wrap({
+            type: event.type,
+            title: event.deviceId ? `Dispositivo ${event.deviceId}` : 'Telemetria',
+            timestampIso,
+            summary: summaryParts.length ? summaryParts.join(' · ') : 'Nova leitura recebida do dispositivo.',
+            details: JSON.stringify(sample, null, 2),
+            category: 'Telemetria',
+            style: 'card-device',
+            raw: event
+          });
+        }
+
+        if (event.type === 'rule.report' || event.type === 'rule.alert') {
+          const rows = Array.isArray(event.rows) ? event.rows : [];
+          const summaryBase = rows.length
+            ? `${rows.length} linha(s). Destaque: ${summarizeRow(rows[0])}`
+            : 'Nenhum dado retornado.';
+          const schedule = event.metadata?.scheduleSummary || event.scheduleSummary
+            ? ` · ${event.metadata?.scheduleSummary || event.scheduleSummary}`
+            : '';
+          const timestampIso = event.generatedAt || nowIso;
+
+          return wrap({
+            type: event.type,
+            title: event.type === 'rule.alert' ? `Alerta · ${event.name ?? event.ruleId}` : `Relatório · ${event.name ?? event.ruleId}`,
+            timestampIso,
+            summary: summaryBase + schedule,
+            rows,
+            details: JSON.stringify(rows.length ? rows : (event.metadata ?? event), null, 2),
+            category: event.type === 'rule.alert' ? 'Alerta' : 'Relatório',
+            style: event.type === 'rule.alert' ? 'card-alert' : 'card-report',
+            raw: event
+          });
+        }
+
+        if (event.type === 'nlq.answer') {
+          const rows = Array.isArray(event.rows) && event.rows.length ? event.rows : Array.isArray(event.graphRows) ? event.graphRows : [];
+          const timestampIso = event.timestamp || nowIso;
+          return wrap({
+            type: 'nlq.answer',
+            title: 'Resposta NLQ',
+            timestampIso,
+            summary: event.answer || 'Resposta gerada.',
+            rows,
+            details: JSON.stringify({
+              pergunta: event.question || '(sem texto)',
+              resposta: event.answer,
+              sql: event.sql,
+              cypher: event.cypher,
+              totalMs: event.totalMs,
+              source: event.source,
+              sqlError: event.sqlError,
+              graphError: event.graphError
+            }, null, 2),
+            category: 'NLQ',
+            style: 'card-nlq',
+            raw: event
+          });
+        }
+
+        if (event.type === 'system') {
+          return wrap({
+            type: event.type,
+            title: 'Sistema',
+            timestampIso: nowIso,
+            summary: event.message || 'Evento do sistema.',
+            details: JSON.stringify(event, null, 2),
+            category: 'Sistema',
+            style: 'card-system',
+            raw: event
+          });
+        }
+
+        const timestampIso = event.generatedAt || event.timestamp || nowIso;
+        return wrap({
+          type: event.type || 'evento',
+          title: event.type ? `Evento ${event.type}` : 'Evento',
+          timestampIso,
+          summary: 'Conteúdo capturado das mensagens em tempo real.',
+          details: JSON.stringify(event, null, 2),
+          category: event.type || 'Evento',
+          style: 'card-generic',
+          raw: event
+        });
+      }
+
+      function renderRowsTable(rows) {
+        if (!Array.isArray(rows) || rows.length === 0) return '';
+        const headers = Object.keys(rows[0]);
+        const head = headers.map((h) => `<th>${escapeHtml(prettifyKey(h))}</th>`).join('');
+        const body = rows
+          .slice(0, 5)
+          .map((row) => {
+            const cells = headers
+              .map((h) => `<td>${escapeHtml(formatCellDisplay(row[h], h))}</td>`).join('');
+            return `<tr>${cells}</tr>`;
+          })
+          .join('');
+        const more = rows.length > 5
+          ? `<tfoot><tr><td colspan="${headers.length}" style="font-style:italic; color: var(--muted);">+${rows.length - 5} linha(s) extras</td></tr></tfoot>`
+          : '';
+        return `<div class="mini-table-wrapper"><table class="mini-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody>${more}</table></div>`;
+      }
+
+      function renderStream() {
+        streamList.innerHTML = '';
+        streamFilters.innerHTML = '';
+
+        state.events.forEach((event) => {
+          const item = document.createElement('div');
+          item.className = `event-item ${event.style || ''}`.trim();
+
+          const detailHtml = event.rows && event.rows.length
+            ? renderRowsTable(event.rows)
+            : event.details
+              ? `<pre>${escapeHtml(event.details)}</pre>`
+              : '';
+
+          item.innerHTML = `
+            <div class="flex" style="justify-content: space-between; align-items:center;">
+              <div>
+                <h4 style="margin:0">${escapeHtml(event.title)}</h4>
+                <small style="color: var(--muted);">${escapeHtml(event.timestamp)}</small>
+              </div>
+              <span class="chip">${escapeHtml(event.category || '')}</span>
+            </div>
+            <p style="margin: 10px 0 6px; color: var(--muted);">${escapeHtml(event.summary || '')}</p>
+            ${detailHtml}
+          `;
+          streamList.appendChild(item);
+        });
+      }
+      function updateLiveTelemetry() {
+        const deviceId = state.selectedDevice;
+        if (!deviceId) {
+          clearLiveTelemetry();
+          return;
+        }
+        const latestEntry = state.deviceLive[deviceId];
+        if (!latestEntry) {
+          clearLiveTelemetry();
+          return;
+        }
+        const sample = latestEntry.sample ?? latestEntry;
+        liveTs.textContent = formatTimestamp(extractSampleField(sample, ['ts', 'timestamp']));
+        liveVoltage.textContent = formatMeasurement(extractSampleField(sample, ['voltage']), 'voltage');
+        liveCurrent.textContent = formatMeasurement(extractSampleField(sample, ['current']), 'current');
+        liveFrequency.textContent = formatMeasurement(extractSampleField(sample, ['frequency']), 'frequency');
+        livePF.textContent = formatMeasurement(extractSampleField(sample, ['power_factor', 'powerFactor']), 'powerFactor');
+      }
+
+      }
+
+      function connectWebSocket() {
+        if (!state.token) return;
+        const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const wsUrl = `${protocol}://${window.location.host}/ws?token=${state.token}`;
+        if (state.ws) state.ws.close();
+        const ws = new WebSocket(wsUrl);
+        state.ws = ws;
+
+        ws.onopen = () => {
+          addStreamEvent({ type: 'system', message: 'WebSocket conectado.' });
+        };
+
+        ws.onclose = () => {
+          addStreamEvent({ type: 'system', message: 'WebSocket desconectado.' });
+          if (state.token) {
+            setTimeout(connectWebSocket, 3000);
+          }
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            addStreamEvent(data);
+            if (data.type === 'device.telemetry' && data.deviceId) {
+              state.deviceLive[data.deviceId] = data;
+              if (state.selectedDevice === data.deviceId) {
+                updateLiveTelemetry();
+              }
+            } else if (data.type && data.type.startsWith('rule.')) {
+              loadRules();
+            }
+          } catch (err) {
+            console.error('Falha ao tratar evento WS', err);
+          }
+        };
+      }
+
+      async function showDashboard() {
+        loginView.classList.add('hidden');
+        dashboard.classList.remove('hidden');
+        companyLabel.textContent = `Empresa: ${state.companyId}`;
+        await Promise.all([loadRules(), loadDevices()]);
+        await loadStreamHistory();
+        connectWebSocket();
+      }
+
+      function showLogin() {
+        dashboard.classList.add('hidden');
+        loginView.classList.remove('hidden');
+      }
+
+      loginForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        setMessage(loginMessage);
+        const username = document.getElementById('loginUser').value.trim();
+        const password = document.getElementById('loginPass').value.trim();
+        const companyId = document.getElementById('loginCompany').value.trim();
+        try {
+          const response = await fetch('/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, companyId: companyId || undefined })
+          });
+          if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || response.statusText);
+          }
+          const data = await response.json();
+          saveSession(data);
+          await showDashboard();
+        } catch (err) {
+          setMessage(loginMessage, err.message, 'error');
+        }
+      });
+
+      logoutBtn.addEventListener('click', () => {
+        clearSession();
+        showLogin();
+      });
+
+      navButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          navButtons.forEach((b) => b.classList.remove('active'));
+          btn.classList.add('active');
+          Object.values(sections).forEach((sec) => sec.classList.add('hidden'));
+          const target = sections[btn.dataset.section];
+          if (target) target.classList.remove('hidden');
+          if (btn.dataset.section === 'stream') {
+            loadStreamHistory();
+          }
+        });
+      });
+
+      ruleTypeSelect.addEventListener('change', () => {
+        scheduleHint.style.display = ruleTypeSelect.value === 'schedule_report' ? 'block' : 'none';
+      });
+      ruleTypeSelect.dispatchEvent(new Event('change'));
+
+      ruleResetBtn.addEventListener('click', () => {
         ruleForm.reset();
         scheduleHint.style.display = 'block';
+        ruleTypeSelect.dispatchEvent(new Event('change'));
+      });
+
+      if (nlqForm) {
+        nlqForm.addEventListener('submit', handleNlqSubmit);
+      }
+
+      ruleForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        setMessage(ruleFormMessage);
+        const payload = {
+          name: document.getElementById('ruleName').value.trim(),
+          type: ruleTypeSelect.value,
+          prompt: document.getElementById('rulePrompt').value.trim(),
+          activate: document.getElementById('ruleActivate').value === 'yes'
+        };
+
+        try {
+          await apiFetch('/rules', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          setMessage(ruleFormMessage, 'Regra criada com sucesso!', 'success');
+          ruleForm.reset();
+          scheduleHint.style.display = 'block';
+          await loadRules();
+        } catch (err) {
+          setMessage(ruleFormMessage, err.message, 'error');
+        }
+      });
+
+      closeRuleDetail.addEventListener('click', hideRuleDetail);
+      reloadRulesBtn.addEventListener('click', async () => {
         await loadRules();
-      } catch (err) {
-        setMessage(ruleFormMessage, err.message, 'error');
-      }
-    });
+        await loadStreamHistory();
+      });
 
-    closeRuleDetail.addEventListener('click', hideRuleDetail);
-    reloadRulesBtn.addEventListener('click', async () => {
-      await loadRules();
-      await loadStreamHistory();
-    });
+      reloadDevicesBtn.addEventListener('click', async () => {
+        await loadDevices();
+        await loadStreamHistory();
+      });
+      closeDeviceDetail.addEventListener('click', closeDevice);
+      applyMetricsBtn.addEventListener('click', loadDeviceMetrics);
 
-    reloadDevicesBtn.addEventListener('click', async () => {
-      await loadDevices();
-      await loadStreamHistory();
-    });
-    closeDeviceDetail.addEventListener('click', closeDevice);
-    applyMetricsBtn.addEventListener('click', loadDeviceMetrics);
-
-    (function autoLoginFromStorage() {
-      const storedToken = localStorage.getItem('nlq_token');
-      const storedCompany = localStorage.getItem('nlq_company');
-      if (storedToken && storedCompany) {
-        state.token = storedToken;
-        state.companyId = storedCompany;
-        showDashboard().catch((err) => console.error('Falha ao restaurar sessão', err));
-      }
-    })();
-  </script>
-</body>
+      (function autoLoginFromStorage() {
+        const storedToken = localStorage.getItem('nlq_token');
+        const storedCompany = localStorage.getItem('nlq_company');
+        if (storedToken && storedCompany) {
+          state.token = storedToken;
+          state.companyId = storedCompany;
+          showDashboard().catch((err) => console.error('Falha ao restaurar sessão', err));
+        }
+      })();
+    </script>
+  </body>
 </html>
