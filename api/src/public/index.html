@@ -1858,6 +1858,7 @@
             const payload = { text: question, companyId: state.companyId };
             const result = await apiFetch("/nlq/query", {
               method: "POST",
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify(payload),
             });
             setMessage(
