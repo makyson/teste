@@ -287,10 +287,10 @@
     <h2>AutenticaÃ§Ã£o</h2>
     <form id="loginForm">
       <label for="loginUser">UsuÃ¡rio</label>
-      <input id="loginUser" type="text" required />
+      <input id="loginUser" type="text" autocomplete="username" required />
 
       <label for="loginPass">Senha</label>
-      <input id="loginPass" type="password" required />
+      <input id="loginPass" type="password" autocomplete="current-password" required />
 
       <label for="loginCompany">Empresa (opcional)</label>
       <input id="loginCompany" type="text" placeholder="company-1" />
@@ -1141,21 +1141,6 @@
           existing.update();
         }
       });
-    }
-
-            ]
-          },
-          options: {
-            scales: {
-              y: { beginAtZero: true }
-            }
-          }
-        });
-      } else {
-        state.chart.data.labels = labels;
-        state.chart.data.datasets[0].data = dataset;
-        state.chart.update();
-      }
     }
 
     function addStreamEvent(event) {
