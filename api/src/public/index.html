@@ -200,6 +200,7 @@
 
     .message.success { background: rgba(22, 163, 74, 0.12); color: #166534; display: block; }
     .message.error { background: rgba(220, 38, 38, 0.12); color: #991b1b; display: block; }
+    .message.info { background: rgba(37, 99, 235, 0.12); color: #1d4ed8; display: block; }
 
     .flex { display: flex; gap: 16px; }
     .flex-wrap { flex-wrap: wrap; }
@@ -228,16 +229,34 @@
     .event-item.card-report { border-left: 4px solid #16a34a; }
     .event-item.card-alert { border-left: 4px solid #dc2626; }
     .event-item.card-system { border-left: 4px solid #64748b; }
+    .event-item.card-nlq { border-left: 4px solid #2563eb; }
     .event-item.card-generic { border-left: 4px solid rgba(15, 23, 42, 0.3); }
     .mini-table-wrapper { margin-top: 12px; overflow-x: auto; }
     .mini-table { width: 100%; border-collapse: collapse; font-size: 13px; }
     .mini-table th, .mini-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); text-align: left; }
     .mini-table tbody tr:nth-child(even) { background: rgba(15, 23, 42, 0.03); }
     .mini-table tfoot td { font-style: italic; color: var(--muted); }
+    .nlq-form textarea { resize: vertical; min-height: 64px; }
+    .nlq-actions { display: flex; justify-content: flex-end; gap: 12px; }
+    .nlq-actions button { min-width: 140px; }
 
     .event-item h4 {
       margin: 0 0 6px 0;
     }
+
+      .metrics-grid {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+      .mini-chart {
+        position: relative;
+        min-height: 200px;
+      }
+      .mini-chart canvas {
+        width: 100%;
+        height: 100%;
+      }
 
     .chips {
       display: flex;
@@ -265,9 +284,9 @@
 </head>
 <body>
   <div id="loginView" class="card" style="max-width: 420px; margin: 120px auto;">
-    <h2>Autenticação</h2>
+    <h2>AutenticaÃ§Ã£o</h2>
     <form id="loginForm">
-      <label for="loginUser">Usuário</label>
+      <label for="loginUser">UsuÃ¡rio</label>
       <input id="loginUser" type="text" required />
 
       <label for="loginPass">Senha</label>
@@ -312,22 +331,22 @@
                 <div style="width: 240px;">
                   <label for="ruleType">Tipo</label>
                   <select id="ruleType">
-                    <option value="schedule_report">Relatório agendado</option>
-                    <option value="threshold_alert">Alerta contínuo</option>
+                    <option value="schedule_report">RelatÃ³rio agendado</option>
+                    <option value="threshold_alert">Alerta contÃ­nuo</option>
                   </select>
                 </div>
                 <div style="width: 200px;">
                   <label for="ruleActivate">Ativar?</label>
                   <select id="ruleActivate">
                     <option value="yes">Sim</option>
-                    <option value="no" selected>Não</option>
+                    <option value="no" selected>NÃ£o</option>
                   </select>
                 </div>
               </div>
 
               <label for="rulePrompt">Prompt (explique a consulta e quando rodar)</label>
-              <textarea id="rulePrompt" placeholder="Ex.: Todo dia às 08h me avise os 10 dispositivos com maior consumo nas últimas 24 horas"></textarea>
-              <small id="scheduleHint" class="hint">Para relatórios agendados, descreva o horário/período no próprio prompt.</small>
+              <textarea id="rulePrompt" placeholder="Ex.: Todo dia Ã s 08h me avise os 10 dispositivos com maior consumo nas Ãºltimas 24 horas"></textarea>
+              <small id="scheduleHint" class="hint">Para relatÃ³rios agendados, descreva o horÃ¡rio/perÃ­odo no prÃ³prio prompt.</small>
 
               <div style="display:flex; gap: 12px; align-items:center;">
                 <button class="primary" type="submit">Salvar regra</button>
@@ -353,7 +372,7 @@
                   <th>Status</th>
                   <th>Agendamento</th>
                   <th>Prompt</th>
-                  <th>Ações</th>
+                  <th>AÃ§Ãµes</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -370,6 +389,17 @@
         </div>
 
         <div id="streamSection" class="hidden">
+          <div class="card">
+            <h2>Pergunta rápida NLQ</h2>
+            <form id="nlqForm" class="nlq-form">
+              <label for="nlqText">Faça uma pergunta sobre os seus dados</label>
+              <textarea id="nlqText" rows="2" placeholder="Ex.: qual o meu consumo máximo e quais os top 2 equipamentos dela?"></textarea>
+              <div class="nlq-actions">
+                <button type="submit" class="primary" id="nlqSubmit">Perguntar</button>
+              </div>
+            </form>
+            <div id="nlqMessage" class="message"></div>
+          </div>
           <div class="card">
             <h2>Eventos em tempo real</h2>
             <div class="chips" id="streamFilters"></div>
@@ -388,11 +418,11 @@
               <thead>
                 <tr>
                   <th>Device</th>
-                  <th>Última leitura</th>
+                  <th>Ãltima leitura</th>
                   <th>Voltage</th>
                   <th>Current</th>
                   <th>Frequency</th>
-                  <th>Ações</th>
+                  <th>AÃ§Ãµes</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -406,7 +436,7 @@
             </div>
             <div class="flex flex-wrap" style="gap: 16px;">
               <div class="grow">
-                <label>Início</label>
+                <label>InÃ­cio</label>
                 <input id="metricsStart" type="datetime-local" />
               </div>
               <div class="grow">
@@ -427,7 +457,7 @@
             </div>
             <div class="flex flex-wrap" style="gap: 16px; margin-top: 12px;">
               <div class="card" style="flex:1; min-width:240px; background: rgba(37,99,235,0.08); border-color: rgba(37,99,235,0.2);">
-                <h3>Última leitura em tempo real</h3>
+                <h3>Ãltima leitura em tempo real</h3>
                 <div id="liveTelemetry">
                   <p><strong>TS:</strong> <span id="liveTs">-</span></p>
                   <p><strong>Voltage:</strong> <span id="liveVoltage">-</span></p>
@@ -437,7 +467,21 @@
                 </div>
               </div>
               <div class="card" style="flex:2; min-width:300px;">
-                <canvas id="metricsChart" height="220"></canvas>
+                <h3>Tendências recentes</h3>
+                <div class="metrics-grid">
+                  <div class="mini-chart">
+                    <canvas id="voltageChart" height="180"></canvas>
+                  </div>
+                  <div class="mini-chart">
+                    <canvas id="currentChart" height="180"></canvas>
+                  </div>
+                  <div class="mini-chart">
+                    <canvas id="frequencyChart" height="180"></canvas>
+                  </div>
+                  <div class="mini-chart">
+                    <canvas id="powerFactorChart" height="180"></canvas>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -457,7 +501,7 @@
       selectedRule: null,
       selectedDevice: null,
       deviceLive: {},
-      chart: null
+      charts: {}
     };
 
     const loginView = document.getElementById('loginView');
@@ -488,6 +532,10 @@
 
     const streamList = document.getElementById('streamList');
     const streamFilters = document.getElementById('streamFilters');
+    const nlqForm = document.getElementById('nlqForm');
+    const nlqText = document.getElementById('nlqText');
+    const nlqSubmit = document.getElementById('nlqSubmit');
+    const nlqMessage = document.getElementById('nlqMessage');
 
     const devicesMessage = document.getElementById('devicesMessage');
     const devicesTableBody = document.querySelector('#devicesTable tbody');
@@ -504,8 +552,119 @@
     const liveCurrent = document.getElementById('liveCurrent');
     const liveFrequency = document.getElementById('liveFrequency');
     const livePF = document.getElementById('livePF');
+    const metricContexts = {
+      voltage: document.getElementById('voltageChart')?.getContext('2d'),
+      current: document.getElementById('currentChart')?.getContext('2d'),
+      frequency: document.getElementById('frequencyChart')?.getContext('2d'),
+      powerFactor: document.getElementById('powerFactorChart')?.getContext('2d')
+    };
 
-    const metricsCtx = document.getElementById('metricsChart').getContext('2d');
+    const measurementConfigs = {
+      voltage: { unit: 'V', allowScale: true },
+      current: { unit: 'A', allowScale: true },
+      frequency: { unit: 'Hz', allowScale: true },
+      powerFactor: { unit: '', allowScale: false, maxDecimals: 3 },
+      default: { unit: '', allowScale: false, maxDecimals: 2 }
+    };
+
+    const scaleSteps = [
+      { threshold: 1e9, divisor: 1e9, prefix: 'G' },
+      { threshold: 1e6, divisor: 1e6, prefix: 'M' },
+      { threshold: 1e3, divisor: 1e3, prefix: 'k' },
+      { threshold: 1, divisor: 1, prefix: '' },
+      { threshold: 1e-3, divisor: 1e-3, prefix: 'm' },
+      { threshold: 1e-6, divisor: 1e-6, prefix: 'u' }
+    ];
+
+    function formatTimestamp(value) {
+      if (!value) return '-';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) {
+        return String(value);
+      }
+      return date.toLocaleString('pt-BR');
+    }
+
+    function formatMeasurement(rawValue, type = 'default') {
+      if (rawValue === null || rawValue === undefined || rawValue === '') {
+        return '-';
+      }
+      const numeric = Number(rawValue);
+      if (!Number.isFinite(numeric)) {
+        return '-';
+      }
+      const config = measurementConfigs[type] || measurementConfigs.default;
+      if (!config.allowScale) {
+        return numeric.toLocaleString('pt-BR', { maximumFractionDigits: config.maxDecimals ?? 2 });
+      }
+      const absValue = Math.abs(numeric);
+      let selected = scaleSteps.find((step) => absValue >= step.threshold);
+      if (!selected) {
+        selected = scaleSteps.find((step) => step.prefix === '') || scaleSteps[scaleSteps.length - 1];
+      }
+      const scaled = numeric / selected.divisor;
+      const absScaled = Math.abs(scaled);
+      let maxDecimals = 3;
+      if (absScaled >= 100) {
+        maxDecimals = 0;
+      } else if (absScaled >= 10) {
+        maxDecimals = 1;
+      } else if (absScaled >= 1) {
+        maxDecimals = 2;
+      }
+      const valueStr = scaled.toLocaleString('pt-BR', { maximumFractionDigits: maxDecimals });
+      const unitLabel = `${selected.prefix}${config.unit}`.trim();
+      return unitLabel ? `${valueStr} ${unitLabel}` : valueStr;
+    }
+
+    function extractSampleField(sample, keys) {
+      if (!sample) return undefined;
+      for (const key of keys) {
+        if (sample[key] !== undefined && sample[key] !== null) {
+          return sample[key];
+        }
+        const altKey = key.includes('_')
+          ? key.replace(/_([a-z])/g, (_, char) => char.toUpperCase())
+          : key.replace(/[A-Z]/g, (match) => `_${match.toLowerCase()}`);
+        if (sample[altKey] !== undefined && sample[altKey] !== null) {
+          return sample[altKey];
+        }
+      }
+      return undefined;
+    }
+
+    function clearLiveTelemetry() {
+      liveTs.textContent = '-';
+      liveVoltage.textContent = '-';
+      liveCurrent.textContent = '-';
+      liveFrequency.textContent = '-';
+      livePF.textContent = '-';
+    }
+
+    function inferMeasurementTypeByKey(key) {
+      if (!key) return null;
+      const normalized = String(key).toLowerCase();
+      if (normalized.includes('voltage') || normalized.includes('tens')) return 'voltage';
+      if (normalized.includes('current') || normalized.includes('corr')) return 'current';
+      if (normalized.includes('freq')) return 'frequency';
+      if (normalized.includes('power_factor')) return 'powerFactor';
+      return null;
+    }
+
+    function formatCellDisplay(value, key) {
+      if (value === null || value === undefined || value === '') {
+        return '-';
+      }
+      const measurementType = inferMeasurementTypeByKey(key);
+      if (measurementType) {
+        return formatMeasurement(value, measurementType);
+      }
+      if (typeof value === 'number') {
+        return value.toLocaleString('pt-BR', { maximumFractionDigits: 3 });
+      }
+      return String(value);
+    }
+
 
     function setMessage(el, msg, type = 'success') {
       if (!msg) {
@@ -538,7 +697,7 @@
     }
 
     async function apiFetch(path, options = {}) {
-      if (!state.token) throw new Error('Token não definido');
+      if (!state.token) throw new Error('Token nÃ£o definido');
       const headers = Object.assign({
         'Content-Type': 'application/json',
         Authorization: `Bearer ${state.token}`
@@ -621,12 +780,12 @@
         <p><strong>Tipo:</strong> ${rule.type}</p>
         <p><strong>Status:</strong> ${rule.status}</p>
         <p><strong>Schedule:</strong> ${rule.scheduleCron || '-'} (${rule.scheduleSummary || '-'})</p>
-        <p><strong>Última execução:</strong> ${rule.lastRunAt || '-'} | <strong>Disparo:</strong> ${rule.lastTriggeredAt || '-'}</p>
+        <p><strong>Ãltima execuÃ§Ã£o:</strong> ${rule.lastRunAt || '-'} | <strong>Disparo:</strong> ${rule.lastTriggeredAt || '-'}</p>
         <h3>SQL</h3>
         <pre>${rule.sql || ''}</pre>
         <h3>Cypher</h3>
         <pre>${rule.cypher || ''}</pre>
-        <h3>Último resultado</h3>
+        <h3>Ãltimo resultado</h3>
         <pre>${JSON.stringify(rule.lastResult ?? '-', null, 2)}</pre>
       `;
       ruleDetailContent.innerHTML = content;
@@ -663,7 +822,22 @@
       try {
         const data = await apiFetch('/devices');
         state.devices = data.items || [];
+        for (const device of state.devices) {
+          const sample = {
+            ts: device.lastTs,
+            voltage: device.voltage,
+            current: device.current,
+            frequency: device.frequency,
+            power_factor: device.powerFactor ?? device.power_factor ?? null
+          };
+          const existing = state.deviceLive[device.id];
+          const existingTs = existing?.sample?.ts ?? existing?.ts ?? null;
+          if (!existingTs || (sample.ts && new Date(sample.ts) > new Date(existingTs))) {
+            state.deviceLive[device.id] = { sample };
+          }
+        }
         renderDevices();
+        updateLiveTelemetry();
       } catch (err) {
         setMessage(devicesMessage, err.message, 'error');
       }
@@ -686,10 +860,10 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${device.id}</td>
-          <td>${device.lastTs ?? '-'}</td>
-          <td>${device.voltage ?? '-'}</td>
-          <td>${device.current ?? '-'}</td>
-          <td>${device.frequency ?? '-'}</td>
+          <td>${formatTimestamp(device.lastTs)}</td>
+          <td>${formatMeasurement(device.voltage, 'voltage')}</td>
+          <td>${formatMeasurement(device.current, 'current')}</td>
+          <td>${formatMeasurement(device.frequency, 'frequency')}</td>
           <td></td>
         `;
         const actionCell = tr.lastElementChild;
@@ -701,15 +875,29 @@
         devicesTableBody.appendChild(tr);
       }
     }
-
     function openDevice(deviceId) {
       state.selectedDevice = deviceId;
       deviceTitle.textContent = `Dispositivo ${deviceId}`;
       deviceDetailCard.classList.remove('hidden');
+
+      const device = state.devices.find((d) => d.id === deviceId);
+      if (device) {
+        state.deviceLive[deviceId] = {
+          sample: {
+            ts: device.lastTs,
+            voltage: device.voltage,
+            current: device.current,
+            frequency: device.frequency,
+            power_factor: device.powerFactor ?? device.power_factor ?? device.powerFactor
+          }
+        };
+      }
+
       updateMetricsRangeInputs();
       loadDeviceMetrics();
       updateLiveTelemetry();
     }
+
 
     function closeDevice() {
       state.selectedDevice = null;
@@ -728,7 +916,7 @@
       const start = metricsStart.value ? new Date(metricsStart.value) : null;
       const end = metricsEnd.value ? new Date(metricsEnd.value) : null;
       if (!start || !end || start >= end) {
-        setMessage(devicesMessage, 'Intervalo inválido.', 'error');
+        setMessage(devicesMessage, 'Intervalo invÃ¡lido.', 'error');
         return;
       }
 
@@ -740,29 +928,221 @@
 
       try {
         const data = await apiFetch(`/devices/${state.selectedDevice}/metrics?${params.toString()}`);
-        renderMetricsChart(data.points || []);
+        renderMetricCharts(data.points || []);
       } catch (err) {
         setMessage(devicesMessage, err.message, 'error');
       }
     }
 
-    function renderMetricsChart(points) {
-      const labels = points.map((p) => p.bucket);
-      const dataset = points.map((p) => p.avgVoltage || 0);
+    async function loadStreamHistory() {
+      try {
+        let rules = Array.isArray(state.rules) ? state.rules : [];
+        if (!rules.length) {
+          const data = await apiFetch('/rules');
+          rules = data.items || [];
+          state.rules = rules;
+        }
+        let devices = Array.isArray(state.devices) ? state.devices : [];
+        if (!devices.length) {
+          const data = await apiFetch('/devices');
+          devices = data.items || [];
+          state.devices = devices;
+        }
 
-      if (!state.chart) {
-        state.chart = new Chart(metricsCtx, {
-          type: 'bar',
-          data: {
-            labels,
-            datasets: [
-              {
-                label: 'Média de tensão (V)',
-                data: dataset,
-                backgroundColor: 'rgba(37, 99, 235, 0.4)',
-                borderColor: 'rgba(37, 99, 235, 1)',
-                borderWidth: 1
+        const events = [];
+
+        for (const rule of rules) {
+          if (rule?.lastResult && typeof rule.lastResult === 'object') {
+            events.push({
+              ...rule.lastResult,
+              type: rule.lastResult.type || 'rule.report',
+              ruleId: rule.id,
+              name: rule.name,
+              companyId: rule.companyId,
+              generatedAt: rule.lastResult.generatedAt || rule.lastRunAt,
+              metadata: {
+                ...rule.lastResult.metadata,
+                scheduleSummary: rule.scheduleSummary || rule.metadata?.scheduleSummary
               }
+            });
+          }
+        }
+
+        for (const device of devices) {
+          const sample = {
+            ts: device.lastTs,
+            voltage: device.voltage,
+            current: device.current,
+            frequency: device.frequency,
+            power_factor: device.powerFactor ?? device.power_factor ?? null
+          };
+          if (sample.ts || sample.voltage != null || sample.current != null || sample.frequency != null) {
+            events.push({
+              type: 'device.telemetry',
+              deviceId: device.id,
+              sample
+            });
+          }
+          const existing = state.deviceLive[device.id];
+          const existingTs = existing?.sample?.ts ?? existing?.ts ?? null;
+          if (!existingTs || (sample.ts && new Date(sample.ts) > new Date(existingTs))) {
+            state.deviceLive[device.id] = { sample };
+          }
+        }
+
+        const normalized = events
+          .map((ev) => normalizeEvent(ev))
+          .sort((a, b) => {
+            const aTime = Date.parse(a.timestampIso || a.raw?.generatedAt || a.raw?.sample?.ts || 0);
+            const bTime = Date.parse(b.timestampIso || b.raw?.generatedAt || b.raw?.sample?.ts || 0);
+            return (Number.isFinite(bTime) ? bTime : 0) - (Number.isFinite(aTime) ? aTime : 0);
+          });
+
+        state.events = normalized;
+        renderStream();
+        updateLiveTelemetry();
+      } catch (err) {
+        console.error('Falha ao carregar histórico do streaming', err);
+      }
+    }
+
+    async function handleNlqSubmit(event) {
+      event.preventDefault();
+      if (!nlqText) return;
+      const question = nlqText.value.trim();
+      if (!question) {
+        setMessage(nlqMessage, 'Escreva uma pergunta antes de enviar.', 'error');
+        nlqText.focus();
+        return;
+      }
+      setMessage(nlqMessage, 'Consultando...', 'info');
+      if (nlqSubmit) nlqSubmit.disabled = true;
+      try {
+        const payload = {
+          text: question,
+          companyId: state.companyId || undefined
+        };
+        const result = await apiFetch('/nlq/query', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        setMessage(nlqMessage, 'Resposta recebida!', 'success');
+        addStreamEvent({
+          type: 'nlq.answer',
+          question,
+          ...result,
+          timestamp: new Date().toISOString()
+        });
+        nlqText.value = '';
+      } catch (err) {
+        setMessage(nlqMessage, err.message || 'Falha ao processar pergunta.', 'error');
+      } finally {
+        if (nlqSubmit) nlqSubmit.disabled = false;
+      }
+    }
+
+
+    const metricChartConfigs = {
+      voltage: {
+        measurement: 'voltage',
+        datasets: [
+          { key: 'avgVoltage', label: 'Tensão média', borderColor: 'rgba(37, 99, 235, 1)', backgroundColor: 'rgba(37, 99, 235, 0.15)' },
+          { key: 'maxVoltage', label: 'Tensão máx.', borderColor: 'rgba(220, 38, 38, 1)', backgroundColor: 'rgba(220, 38, 38, 0.12)' },
+          { key: 'minVoltage', label: 'Tensão mín.', borderColor: 'rgba(34, 197, 94, 1)', backgroundColor: 'rgba(34, 197, 94, 0.12)' }
+        ]
+      },
+      current: {
+        measurement: 'current',
+        datasets: [
+          { key: 'avgCurrent', label: 'Corrente média', borderColor: 'rgba(16, 185, 129, 1)', backgroundColor: 'rgba(16, 185, 129, 0.15)' }
+        ]
+      },
+      frequency: {
+        measurement: 'frequency',
+        datasets: [
+          { key: 'avgFrequency', label: 'Frequência média', borderColor: 'rgba(249, 115, 22, 1)', backgroundColor: 'rgba(249, 115, 22, 0.15)' }
+        ]
+      },
+      powerFactor: {
+        measurement: 'powerFactor',
+        datasets: [
+          { key: 'avgPowerFactor', label: 'Fator de potência médio', borderColor: 'rgba(139, 92, 246, 1)', backgroundColor: 'rgba(139, 92, 246, 0.15)' }
+        ]
+      }
+    };
+
+    function createChartOptions(measurementType) {
+      const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { intersect: false, mode: 'index' },
+        scales: {
+          x: {
+            ticks: { maxRotation: 45, minRotation: 45 }
+          },
+          y: {
+            beginAtZero: measurementType !== 'powerFactor',
+            ticks: {
+              callback(value) {
+                return formatMeasurement(value, measurementType);
+              }
+            }
+          }
+        },
+        plugins: {
+          legend: { display: true },
+          tooltip: {
+            callbacks: {
+              label(context) {
+                const label = context.dataset.label ? `${context.dataset.label}: ` : '';
+                return `${label}${formatMeasurement(context.parsed.y, measurementType)}`;
+              }
+            }
+          }
+        }
+      };
+
+      if (measurementType === 'powerFactor') {
+        options.scales.y.suggestedMin = 0;
+        options.scales.y.suggestedMax = 1;
+      }
+
+      return options;
+    }
+
+    function renderMetricCharts(points = []) {
+      const labels = points.map((p) => p.bucket);
+      Object.entries(metricChartConfigs).forEach(([key, config]) => {
+        const ctx = metricContexts[key];
+        if (!ctx) return;
+
+        const datasets = config.datasets.map((dataset) => ({
+          ...dataset,
+          type: 'line',
+          fill: false,
+          tension: 0.3,
+          borderWidth: 2,
+          pointRadius: 2,
+          data: points.map((p) => Number(p?.[dataset.key] ?? 0))
+        }));
+
+        const existing = state.charts[key];
+        if (!existing) {
+          state.charts[key] = new Chart(ctx, {
+            type: 'line',
+            data: { labels, datasets },
+            options: createChartOptions(config.measurement)
+          });
+        } else {
+          existing.data.labels = labels;
+          existing.data.datasets.forEach((dataset, index) => {
+            dataset.data = datasets[index]?.data ?? [];
+          });
+          existing.update();
+        }
+      });
+    }
+
             ]
           },
           options: {
@@ -779,7 +1159,8 @@
     }
 
     function addStreamEvent(event) {
-      state.events.unshift(event);
+      const normalized = normalizeEvent(event);
+      state.events.unshift(normalized);
       if (state.events.length > 200) state.events.pop();
       renderStream();
     }
@@ -797,30 +1178,26 @@
       const map = {
         device_id: 'Dispositivo',
         daily_kwh: 'Energia (kWh)',
+        total_kwh: 'Energia total (kWh)',
         consumption: 'Consumo',
-        voltage: 'Tens�o',
+        voltage: 'Tensão',
         current: 'Corrente',
-        frequency: 'Frequ�ncia',
-        power_factor: 'Fator de pot�ncia',
-        max_voltage: 'Tens�o m�x.',
-        min_voltage: 'Tens�o m�n.',
-        avg_voltage: 'Tens�o m�dia',
-        avg_current: 'Corrente m�dia'
+        frequency: 'Frequência',
+        power_factor: 'Fator de potência',
+        max_voltage: 'Tensão máx.',
+        min_voltage: 'Tensão mín.',
+        avg_voltage: 'Tensão média',
+        avg_current: 'Corrente média',
+        avg_frequency: 'Frequência média',
+        avg_power_factor: 'Fator de potência médio',
+        total_ms: 'Tempo total (ms)',
+        answer: 'Resposta'
       };
       return map[key] || key.replace(/_/g, ' ');
     }
 
     function formatValue(value, key) {
-      if (value == null) return '-';
-      if (typeof value === 'number') {
-        if (/kwh/i.test(key)) return `${value.toFixed(2)} kWh`;
-        if (/voltage/i.test(key)) return `${value.toFixed(2)} V`;
-        if (/current/i.test(key)) return `${value.toFixed(2)} A`;
-        if (/frequency/i.test(key)) return `${value.toFixed(2)} Hz`;
-        if (/power_factor/i.test(key)) return value.toFixed(2);
-        return value.toFixed(2);
-      }
-      return String(value);
+      return formatCellDisplay(value, key);
     }
 
     function summarizeRow(row) {
@@ -828,44 +1205,50 @@
       const entries = Object.entries(row).slice(0, 3);
       return entries
         .map(([key, value]) => `${prettifyKey(key)}: ${formatValue(value, key)}`)
-        .join(' � ');
+        .join('  ');
     }
 
     function normalizeEvent(event) {
       const nowIso = new Date().toISOString();
+      const wrap = (override) => ({
+        timestampIso: override.timestampIso || nowIso,
+        timestamp: formatTimestamp(override.timestampIso || nowIso),
+        summary: override.summary || 'Evento recebido.',
+        rows: Array.isArray(override.rows) ? override.rows : [],
+        details: override.details || JSON.stringify(override.raw ?? event, null, 2),
+        category: override.category || 'Sistema',
+        style: override.style || 'card-system',
+        title: override.title || 'Evento',
+        raw: override.raw ?? event,
+        type: override.type || event?.type || 'evento'
+      });
+
       if (!event || typeof event !== 'object') {
-        return {
-          type: 'unknown',
+        return wrap({
           title: 'Evento desconhecido',
-          timestamp: nowIso,
-          summary: 'Payload n�o reconhecido.',
-          rows: [],
-          details: JSON.stringify(event, null, 2),
-          category: 'Sistema',
-          style: 'card-system',
-          raw: event
-        };
+          summary: 'Payload não reconhecido.'
+        });
       }
 
       if (event.type === 'device.telemetry') {
         const sample = event.sample ?? {};
+        const timestampIso = sample.ts || nowIso;
         const summaryParts = [
-          sample.voltage != null ? `Voltage: ${sample.voltage}` : null,
-          sample.current != null ? `Current: ${sample.current}` : null,
-          sample.frequency != null ? `Frequency: ${sample.frequency}` : null
+          sample.voltage != null ? `Tensão: ${formatMeasurement(sample.voltage, 'voltage')}` : null,
+          sample.current != null ? `Corrente: ${formatMeasurement(sample.current, 'current')}` : null,
+          sample.frequency != null ? `Frequência: ${formatMeasurement(sample.frequency, 'frequency')}` : null
         ].filter(Boolean);
 
-        return {
+        return wrap({
           type: event.type,
           title: event.deviceId ? `Dispositivo ${event.deviceId}` : 'Telemetria',
-          timestamp: sample.ts || nowIso,
-          summary: summaryParts.join(' � ') || 'Nova leitura recebida do dispositivo.',
-          rows: [],
+          timestampIso,
+          summary: summaryParts.length ? summaryParts.join(' · ') : 'Nova leitura recebida do dispositivo.',
           details: JSON.stringify(sample, null, 2),
           category: 'Telemetria',
           style: 'card-device',
           raw: event
-        };
+        });
       }
 
       if (event.type === 'rule.report' || event.type === 'rule.alert') {
@@ -873,61 +1256,94 @@
         const summaryBase = rows.length
           ? `${rows.length} linha(s). Destaque: ${summarizeRow(rows[0])}`
           : 'Nenhum dado retornado.';
-        const schedule = event.metadata?.scheduleSummary ? ` � ${event.metadata.scheduleSummary}` : '';
-        return {
+        const schedule = event.metadata?.scheduleSummary || event.scheduleSummary
+          ? ` · ${event.metadata?.scheduleSummary || event.scheduleSummary}`
+          : '';
+        const timestampIso = event.generatedAt || nowIso;
+
+        return wrap({
           type: event.type,
-          title: event.type === 'rule.alert' ? `Alerta � ${event.name ?? event.ruleId}` : `Relat�rio � ${event.name ?? event.ruleId}`,
-          timestamp: event.generatedAt || nowIso,
+          title: event.type === 'rule.alert' ? `Alerta · ${event.name ?? event.ruleId}` : `Relatório · ${event.name ?? event.ruleId}`,
+          timestampIso,
           summary: summaryBase + schedule,
           rows,
           details: JSON.stringify(rows.length ? rows : (event.metadata ?? event), null, 2),
-          category: event.type === 'rule.alert' ? 'Alerta' : 'Relat�rio',
+          category: event.type === 'rule.alert' ? 'Alerta' : 'Relatório',
           style: event.type === 'rule.alert' ? 'card-alert' : 'card-report',
           raw: event
-        };
+        });
+      }
+
+      if (event.type === 'nlq.answer') {
+        const rows = Array.isArray(event.rows) && event.rows.length ? event.rows : Array.isArray(event.graphRows) ? event.graphRows : [];
+        const timestampIso = event.timestamp || nowIso;
+        return wrap({
+          type: 'nlq.answer',
+          title: 'Resposta NLQ',
+          timestampIso,
+          summary: event.answer || 'Resposta gerada.',
+          rows,
+          details: JSON.stringify({
+            pergunta: event.question || '(sem texto)',
+            resposta: event.answer,
+            sql: event.sql,
+            cypher: event.cypher,
+            totalMs: event.totalMs,
+            source: event.source,
+            sqlError: event.sqlError,
+            graphError: event.graphError
+          }, null, 2),
+          category: 'NLQ',
+          style: 'card-nlq',
+          raw: event
+        });
       }
 
       if (event.type === 'system') {
-        return {
+        return wrap({
           type: event.type,
           title: 'Sistema',
-          timestamp: nowIso,
+          timestampIso: nowIso,
           summary: event.message || 'Evento do sistema.',
-          rows: [],
           details: JSON.stringify(event, null, 2),
           category: 'Sistema',
           style: 'card-system',
           raw: event
-        };
+        });
       }
 
-      return {
+      const timestampIso = event.generatedAt || event.timestamp || nowIso;
+      return wrap({
         type: event.type || 'evento',
         title: event.type ? `Evento ${event.type}` : 'Evento',
-        timestamp: event.generatedAt || nowIso,
-        summary: 'Conte�do capturado das mensagens em tempo real.',
-        rows: [],
+        timestampIso,
+        summary: 'Conteúdo capturado das mensagens em tempo real.',
         details: JSON.stringify(event, null, 2),
         category: event.type || 'Evento',
         style: 'card-generic',
         raw: event
-      };
+      });
     }
 
     function renderRowsTable(rows) {
       if (!Array.isArray(rows) || rows.length === 0) return '';
       const headers = Object.keys(rows[0]);
-      const head = headers.map((h) => `<th>${escapeHtml(h)}</th>`).join('');
-      const body = rows.slice(0, 5)
-        .map((row) => `<tr>${headers.map((h) => `<td>${escapeHtml(row[h])}</td>`).join('')}</tr>`)
+      const head = headers.map((h) => `<th>${escapeHtml(prettifyKey(h))}</th>`).join('');
+      const body = rows
+        .slice(0, 5)
+        .map((row) => {
+          const cells = headers
+            .map((h) => `<td>${escapeHtml(formatCellDisplay(row[h], h))}</td>`).join('');
+          return `<tr>${cells}</tr>`;
+        })
         .join('');
       const more = rows.length > 5
-        ? `<tfoot><tr><td colspan="${headers.length}" style="font-style:italic; color: var(--muted);">+${rows.length - 5} linha(s) extras�</td></tr></tfoot>`
+        ? `<tfoot><tr><td colspan="${headers.length}" style="font-style:italic; color: var(--muted);">+${rows.length - 5} linha(s) extras</td></tr></tfoot>`
         : '';
       return `<div class="mini-table-wrapper"><table class="mini-table"><thead><tr>${head}</tr></thead><tbody>${body}</tbody>${more}</table></div>`;
     }
 
-        function renderStream() {
+    function renderStream() {
       streamList.innerHTML = '';
       streamFilters.innerHTML = '';
 
@@ -955,24 +1371,25 @@
         streamList.appendChild(item);
       });
     }
-
     function updateLiveTelemetry() {
       const deviceId = state.selectedDevice;
-      if (!deviceId) return;
-      const latest = state.deviceLive[deviceId];
-      if (!latest) {
-        liveTs.textContent = '-';
-        liveVoltage.textContent = '-';
-        liveCurrent.textContent = '-';
-        liveFrequency.textContent = '-';
-        livePF.textContent = '-';
+      if (!deviceId) {
+        clearLiveTelemetry();
         return;
       }
-      liveTs.textContent = latest.sample?.ts || '-';
-      liveVoltage.textContent = latest.sample?.voltage ?? '-';
-      liveCurrent.textContent = latest.sample?.current ?? '-';
-      liveFrequency.textContent = latest.sample?.frequency ?? '-';
-      livePF.textContent = latest.sample?.power_factor ?? '-';
+      const latestEntry = state.deviceLive[deviceId];
+      if (!latestEntry) {
+        clearLiveTelemetry();
+        return;
+      }
+      const sample = latestEntry.sample ?? latestEntry;
+      liveTs.textContent = formatTimestamp(extractSampleField(sample, ['ts', 'timestamp']));
+      liveVoltage.textContent = formatMeasurement(extractSampleField(sample, ['voltage']), 'voltage');
+      liveCurrent.textContent = formatMeasurement(extractSampleField(sample, ['current']), 'current');
+      liveFrequency.textContent = formatMeasurement(extractSampleField(sample, ['frequency']), 'frequency');
+      livePF.textContent = formatMeasurement(extractSampleField(sample, ['power_factor', 'powerFactor']), 'powerFactor');
+    }
+
     }
 
     function connectWebSocket() {
@@ -1012,12 +1429,12 @@
       };
     }
 
-    function showDashboard() {
+    async function showDashboard() {
       loginView.classList.add('hidden');
       dashboard.classList.remove('hidden');
       companyLabel.textContent = `Empresa: ${state.companyId}`;
-      loadRules();
-      loadDevices();
+      await Promise.all([loadRules(), loadDevices()]);
+      await loadStreamHistory();
       connectWebSocket();
     }
 
@@ -1044,7 +1461,7 @@
         }
         const data = await response.json();
         saveSession(data);
-        showDashboard();
+        await showDashboard();
       } catch (err) {
         setMessage(loginMessage, err.message, 'error');
       }
@@ -1060,7 +1477,11 @@
         navButtons.forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
         Object.values(sections).forEach((sec) => sec.classList.add('hidden'));
-        sections[btn.dataset.section].classList.remove('hidden');
+        const target = sections[btn.dataset.section];
+        if (target) target.classList.remove('hidden');
+        if (btn.dataset.section === 'stream') {
+          loadStreamHistory();
+        }
       });
     });
 
@@ -1074,6 +1495,10 @@
       scheduleHint.style.display = 'block';
       ruleTypeSelect.dispatchEvent(new Event('change'));
     });
+
+    if (nlqForm) {
+      nlqForm.addEventListener('submit', handleNlqSubmit);
+    }
 
     ruleForm.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -1100,9 +1525,15 @@
     });
 
     closeRuleDetail.addEventListener('click', hideRuleDetail);
-    reloadRulesBtn.addEventListener('click', loadRules);
+    reloadRulesBtn.addEventListener('click', async () => {
+      await loadRules();
+      await loadStreamHistory();
+    });
 
-    reloadDevicesBtn.addEventListener('click', loadDevices);
+    reloadDevicesBtn.addEventListener('click', async () => {
+      await loadDevices();
+      await loadStreamHistory();
+    });
     closeDeviceDetail.addEventListener('click', closeDevice);
     applyMetricsBtn.addEventListener('click', loadDeviceMetrics);
 
@@ -1112,7 +1543,7 @@
       if (storedToken && storedCompany) {
         state.token = storedToken;
         state.companyId = storedCompany;
-        showDashboard();
+        showDashboard().catch((err) => console.error('Falha ao restaurar sessão', err));
       }
     })();
   </script>
