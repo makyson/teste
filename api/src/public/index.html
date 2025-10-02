@@ -11,8 +11,7 @@
       rel="stylesheet"
     />
 
-    <!-- Libs -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Libs (ordem importa): Chart.js + adapter de data -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 
@@ -541,15 +540,7 @@
     </div>
 
     <script>
-      // Locale do date-fns (evita "dateFnsLocalePtBR is not defined")
-      window.dateFnsLocalePtBR =
-        window.ptBR ||
-        (window.dateFns &&
-          window.dateFns.locale &&
-          window.dateFns.locale.ptBR) ||
-        undefined;
-
-      /* ------- Utils ------- */
+      /* ================= Utils ================= */
       const SI_PREFIXES = [
         { exp: 12, prefix: "T" },
         { exp: 9, prefix: "G" },
@@ -608,7 +599,6 @@
           ? String(value)
           : d.toLocaleString("pt-BR");
       }
-
       function currentTimeUnit() {
         const sel = document.getElementById("metricsBucket");
         const v = sel ? sel.value : "hour";
@@ -616,8 +606,17 @@
         if (v === "day") return "day";
         return "hour";
       }
+      function toLocalInputValue(date) {
+        const pad = (n) => String(n).padStart(2, "0");
+        const y = date.getFullYear();
+        const m = pad(date.getMonth() + 1);
+        const d = pad(date.getDate());
+        const hh = pad(date.getHours());
+        const mm = pad(date.getMinutes());
+        return `${y}-${m}-${d}T${hh}:${mm}`;
+      }
 
-      /* ------- Estado ------- */
+      /* ================= Estado ================= */
       const state = {
         token: null,
         companyId: null,
@@ -631,7 +630,7 @@
         chart: null,
       };
 
-      /* ------- DOM ------- */
+      /* ================= DOM ================= */
       const loginView = document.getElementById("loginView");
       const dashboard = document.getElementById("dashboard");
       const loginForm = document.getElementById("loginForm");
@@ -673,7 +672,7 @@
       const liveFrequency = document.getElementById("liveFrequency");
       const livePF = document.getElementById("livePF");
 
-      /* ------- Chart ------- */
+      /* ================= Chart ================= */
       (function initMetricsChart() {
         const canvas = document.getElementById("metricsChart");
         if (!canvas) return;
@@ -687,8 +686,8 @@
               {
                 label: "Tensão média",
                 data: [], // {x: Date, y: number}
-                backgroundColor: "rgba(37, 99, 235, 0.4)",
-                borderColor: "rgba(37, 99, 235, 1)",
+                backgroundColor: "rgba(37,99,235,.4)",
+                borderColor: "rgba(37,99,235,1)",
                 borderWidth: 1,
                 parsing: false,
               },
@@ -700,7 +699,6 @@
             scales: {
               x: {
                 type: "time",
-                adapters: { date: { locale: dateFnsLocalePtBR } },
                 time: {
                   unit: currentTimeUnit(),
                   displayFormats: {
@@ -708,7 +706,6 @@
                     hour: "dd/MM HH:mm",
                     day: "dd/MM",
                   },
-                  tooltipFormat: "dd/MM/yyyy 'às' HH:mm",
                 },
                 ticks: {
                   source: "data",
@@ -720,11 +717,13 @@
                     try {
                       const d = new Date(this.getLabelForValue(value));
                       const unit = this.chart.options.scales.x.time.unit;
-                      return dateFns.format(
-                        d,
-                        unit === "day" ? "dd/MM" : "dd/MM HH:mm",
-                        { locale: dateFnsLocalePtBR }
-                      );
+                      return new Intl.DateTimeFormat("pt-BR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        ...(unit !== "day"
+                          ? { hour: "2-digit", minute: "2-digit" }
+                          : {}),
+                      }).format(d);
                     } catch {
                       return value;
                     }
@@ -748,11 +747,13 @@
                   title(items) {
                     const x = items[0]?.parsed?.x;
                     if (!x) return "";
-                    return dateFns.format(
-                      new Date(x),
-                      "dd/MM/yyyy 'às' HH:mm",
-                      { locale: dateFnsLocalePtBR }
-                    );
+                    return new Intl.DateTimeFormat("pt-BR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    }).format(new Date(x));
                   },
                   label(ctx) {
                     const v = ctx.parsed?.y;
@@ -764,7 +765,6 @@
           },
         });
 
-        // quando mudar o "Agrupar por", ajusta a unidade do eixo
         metricsBucket.addEventListener("change", () => {
           if (!state.chart) return;
           state.chart.options.scales.x.time.unit = currentTimeUnit();
@@ -772,7 +772,7 @@
         });
       })();
 
-      /* ------- Helpers UI ------- */
+      /* ================= Helpers UI ================= */
       function setMessage(el, msg, type = "success") {
         if (!msg) {
           el.className = "message";
@@ -800,7 +800,6 @@
           state.ws = null;
         }
       }
-
       async function apiFetch(path, options = {}) {
         if (!state.token) throw new Error("Token não definido");
         const headers = Object.assign(
@@ -819,7 +818,7 @@
         return response.json();
       }
 
-      /* ------- Regras ------- */
+      /* ================= Regras ================= */
       async function loadRules() {
         try {
           const data = await apiFetch("/rules");
@@ -924,7 +923,7 @@
         }
       }
 
-      /* ------- Dispositivos ------- */
+      /* ================= Dispositivos ================= */
       async function loadDevices() {
         try {
           const data = await apiFetch("/devices");
@@ -942,8 +941,9 @@
             if (
               !existingTs ||
               (sample.ts && new Date(sample.ts) > new Date(existingTs))
-            )
+            ) {
               state.deviceLive[device.id] = { sample };
+            }
           }
           renderDevices();
         } catch (err) {
@@ -995,10 +995,9 @@
       function updateMetricsRangeInputs() {
         const end = new Date();
         const start = new Date(end.getTime() - 24 * 60 * 60 * 1000);
-        metricsEnd.value = end.toISOString().slice(0, 16);
-        metricsStart.value = start.toISOString().slice(0, 16);
+        metricsEnd.value = toLocalInputValue(end);
+        metricsStart.value = toLocalInputValue(start);
       }
-
       async function loadDeviceMetrics() {
         if (!state.selectedDevice) return;
         const start = metricsStart.value ? new Date(metricsStart.value) : null;
@@ -1016,12 +1015,19 @@
           const data = await apiFetch(
             `/devices/${state.selectedDevice}/metrics?${params.toString()}`
           );
+          console.log("metrics points", data.points);
+          if (!data.points?.length)
+            setMessage(
+              devicesMessage,
+              "Sem pontos no período/agrupamento selecionado.",
+              "error"
+            );
+          else setMessage(devicesMessage);
           renderMetricsChart(data.points || []);
         } catch (err) {
           setMessage(devicesMessage, err.message, "error");
         }
       }
-
       function renderMetricsChart(points = []) {
         const sorted = [...points].sort(
           (a, b) => new Date(a.bucket) - new Date(b.bucket)
@@ -1036,7 +1042,7 @@
         state.chart.update();
       }
 
-      /* ------- Stream ------- */
+      /* ================= Stream ================= */
       function addStreamEvent(event) {
         state.events.unshift(event);
         if (state.events.length > 200) state.events.pop();
@@ -1065,31 +1071,27 @@
         const id = state.selectedDevice;
         const latest = id ? state.deviceLive[id] : null;
         const s = latest?.sample ?? latest ?? null;
-        const tsEl = liveTs,
-          vEl = liveVoltage,
-          aEl = liveCurrent,
-          fEl = liveFrequency,
-          pfEl = livePF;
         if (!s) {
-          tsEl.textContent =
-            vEl.textContent =
-            aEl.textContent =
-            fEl.textContent =
-            pfEl.textContent =
+          liveTs.textContent =
+            liveVoltage.textContent =
+            liveCurrent.textContent =
+            liveFrequency.textContent =
+            livePF.textContent =
               "-";
           return;
         }
-        tsEl.textContent = formatTimestamp(s.ts ?? s.timestamp);
-        vEl.textContent = fmtV(s.voltage);
-        aEl.textContent = fmtA(s.current);
-        fEl.textContent = fmtHz(s.frequency);
+        liveTs.textContent = formatTimestamp(s.ts ?? s.timestamp);
+        liveVoltage.textContent = fmtV(s.voltage);
+        liveCurrent.textContent = fmtA(s.current);
+        liveFrequency.textContent = fmtHz(s.frequency);
         const pf = s.power_factor ?? s.powerFactor;
-        pfEl.textContent =
-          pf === null || pf === undefined
-            ? "-"
-            : Number(pf).toLocaleString("pt-BR", { maximumFractionDigits: 3 });
+        livePF.textContent =
+          pf ?? pf === 0
+            ? Number(pf).toLocaleString("pt-BR", { maximumFractionDigits: 3 })
+            : "-";
       }
 
+      /* ================= WS ================= */
       function connectWebSocket() {
         if (!state.token) return;
         const protocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -1104,9 +1106,7 @@
             type: "system",
             message: "WebSocket desconectado.",
           });
-          if (state.token) {
-            setTimeout(connectWebSocket, 3000);
-          }
+          if (state.token) setTimeout(connectWebSocket, 3000);
         };
         ws.onmessage = (event) => {
           try {
@@ -1122,7 +1122,7 @@
         };
       }
 
-      /* ------- Navegação & Auth ------- */
+      /* ================= Navegação & Auth ================= */
       function showDashboard() {
         loginView.classList.add("hidden");
         dashboard.classList.remove("hidden");
@@ -1183,6 +1183,7 @@
           ruleTypeSelect.value === "schedule_report" ? "block" : "none";
       });
       ruleTypeSelect.dispatchEvent(new Event("change"));
+
       ruleResetBtn.addEventListener("click", () => {
         ruleForm.reset();
         scheduleHint.style.display = "block";
@@ -1211,6 +1212,7 @@
           setMessage(ruleFormMessage, err.message, "error");
         }
       });
+
       closeRuleDetail.addEventListener("click", hideRuleDetail);
       reloadRulesBtn.addEventListener("click", loadRules);
       reloadDevicesBtn.addEventListener("click", loadDevices);
