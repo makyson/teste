@@ -952,7 +952,13 @@
         selectedDevice: null,
         deviceLive: {},
         charts: { voltage: null, current: null, frequency: null, pf: null },
-        lastMetrics: { points: [], deviceId: null, start: null, end: null, bucket: null },
+        lastMetrics: {
+          points: [],
+          deviceId: null,
+          start: null,
+          end: null,
+          bucket: null,
+        },
       };
 
       const loginView = document.getElementById("loginView");
@@ -1124,7 +1130,6 @@
         if (!state.token) throw new Error("Token não definido");
         const headers = Object.assign(
           {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${state.token}`,
           },
           options.headers || {}
@@ -1391,7 +1396,8 @@
       }
 
       function exportMetricsCSV() {
-        const { points, deviceId, start, end, bucket } = state.lastMetrics || {};
+        const { points, deviceId, start, end, bucket } =
+          state.lastMetrics || {};
         if (!points || !points.length) {
           alert("Não há dados para exportar.");
           return;
@@ -1410,12 +1416,18 @@
           p.avgFrequency ?? "",
           p.avgPowerFactor ?? "",
         ]);
-        const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
-        const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+        const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join(
+          "\n"
+        );
+        const blob = new Blob(["\uFEFF" + csv], {
+          type: "text/csv;charset=utf-8;",
+        });
         const a = document.createElement("a");
         const startTag = (start || "").replace(/[:T]/g, "-").slice(0, 19);
         const endTag = (end || "").replace(/[:T]/g, "-").slice(0, 19);
-        const fileName = `metrics_${deviceId || "device"}_${bucket || "bucket"}_${startTag}_${endTag}.csv`;
+        const fileName = `metrics_${deviceId || "device"}_${
+          bucket || "bucket"
+        }_${startTag}_${endTag}.csv`;
         a.href = URL.createObjectURL(blob);
         a.download = fileName;
         document.body.appendChild(a);
@@ -1905,7 +1917,8 @@
       reloadDevicesBtn.addEventListener("click", loadDevices);
       closeDeviceDetail.addEventListener("click", closeDevice);
       applyMetricsBtn.addEventListener("click", loadDeviceMetrics);
-      if (exportMetricsBtn) exportMetricsBtn.addEventListener("click", exportMetricsCSV);
+      if (exportMetricsBtn)
+        exportMetricsBtn.addEventListener("click", exportMetricsCSV);
 
       (function autoLoginFromStorage() {
         const storedToken = localStorage.getItem("nlq_token");
