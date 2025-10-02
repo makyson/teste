@@ -15,7 +15,7 @@ const COMMON_FIELDS = [
 ];
 
 function buildSchedulePrompt(text) {
-  const common = COMMON_FIELDS.map((f) => `\`${f}\``).join(", ");
+  const common = COMMON_FIELDS.map((f) => `\\\`${f}\\\``).join(", ");
 
   const schemaContext = `
 Esquema disponível (não invente tabelas/colunas fora disso):
@@ -43,7 +43,7 @@ Contexto de dados (para evitar inventar campos):
 ${schemaContext.trim()}
 
 Quando o SUMMARY citar atributos, **prefira** os identificadores canônicos: ${common}.
-- Mapeie sinônimos para os canônicos e **cite apenas o canônico** (ex.: device_id/logical_id → \`id\`; ts/timestamp → \`lastTs\`; power_factor → \`powerFactor\`; freq → \`frequency\`).
+- Mapeie sinônimos para os canônicos e **cite apenas o canônico** (ex.: device_id/logical_id → \\\`id\\\`; ts/timestamp → \\\`lastTs\\\`; power_factor → \\\`powerFactor\\\`; freq → \\\`frequency\\\`).
 - **Não** inclua unidades, símbolos ou prefixos (sem V/A/Hz/k etc.). Apenas o nome do campo.
 - Se a consulta envolver consumo (kWh), descreva a ação no summary sem inventar identificadores novos; use texto natural (ex.: "maior consumo nas últimas 24h") e cite campos canônicos só se necessário.
 
@@ -52,12 +52,22 @@ Entrada: "a cada 2 minutos me avise os top 10 por consumo nas últimas 24h"
 Saída: {"cron":"*/2 * * * *","summary":"A cada 2 minutos (UTC), identificar top 10 por consumo das últimas 24h."}
 
 Entrada: "todo dia às 08:00 checar tensão e corrente das últimas 24h"
-Saída: {"cron":"0 8 * * *","summary":"Diariamente às 08:00 UTC, analisar \`voltage\` e \`current\` nas últimas 24h; usando \`lastTs\` como referência."}
+Saída: {"cron":"0 8 * * *","summary":"Diariamente às 08:00 UTC, analisar \\\`voltage\\\` e \\\`current\\\` nas últimas 24h; usando \\\`lastTs\\\` como referência."}
 
 Entrada: "a cada 2 horas avaliar fator de potência"
-Saída: {"cron":"0 */2 * * *","summary":"A cada 2h (UTC) verificar \`powerFactor\` por \`id\`."}
+Saída: {"cron":"0 */2 * * *","summary":"A cada 2h (UTC) verificar \\\`powerFactor\\\` por \\\`id\\\`."}
 
-Descrição: ${text}`;
+Descrição: ${text}
+
+Política de colunas no SELECT final:
+- Use agregações (ex.: kWh) apenas para ordenar/filtrar em CTE/subquery.
+- O SELECT final NÃO deve expor colunas agregadas como total_kwh, max_kwh_anual, weekly_kwh, total_amps etc.
+- O SELECT final deve expor SOMENTE campos canônicos, escolhidos pelo pedido do usuário:
+  - \\\`id\\\`, \\\`lastTs\\\`, \\\`voltage\\\`, \\\`current\\\`, \\\`frequency\\\`, \\\`powerFactor\\\`.
+- Se o usuário pedir "só voltage", retorne apenas \\\`voltage\\\` (sem id, sem agregados).
+- Se o usuário pedir "top 10 por consumo", use kWh para ranquear, mas no SELECT final retorne apenas \\\`id\\\` (ou nada além do que o usuário explicitamente pediu).
+- Não invente nomes novos; mapeie device_id/logical_id → \\\`id\\\`, ts/timestamp → \\\`lastTs\\\`, power_factor → \\\`powerFactor\\\`, freq → \\\`frequency\\\`.
+`;
 }
 
 export async function generateScheduleCron({ text }) {
@@ -72,6 +82,7 @@ export async function generateScheduleCron({ text }) {
   const response = await fetch(endpoint, {
     method: "POST",
     headers: {
+      "Content-Type": "application/json",
       "x-goog-api-key": config.gemini.apiKey,
     },
     body: JSON.stringify({
