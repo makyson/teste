@@ -394,6 +394,58 @@
         background: rgba(241, 245, 255, 0.65);
       }
 
+      .message.info {
+        background: rgba(37, 99, 235, 0.12);
+        color: #1d4ed8;
+        display: block;
+      }
+
+      .nlq-answer {
+        border-top: 1px solid var(--border);
+        padding-top: 16px;
+        margin-top: 16px;
+      }
+
+      .nlq-rows table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+      }
+      .nlq-rows th,
+      .nlq-rows td {
+        border-bottom: 1px solid #e2e8f0;
+        padding: 8px 10px;
+        text-align: left;
+      }
+      .nlq-rows tbody tr:hover {
+        background: rgba(37, 99, 235, 0.05);
+      }
+
+      .nlq-empty {
+        color: var(--muted);
+        font-style: italic;
+      }
+
+      .nlq-code-group {
+        display: grid;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .nlq-code-group h4 {
+        margin: 8px 0 4px;
+        font-size: 14px;
+      }
+
+      .nlq-code {
+        background: #0f172a;
+        color: #e2e8f0;
+        border-radius: 12px;
+        padding: 12px 14px;
+        max-height: 240px;
+        overflow: auto;
+        font-size: 13px;
+      }
+
       canvas {
         background: #fff;
         border-radius: 12px;
@@ -465,6 +517,7 @@
         <nav>
           <button class="active" data-section="rules">Regras</button>
           <button data-section="stream">Streaming</button>
+          <button data-section="chat">NLQ Chat</button>
           <button data-section="devices">Dispositivos</button>
         </nav>
         <section>
@@ -562,6 +615,36 @@
               <div id="streamMessage" class="message"></div>
               <div class="chips" id="streamFilters"></div>
               <div id="streamList" class="events-list"></div>
+            </div>
+          </div>
+
+          <div id="chatSection" class="hidden">
+            <div class="card">
+              <h2>Pergunte ao NLQ</h2>
+              <p style="margin: -4px 0 16px; color: var(--muted);">Envie perguntas em linguagem natural e visualize os dados retornados pela consulta.</p>
+              <form id="nlqForm">
+                <label for="nlqQuestion">Sua pergunta</label>
+                <textarea id="nlqQuestion" rows="3" placeholder="qual o meu consumo máximo e quais os top 2 equipamentos dela?" required></textarea>
+                <div class="flex" style="justify-content: flex-end; gap: 8px; margin-top: 12px">
+                  <button type="button" class="secondary" id="nlqClear">Limpar</button>
+                  <button type="submit" class="primary">Consultar</button>
+                </div>
+              </form>
+              <div id="nlqMessage" class="message"></div>
+              <div id="nlqAnswer" class="nlq-answer hidden">
+                <h3>Resposta</h3>
+                <p id="nlqAnswerText"></p>
+                <div id="nlqRows" class="nlq-rows"></div>
+                <details class="nlq-details">
+                  <summary>Ver SQL/Cypher gerados</summary>
+                  <div class="nlq-code-group">
+                    <h4>SQL</h4>
+                    <pre id="nlqSql" class="nlq-code"></pre>
+                    <h4>Cypher</h4>
+                    <pre id="nlqCypher" class="nlq-code"></pre>
+                  </div>
+                </details>
+              </div>
             </div>
           </div>
 
@@ -750,6 +833,7 @@
       const sections = {
         rules: document.getElementById("rulesSection"),
         stream: document.getElementById("streamSection"),
+        chat: document.getElementById("chatSection"),
         devices: document.getElementById("devicesSection"),
       };
 
@@ -768,6 +852,16 @@
       const streamList = document.getElementById("streamList");
       const streamFilters = document.getElementById("streamFilters");
       const streamMessage = document.getElementById("streamMessage");
+
+      const nlqForm = document.getElementById("nlqForm");
+      const nlqQuestion = document.getElementById("nlqQuestion");
+      const nlqClear = document.getElementById("nlqClear");
+      const nlqMessage = document.getElementById("nlqMessage");
+      const nlqAnswer = document.getElementById("nlqAnswer");
+      const nlqAnswerText = document.getElementById("nlqAnswerText");
+      const nlqRows = document.getElementById("nlqRows");
+      const nlqSql = document.getElementById("nlqSql");
+      const nlqCypher = document.getElementById("nlqCypher");
 
       const devicesMessage = document.getElementById("devicesMessage");
       const devicesTableBody = document.querySelector("#devicesTable tbody");
@@ -1281,6 +1375,80 @@
         });
       }
 
+      function renderNlqRows(rows) {
+        if (!nlqRows) return;
+        nlqRows.innerHTML = "";
+        const list = Array.isArray(rows) ? rows : [];
+        if (!list.length) {
+          const empty = document.createElement("p");
+          empty.className = "nlq-empty";
+          empty.textContent = "Nenhum registro retornado.";
+          nlqRows.appendChild(empty);
+          return;
+        }
+
+        const columns = Array.from(
+          list.reduce((set, row) => {
+            if (row && typeof row === "object") {
+              Object.keys(row).forEach((key) => set.add(key));
+            }
+            return set;
+          }, new Set())
+        );
+        if (!columns.length) {
+          columns.push("resultado");
+        }
+
+        const table = document.createElement("table");
+        const thead = document.createElement("thead");
+        const headerRow = document.createElement("tr");
+        columns.forEach((col) => {
+          const th = document.createElement("th");
+          th.textContent = col;
+          headerRow.appendChild(th);
+        });
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+
+        const tbody = document.createElement("tbody");
+        list.forEach((row) => {
+          const tr = document.createElement("tr");
+          columns.forEach((col) => {
+            const td = document.createElement("td");
+            let value = row && typeof row === "object" ? row[col] : null;
+            if ((value === null || value === undefined) && col === "resultado" && row !== null && row !== undefined) {
+              value = row;
+            }
+            if (value === null || value === undefined) {
+              td.textContent = "-";
+            } else if (typeof value === "number") {
+              td.textContent = value.toLocaleString("pt-BR");
+            } else if (value instanceof Date) {
+              td.textContent = value.toLocaleString("pt-BR");
+            } else {
+              td.textContent = String(value);
+            }
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+        table.appendChild(tbody);
+        nlqRows.appendChild(table);
+      }
+
+      function showNlqResult(result) {
+        if (!nlqAnswer) return;
+        nlqAnswer.classList.remove("hidden");
+        nlqAnswerText.textContent = result?.answer || "Nenhuma resposta retornada.";
+        renderNlqRows(result?.rows);
+        if (nlqSql) {
+          nlqSql.textContent = result?.sql || "-";
+        }
+        if (nlqCypher) {
+          nlqCypher.textContent = result?.cypher || "-";
+        }
+      }
+
       async function loadStreamEvents(limit = 50) {
         if (!state.token) return;
         if (streamMessage) setMessage(streamMessage);
@@ -1434,6 +1602,11 @@
           if (target === "stream") {
             renderStream();
             loadStreamEvents();
+          } else if (target === "chat") {
+            setMessage(nlqMessage);
+            if (nlqQuestion) {
+              nlqQuestion.focus();
+            }
           }
         });
       });
@@ -1449,6 +1622,52 @@
         scheduleHint.style.display = "block";
         ruleTypeSelect.dispatchEvent(new Event("change"));
       });
+
+      if (nlqForm) {
+        nlqForm.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          const question = (nlqQuestion?.value || "").trim();
+          if (!question) {
+            setMessage(nlqMessage, "Digite uma pergunta antes de enviar.", "error");
+            return;
+          }
+          if (!state.companyId) {
+            setMessage(nlqMessage, "Empresa não definida. Faça login novamente.", "error");
+            return;
+          }
+          setMessage(nlqMessage, "Consultando NLQ...", "info");
+          try {
+            const payload = {
+              text: question,
+              companyId: state.companyId,
+            };
+            const result = await apiFetch("/nlq/query", {
+              method: "POST",
+              body: JSON.stringify(payload),
+            });
+            setMessage(nlqMessage, "Consulta executada com sucesso!", "success");
+            showNlqResult(result);
+          } catch (err) {
+            setMessage(
+              nlqMessage,
+              err?.message || "Falha ao consultar NLQ.",
+              "error"
+            );
+          }
+        });
+      }
+
+      if (nlqClear) {
+        nlqClear.addEventListener("click", () => {
+          if (nlqForm) nlqForm.reset();
+          setMessage(nlqMessage);
+          if (nlqAnswer) nlqAnswer.classList.add("hidden");
+          if (nlqRows) nlqRows.innerHTML = "";
+          if (nlqSql) nlqSql.textContent = "";
+          if (nlqCypher) nlqCypher.textContent = "";
+          if (nlqQuestion) nlqQuestion.focus();
+        });
+      }
 
       ruleForm.addEventListener("submit", async (event) => {
         event.preventDefault();
