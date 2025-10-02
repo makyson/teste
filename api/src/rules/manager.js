@@ -1,16 +1,19 @@
-import cron from 'node-cron';
-import { runSql } from '../db/timescale.js';
-import { recordEvent } from '../events/store.js';
+import cron from "node-cron";
+import { runSql } from "../db/timescale.js";
+import { recordEvent } from "../events/store.js";
 function normalizeRow(row) {
-  if (!row || typeof row !== 'object') return row;
+  if (!row || typeof row !== "object") return row;
   const out = {};
   for (const key of Object.keys(row)) {
     const v = row[key];
     if (v instanceof Date) out[key] = v.toISOString();
-    else if (typeof v === 'number' && !Number.isFinite(v)) out[key] = null;
-    else if (v && typeof v === 'object') {
-      try { out[key] = JSON.parse(JSON.stringify(v)); }
-      catch { out[key] = String(v); }
+    else if (typeof v === "number" && !Number.isFinite(v)) out[key] = null;
+    else if (v && typeof v === "object") {
+      try {
+        out[key] = JSON.parse(JSON.stringify(v));
+      } catch {
+        out[key] = String(v);
+      }
     } else out[key] = v;
   }
   return out;
@@ -20,11 +23,7 @@ function normalizeRows(rows) {
   if (!Array.isArray(rows)) return [];
   return rows.map((r) => normalizeRow(r));
 }
-import {
-  listRules,
-  getRuleById,
-  recordRuleExecution
-} from './store.js';
+import { listRules, getRuleById, recordRuleExecution } from "./store.js";
 
 function buildSqlParams(rule) {
   if (!rule?.sql) return [];
@@ -32,7 +31,7 @@ function buildSqlParams(rule) {
   const tokens = Array.isArray(rule.sqlParams) ? rule.sqlParams : [];
   if (tokens.length > 0) {
     return tokens.map((token) => {
-      if (token === '$COMPANY_ID') return rule.companyId;
+      if (token === "$COMPANY_ID") return rule.companyId;
       return token;
     });
   }
@@ -74,8 +73,8 @@ export function createRuleManager({ log, hub }) {
     }
 
     if (!thresholdTask) {
-      thresholdTask = cron.schedule('*/1 * * * *', runThresholdScan, {
-        timezone: 'UTC'
+      thresholdTask = cron.schedule("*/1 * * * *", runThresholdScan, {
+        timezone: "UTC",
       });
     }
   };
@@ -88,31 +87,40 @@ export function createRuleManager({ log, hub }) {
 
   const broadcastResult = (rule, rows) => {
     const payload = {
-      type: rule.type === 'threshold_alert' ? 'rule.alert' : 'rule.report',
+      type: rule.type === "threshold_alert" ? "rule.alert" : "rule.report",
       ruleId: rule.id,
       name: rule.name,
       companyId: rule.companyId,
       generatedAt: new Date().toISOString(),
       rows,
-      metadata: rule.metadata ?? {}
+      metadata: rule.metadata ?? {},
     };
 
     try {
       recordEvent(rule.companyId, payload);
     } catch (err) {
-      log.warn({ err, ruleId: rule.id }, 'Falha ao registrar evento recente da regra');
+      log.warn(
+        { err, ruleId: rule.id },
+        "Falha ao registrar evento recente da regra"
+      );
     }
 
     try {
       hub.broadcast(rule.companyId, payload);
     } catch (err) {
-      log.error({ err, ruleId: rule.id }, 'Falha ao transmitir resultado da regra');
+      log.error(
+        { err, ruleId: rule.id },
+        "Falha ao transmitir resultado da regra"
+      );
     }
   };
 
   const executeRule = async (ruleId, { rule: providedRule } = {}) => {
     if (running.has(ruleId)) {
-      log.debug({ ruleId }, 'Execução ignorada: tarefa anterior ainda em andamento');
+      log.debug(
+        { ruleId },
+        "Execução ignorada: tarefa anterior ainda em andamento"
+      );
       return;
     }
 
@@ -125,31 +133,33 @@ export function createRuleManager({ log, hub }) {
       if (!rule) {
         return;
       }
-      if (rule.status !== 'active') {
+      if (rule.status !== "active") {
         return;
       }
 
       const params = buildSqlParams(rule);
       const result = await runSql(rule.sql, params);
       const rows = Array.isArray(result?.rows) ? result.rows : [];
-      const trimmed = prepareResult(rows);\n      const normalized = normalizeRows(trimmed);
-      const triggered = rule.type === 'threshold_alert' ? rows.length > 0 : true;
+      const trimmed = prepareResult(rows);
+      const normalized = normalizeRows(trimmed);
+      const triggered =
+        rule.type === "threshold_alert" ? rows.length > 0 : true;
 
       await recordRuleExecution({
         id: rule.id,
         lastResult: triggered ? normalized : [],
-        triggered
+        triggered,
       });
 
       if (triggered) {
         broadcastResult(rule, normalized);
       }
     } catch (err) {
-      log.error({ err, ruleId }, 'Falha ao executar regra');
+      log.error({ err, ruleId }, "Falha ao executar regra");
       await recordRuleExecution({
         id: ruleId,
         lastResult: { error: err.message },
-        triggered: false
+        triggered: false,
       });
     } finally {
       running.delete(ruleId);
@@ -157,26 +167,33 @@ export function createRuleManager({ log, hub }) {
   };
 
   const addRule = (rule) => {
-    if (!rule || rule.status !== 'active') {
+    if (!rule || rule.status !== "active") {
       return;
     }
 
-    if (rule.type === 'schedule_report') {
+    if (rule.type === "schedule_report") {
       if (!rule.scheduleCron || !cron.validate(rule.scheduleCron)) {
-        log.warn({ ruleId: rule.id }, 'Cron inválido para regra agendada, ignorando');
+        log.warn(
+          { ruleId: rule.id },
+          "Cron inválido para regra agendada, ignorando"
+        );
         return;
       }
 
       stopJob(rule.id);
-      const task = cron.schedule(rule.scheduleCron, () => executeRule(rule.id, { rule }), {
-        timezone: 'UTC'
-      });
+      const task = cron.schedule(
+        rule.scheduleCron,
+        () => executeRule(rule.id, { rule }),
+        {
+          timezone: "UTC",
+        }
+      );
       scheduledJobs.set(rule.id, task);
-      log.info({ ruleId: rule.id }, 'Regra agendada registrada');
-    } else if (rule.type === 'threshold_alert') {
+      log.info({ ruleId: rule.id }, "Regra agendada registrada");
+    } else if (rule.type === "threshold_alert") {
       thresholdRules.set(rule.id, rule);
       ensureThresholdTask();
-      log.info({ ruleId: rule.id }, 'Regra de alerta contínuo registrada');
+      log.info({ ruleId: rule.id }, "Regra de alerta contínuo registrada");
     }
   };
 
@@ -221,8 +238,6 @@ export function createRuleManager({ log, hub }) {
     removeRule,
     reloadRule,
     executeRule,
-    broadcastResult
+    broadcastResult,
   };
 }
-
-
