@@ -9,6 +9,10 @@
       rel="stylesheet"
     />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.30.0/dist/date-fns.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.30.0/locale/pt-BR/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.umd.min.js"></script>
+
     <style>
       :root {
         color-scheme: light dark;
@@ -576,6 +580,14 @@
     </div>
 
     <script>
+      // cria a global esperada pelo seu código
+      window.dateFnsLocalePtBR =
+        window.ptBR ||
+        (window.dateFns &&
+          window.dateFns.locale &&
+          window.dateFns.locale.ptBR) ||
+        undefined;
+
       const SI_PREFIXES = [
         { exp: 12, prefix: "T" },
         { exp: 9, prefix: "G" },
@@ -701,6 +713,14 @@
       const liveCurrent = document.getElementById("liveCurrent");
       const liveFrequency = document.getElementById("liveFrequency");
       const livePF = document.getElementById("livePF");
+
+      function currentTimeUnit() {
+        const sel = document.getElementById("metricsBucket");
+        const v = sel ? sel.value : "hour";
+        if (v === "minute") return "minute";
+        if (v === "day") return "day";
+        return "hour";
+      }
 
       (function initMetricsChart() {
         const canvas = document.getElementById("metricsChart");
