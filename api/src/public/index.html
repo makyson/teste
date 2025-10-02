@@ -34,11 +34,9 @@
         margin: 0;
         min-height: 100vh;
       }
-
       a {
         color: var(--accent);
       }
-
       .hidden {
         display: none !important;
       }
@@ -48,7 +46,6 @@
         color: #fff;
         padding: 24px;
       }
-
       header h1 {
         margin: 0 0 4px 0;
         font-size: 24px;
@@ -62,7 +59,6 @@
         display: flex;
         min-height: calc(100vh - 120px);
       }
-
       nav {
         width: 240px;
         padding: 24px;
@@ -70,7 +66,6 @@
         background: rgba(255, 255, 255, 0.6);
         backdrop-filter: blur(6px);
       }
-
       nav button {
         display: block;
         width: 100%;
@@ -85,12 +80,10 @@
         cursor: pointer;
         transition: background 0.2s ease;
       }
-
       nav button.active {
         background: rgba(37, 99, 235, 0.15);
         color: var(--accent-dark);
       }
-
       nav button:hover {
         background: rgba(37, 99, 235, 0.1);
       }
@@ -137,7 +130,6 @@
         transition: border 0.2s ease;
         margin-bottom: 16px;
       }
-
       input:focus,
       textarea:focus,
       select:focus {
@@ -145,7 +137,6 @@
         border-color: var(--accent);
         box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
       }
-
       textarea {
         resize: vertical;
         min-height: 120px;
@@ -161,18 +152,15 @@
         cursor: pointer;
         transition: background 0.2s ease;
       }
-
       button.primary:hover {
         background: var(--accent-dark);
       }
-
       button.link {
         background: transparent;
         border: none;
         color: var(--accent);
         cursor: pointer;
       }
-
       button.danger {
         background: var(--danger);
         color: #fff;
@@ -187,7 +175,6 @@
         border-collapse: collapse;
         margin-top: 12px;
       }
-
       th,
       td {
         border-bottom: 1px solid var(--border);
@@ -195,7 +182,6 @@
         text-align: left;
         font-size: 14px;
       }
-
       th {
         background: rgba(15, 23, 42, 0.03);
         text-transform: uppercase;
@@ -221,7 +207,6 @@
         font-size: 12px;
         font-weight: 600;
       }
-
       .badge.active {
         background: rgba(22, 163, 74, 0.16);
         color: #166534;
@@ -237,7 +222,6 @@
         margin-bottom: 16px;
         display: none;
       }
-
       .message.success {
         background: rgba(22, 163, 74, 0.12);
         color: #166534;
@@ -246,6 +230,11 @@
       .message.error {
         background: rgba(220, 38, 38, 0.12);
         color: #991b1b;
+        display: block;
+      }
+      .message.info {
+        background: rgba(37, 99, 235, 0.12);
+        color: #1d4ed8;
         display: block;
       }
 
@@ -273,7 +262,11 @@
         border: 1px solid rgba(37, 99, 235, 0.08);
         border-radius: 18px;
         padding: 20px 22px;
-        background: linear-gradient(140deg, rgba(255, 255, 255, 0.95), rgba(241, 245, 255, 0.65));
+        background: linear-gradient(
+          140deg,
+          rgba(255, 255, 255, 0.95),
+          rgba(241, 245, 255, 0.65)
+        );
         box-shadow: 0 18px 32px rgba(15, 23, 42, 0.08);
         transition: transform 0.15s ease, box-shadow 0.2s ease;
       }
@@ -303,7 +296,6 @@
         align-items: center;
         margin-bottom: 12px;
       }
-
       .event-badge {
         background: rgba(22, 163, 74, 0.12);
         color: #15803d;
@@ -322,23 +314,19 @@
         background: rgba(100, 116, 139, 0.12);
         color: #475569;
       }
-
       .event-time {
         color: var(--muted);
         font-size: 13px;
       }
-
       .event-item h3 {
         margin: 0 0 8px 0;
         font-size: 18px;
       }
-
       .event-summary {
         margin: 0 0 12px 0;
         color: #1f2933;
         line-height: 1.5;
       }
-
       .event-stats {
         display: flex;
         gap: 12px;
@@ -346,7 +334,6 @@
         color: var(--muted);
         margin-bottom: 12px;
       }
-
       .event-item details {
         border-top: 1px dashed rgba(148, 163, 184, 0.4);
         padding-top: 12px;
@@ -374,7 +361,6 @@
         flex-wrap: wrap;
         margin-bottom: 16px;
       }
-
       .chip {
         background: rgba(37, 99, 235, 0.12);
         color: var(--accent-dark);
@@ -385,27 +371,11 @@
         letter-spacing: 0.04em;
       }
 
-      .stream-empty {
-        padding: 40px 24px;
-        text-align: center;
-        color: var(--muted);
-        border: 2px dashed rgba(148, 163, 184, 0.3);
-        border-radius: 16px;
-        background: rgba(241, 245, 255, 0.65);
-      }
-
-      .message.info {
-        background: rgba(37, 99, 235, 0.12);
-        color: #1d4ed8;
-        display: block;
-      }
-
       .nlq-answer {
         border-top: 1px solid var(--border);
         padding-top: 16px;
         margin-top: 16px;
       }
-
       .nlq-rows table {
         width: 100%;
         border-collapse: collapse;
@@ -420,7 +390,6 @@
       .nlq-rows tbody tr:hover {
         background: rgba(37, 99, 235, 0.05);
       }
-
       .nlq-empty {
         color: var(--muted);
         font-style: italic;
@@ -435,7 +404,6 @@
         margin: 8px 0 4px;
         font-size: 14px;
       }
-
       .nlq-code {
         background: #0f172a;
         color: #e2e8f0;
@@ -450,6 +418,7 @@
         background: #fff;
         border-radius: 12px;
         border: 1px solid var(--border);
+        /* padding mantém borda “respirando”; o tamanho final vem da chart-box */
         padding: 12px;
       }
 
@@ -469,6 +438,110 @@
           text-align: center;
         }
       }
+
+      /* ====== Altura controlada dos gráficos ====== */
+      .chart-box {
+        height: 260px;
+        max-height: 260px;
+        width: 100%;
+      }
+      .chart-box > canvas {
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      @media (max-width: 640px) {
+        .chart-box {
+          height: 220px;
+          max-height: 220px;
+        }
+      }
+
+      /* contêiner rolável */
+      .table-scroll {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* garante largura mínima e evita estourar o card */
+      #rulesTable {
+        min-width: 860px; /* ajuste se quiser mais estreito/largo */
+        table-layout: auto;
+      }
+
+      /* melhor quebra nas colunas “Agendamento” e “Prompt” */
+      #rulesTable td:nth-child(4),
+      #rulesTable td:nth-child(5) {
+        white-space: normal;
+        word-break: break-word;
+      }
+
+      /* o <pre> do prompt vinha forçando largura grande */
+      #rulesTable td:nth-child(5) pre {
+        white-space: pre-wrap; /* permite quebrar linha dentro do pre */
+        word-break: break-word;
+        max-width: 520px; /* opcional: limita largura do conteúdo */
+      }
+
+      /* manter botões na mesma linha sem quebrar demais */
+      #rulesTable td:last-child {
+        white-space: nowrap;
+      }
+
+      /* em telas pequenas, esconda a coluna Prompt (opcional) */
+      @media (max-width: 900px) {
+        #rulesTable th:nth-child(5),
+        #rulesTable td:nth-child(5) {
+          display: none;
+        }
+      }
+
+      /* barra do topo dos cards fica colada no topo ao rolar */
+      .card-toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+
+        /* ocupa a largura inteira do card */
+        background: var(--card);
+        border-bottom: 1px solid var(--border);
+
+        /* “anula” o padding do card para a barra encostar nas bordas */
+        margin: -24px -24px 0 -24px; /* mesmo valor do padding do .card */
+        padding: 16px 24px 12px 24px; /* altura confortável */
+      }
+
+      /* barra fixa do card, sem margem negativa no topo (não cobre a tabela) */
+      .card-toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--card);
+        border-bottom: 1px solid var(--border);
+        margin: 0 -24px 12px -24px; /* remove o -24px do topo */
+        padding: 16px 24px 12px 24px;
+      }
+
+      /* contêiner com scroll horizontal (se precisar) */
+      .table-scroll {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* largura mínima pra tabela não “cortar” */
+      #devicesTable {
+        min-width: 720px;
+      }
+
+      /* thead sticky: fica logo abaixo da toolbar */
+      .table-sticky-head thead th {
+        position: sticky;
+        top: 10px; /* altura aproximada da toolbar; ajuste se mudar */
+        z-index: 5;
+        background: var(--card);
+      }
     </style>
   </head>
   <body>
@@ -481,7 +554,6 @@
       <form id="loginForm">
         <label for="loginUser">Usuário</label>
         <input id="loginUser" type="text" autocomplete="username" required />
-
         <label for="loginPass">Senha</label>
         <input
           id="loginPass"
@@ -489,10 +561,8 @@
           autocomplete="current-password"
           required
         />
-
         <label for="loginCompany">Empresa (opcional)</label>
         <input id="loginCompany" type="text" placeholder="company-1" />
-
         <button class="primary" type="submit">Entrar</button>
       </form>
       <div id="loginMessage" class="message"></div>
@@ -508,11 +578,10 @@
             <h1>Energy NLQ Dashboard</h1>
             <p id="companyLabel">Empresa:</p>
           </div>
-          <div>
-            <button class="primary" id="logoutBtn">Sair</button>
-          </div>
+          <div><button class="primary" id="logoutBtn">Sair</button></div>
         </div>
       </header>
+
       <main>
         <nav>
           <button class="active" data-section="rules">Regras</button>
@@ -520,7 +589,9 @@
           <button data-section="chat">NLQ Chat</button>
           <button data-section="devices">Dispositivos</button>
         </nav>
+
         <section>
+          <!-- Regras -->
           <div id="rulesSection">
             <div class="card">
               <h2>Nova regra</h2>
@@ -581,19 +652,23 @@
                 </div>
               </div>
               <div id="rulesMessage" class="message"></div>
-              <table id="rulesTable">
-                <thead>
-                  <tr>
-                    <th>Nome</th>
-                    <th>Tipo</th>
-                    <th>Status</th>
-                    <th>Agendamento</th>
-                    <th>Prompt</th>
-                    <th>Ações</th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
+
+              <!-- NOVO: contêiner com overflow-x -->
+              <div class="table-scroll">
+                <table id="rulesTable">
+                  <thead>
+                    <tr>
+                      <th>Nome</th>
+                      <th>Tipo</th>
+                      <th>Status</th>
+                      <th>Agendamento</th>
+                      <th>Prompt</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
             </div>
 
             <div class="card hidden" id="ruleDetailCard">
@@ -608,25 +683,42 @@
             </div>
           </div>
 
+          <!-- Streaming -->
           <div id="streamSection" class="hidden">
             <div class="card">
               <h2>Relatórios em tempo real</h2>
-              <p style="margin: -4px 0 16px; color: var(--muted);">Veja os últimos resultados gerados pelas regras automáticas.</p>
+              <p style="margin: -4px 0 16px; color: var(--muted)">
+                Veja os últimos resultados gerados pelas regras automáticas.
+              </p>
               <div id="streamMessage" class="message"></div>
               <div class="chips" id="streamFilters"></div>
               <div id="streamList" class="events-list"></div>
             </div>
           </div>
 
+          <!-- NLQ Chat -->
           <div id="chatSection" class="hidden">
             <div class="card">
               <h2>Pergunte ao NLQ</h2>
-              <p style="margin: -4px 0 16px; color: var(--muted);">Envie perguntas em linguagem natural e visualize os dados retornados pela consulta.</p>
+              <p style="margin: -4px 0 16px; color: var(--muted)">
+                Envie perguntas em linguagem natural e visualize os dados
+                retornados pela consulta.
+              </p>
               <form id="nlqForm">
                 <label for="nlqQuestion">Sua pergunta</label>
-                <textarea id="nlqQuestion" rows="3" placeholder="qual o meu consumo máximo e quais os top 2 equipamentos dela?" required></textarea>
-                <div class="flex" style="justify-content: flex-end; gap: 8px; margin-top: 12px">
-                  <button type="button" class="secondary" id="nlqClear">Limpar</button>
+                <textarea
+                  id="nlqQuestion"
+                  rows="3"
+                  placeholder="qual o meu consumo máximo e quais os top 2 equipamentos dela?"
+                  required
+                ></textarea>
+                <div
+                  class="flex"
+                  style="justify-content: flex-end; gap: 8px; margin-top: 12px"
+                >
+                  <button type="button" class="secondary" id="nlqClear">
+                    Limpar
+                  </button>
                   <button type="submit" class="primary">Consultar</button>
                 </div>
               </form>
@@ -648,29 +740,35 @@
             </div>
           </div>
 
+          <!-- Dispositivos -->
           <div id="devicesSection" class="hidden">
             <div class="card">
               <div
-                class="flex"
+                class="flex card-toolbar"
                 style="justify-content: space-between; align-items: center"
               >
                 <h2>Dispositivos monitorados</h2>
                 <button class="primary" id="reloadDevicesBtn">Atualizar</button>
               </div>
+
               <div id="devicesMessage" class="message"></div>
-              <table id="devicesTable">
-                <thead>
-                  <tr>
-                    <th>Device</th>
-                    <th>Última leitura</th>
-                    <th>Voltage</th>
-                    <th>Current</th>
-                    <th>Frequency</th>
-                    <th>Ações</th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
+
+              <!-- NOVO: contêiner rolável + thead sticky -->
+              <div class="table-scroll">
+                <table id="devicesTable" class="table-sticky-head">
+                  <thead>
+                    <tr>
+                      <th>Device</th>
+                      <th>Última leitura</th>
+                      <th>Voltage</th>
+                      <th>Current</th>
+                      <th>Frequency</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
             </div>
 
             <div id="deviceDetailCard" class="card hidden">
@@ -681,6 +779,8 @@
                 <h2 id="deviceTitle">Dispositivo</h2>
                 <button class="link" id="closeDeviceDetail">Fechar</button>
               </div>
+
+              <!-- Filtros -->
               <div class="flex flex-wrap" style="gap: 16px">
                 <div class="grow">
                   <label>Início</label>
@@ -702,6 +802,8 @@
                   <button class="primary" id="applyMetricsBtn">Aplicar</button>
                 </div>
               </div>
+
+              <!-- Telemetria + Gráficos -->
               <div class="flex flex-wrap" style="gap: 16px; margin-top: 12px">
                 <div
                   class="card"
@@ -730,8 +832,33 @@
                     </p>
                   </div>
                 </div>
+
                 <div class="card" style="flex: 2; min-width: 300px">
-                  <canvas id="metricsChart" height="220"></canvas>
+                  <h3 style="margin-top: 0">Tensão média</h3>
+                  <div class="chart-box">
+                    <canvas id="metricsVoltageChart"></canvas>
+                  </div>
+                </div>
+
+                <div class="card" style="flex: 2; min-width: 300px">
+                  <h3 style="margin-top: 0">Corrente média</h3>
+                  <div class="chart-box">
+                    <canvas id="metricsCurrentChart"></canvas>
+                  </div>
+                </div>
+
+                <div class="card" style="flex: 2; min-width: 300px">
+                  <h3 style="margin-top: 0">Frequência média</h3>
+                  <div class="chart-box">
+                    <canvas id="metricsFrequencyChart"></canvas>
+                  </div>
+                </div>
+
+                <div class="card" style="flex: 2; min-width: 300px">
+                  <h3 style="margin-top: 0">Fator de potência médio</h3>
+                  <div class="chart-box">
+                    <canvas id="metricsPFChart"></canvas>
+                  </div>
                 </div>
               </div>
             </div>
@@ -767,13 +894,10 @@
           return "-";
         const num = Number(value);
         if (!Number.isFinite(num)) return "-";
-        if (num === 0) {
-          return unit ? `0 ${unit}` : "0";
-        }
+        if (num === 0) return unit ? `0 ${unit}` : "0";
 
         let exp = Math.floor(Math.log10(Math.abs(num)) / 3) * 3;
         exp = Math.max(clampMinExp, Math.min(clampMaxExp, exp));
-
         let chosen = SI_PREFIXES.find((p) => p.exp === exp);
         if (!chosen) {
           const ordered = [...SI_PREFIXES].sort((a, b) => b.exp - a.exp);
@@ -781,7 +905,6 @@
             ordered.find((p) => exp >= p.exp) || ordered[ordered.length - 1];
           exp = chosen.exp;
         }
-
         const scaled = num / 10 ** exp;
         const absScaled = Math.abs(scaled);
         let decimals = maxDecimals;
@@ -819,7 +942,7 @@
         selectedRule: null,
         selectedDevice: null,
         deviceLive: {},
-        chart: null,
+        charts: { voltage: null, current: null, frequency: null, pf: null },
       };
 
       const loginView = document.getElementById("loginView");
@@ -879,51 +1002,82 @@
       const liveFrequency = document.getElementById("liveFrequency");
       const livePF = document.getElementById("livePF");
 
-      (function initMetricsChart() {
-        const canvas = document.getElementById("metricsChart");
-        if (!canvas) return;
-        const ctx = canvas.getContext("2d");
-        state.chart = new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: [],
-            datasets: [
-              {
-                label: "Tensão média",
-                data: [],
-                backgroundColor: "rgba(37, 99, 235, 0.4)",
-                borderColor: "rgba(37, 99, 235, 1)",
-                borderWidth: 1,
+      (function initMetricsCharts() {
+        function makeChart(
+          canvasId,
+          label,
+          yTickFmt,
+          suggestedMin = 0,
+          suggestedMax = undefined
+        ) {
+          const canvas = document.getElementById(canvasId);
+          if (!canvas) return null;
+          const ctx = canvas.getContext("2d");
+          return new Chart(ctx, {
+            type: "bar",
+            data: {
+              labels: [],
+              datasets: [{ label, data: [], borderWidth: 1 }],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              animation: false,
+              scales: {
+                x: {
+                  ticks: { autoSkip: true, maxTicksLimit: 8 },
+                  grid: { display: false },
+                  categoryPercentage: 0.7,
+                  barPercentage: 0.8,
+                },
+                y: {
+                  beginAtZero: suggestedMin === 0,
+                  suggestedMin,
+                  suggestedMax,
+                  ticks: { callback: (v) => yTickFmt(v) },
+                },
               },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-              y: {
-                beginAtZero: true,
-                ticks: {
-                  callback(value) {
-                    return fmtV(value);
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  animation: false,
+                  callbacks: {
+                    label(ctx) {
+                      const val = ctx.parsed.y;
+                      return `${ctx.dataset.label}: ${yTickFmt(val)}`;
+                    },
                   },
                 },
               },
             },
-            plugins: {
-              tooltip: {
-                callbacks: {
-                  label(context) {
-                    const label = context.dataset.label
-                      ? `${context.dataset.label}: `
-                      : "";
-                    return label + fmtV(context.parsed.y);
-                  },
-                },
-              },
-            },
-          },
-        });
+          });
+        }
+
+        state.charts.voltage = makeChart(
+          "metricsVoltageChart",
+          "Tensão média",
+          fmtV
+        );
+        state.charts.current = makeChart(
+          "metricsCurrentChart",
+          "Corrente média",
+          fmtA
+        );
+        state.charts.frequency = makeChart(
+          "metricsFrequencyChart",
+          "Frequência média",
+          fmtHz
+        );
+        state.charts.pf = makeChart(
+          "metricsPFChart",
+          "FP médio",
+          (v) =>
+            v == null || Number.isNaN(Number(v))
+              ? "-"
+              : Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 3 }),
+          0,
+          1
+        );
       })();
 
       function setMessage(el, msg, type = "success") {
@@ -944,7 +1098,6 @@
         localStorage.setItem("nlq_token", data.token);
         localStorage.setItem("nlq_company", data.companyId);
       }
-
       function clearSession() {
         state.token = null;
         state.companyId = null;
@@ -965,7 +1118,6 @@
           },
           options.headers || {}
         );
-
         const response = await fetch(path, { ...options, headers });
         if (!response.ok) {
           const text = await response.text();
@@ -1001,18 +1153,15 @@
         for (const rule of state.rules) {
           const tr = document.createElement("tr");
           const summary = rule.scheduleSummary || "-";
-
           tr.innerHTML = `
-          <td><strong>${rule.name}</strong><br/><small>${
+            <td><strong>${rule.name}</strong><br/><small>${
             rule.companyId
           }</small></td>
-          <td>${rule.type}</td>
-          <td><span class="badge ${rule.status}">${rule.status}</span></td>
-          <td>${rule.scheduleCron || "-"}<br/><small>${summary}</small></td>
-          <td><pre>${rule.prompt || ""}</pre></td>
-          <td></td>
-        `;
-
+            <td>${rule.type}</td>
+            <td><span class="badge ${rule.status}">${rule.status}</span></td>
+            <td>${rule.scheduleCron || "-"}<br/><small>${summary}</small></td>
+            <td><pre>${rule.prompt || ""}</pre></td>
+            <td></td>`;
           const actionsCell = tr.lastElementChild;
 
           const detailBtn = document.createElement("button");
@@ -1046,24 +1195,23 @@
         const rule = state.rules.find((r) => r.id === id);
         if (!rule) return;
         state.selectedRule = rule;
-
         const content = `
-        <p><strong>ID:</strong> ${rule.id}</p>
-        <p><strong>Tipo:</strong> ${rule.type}</p>
-        <p><strong>Status:</strong> ${rule.status}</p>
-        <p><strong>Schedule:</strong> ${rule.scheduleCron || "-"} (${
+          <p><strong>ID:</strong> ${rule.id}</p>
+          <p><strong>Tipo:</strong> ${rule.type}</p>
+          <p><strong>Status:</strong> ${rule.status}</p>
+          <p><strong>Schedule:</strong> ${rule.scheduleCron || "-"} (${
           rule.scheduleSummary || "-"
         })</p>
-        <p><strong>Última execução:</strong> ${
-          rule.lastRunAt || "-"
-        } | <strong>Disparo:</strong> ${rule.lastTriggeredAt || "-"}</p>
-        <h3>SQL</h3>
-        <pre>${rule.sql || ""}</pre>
-        <h3>Cypher</h3>
-        <pre>${rule.cypher || ""}</pre>
-        <h3>Último resultado</h3>
-        <pre>${JSON.stringify(rule.lastResult ?? "-", null, 2)}</pre>
-      `;
+          <p><strong>Última execução:</strong> ${
+            rule.lastRunAt || "-"
+          } | <strong>Disparo:</strong> ${rule.lastTriggeredAt || "-"}</p>
+          <h3>SQL</h3><pre>${rule.sql || ""}</pre>
+          <h3>Cypher</h3><pre>${rule.cypher || ""}</pre>
+          <h3>Último resultado</h3><pre>${JSON.stringify(
+            rule.lastResult ?? "-",
+            null,
+            2
+          )}</pre>`;
         ruleDetailContent.innerHTML = content;
         ruleDetailCard.classList.remove("hidden");
       }
@@ -1137,13 +1285,12 @@
         for (const device of state.devices) {
           const tr = document.createElement("tr");
           tr.innerHTML = `
-          <td>${device.id}</td>
-          <td>${formatTimestamp(device.lastTs)}</td>
-          <td>${fmtV(device.voltage)}</td>
-          <td>${fmtA(device.current)}</td>
-          <td>${fmtHz(device.frequency)}</td>
-          <td></td>
-        `;
+            <td>${device.id}</td>
+            <td>${formatTimestamp(device.lastTs)}</td>
+            <td>${fmtV(device.voltage)}</td>
+            <td>${fmtA(device.current)}</td>
+            <td>${fmtHz(device.frequency)}</td>
+            <td></td>`;
           const actionCell = tr.lastElementChild;
           const viewBtn = document.createElement("button");
           viewBtn.className = "primary";
@@ -1162,7 +1309,6 @@
         loadDeviceMetrics();
         updateLiveTelemetry();
       }
-
       function closeDevice() {
         state.selectedDevice = null;
         deviceDetailCard.classList.add("hidden");
@@ -1189,7 +1335,6 @@
           end: end.toISOString(),
           bucket: metricsBucket.value,
         });
-
         try {
           const data = await apiFetch(
             `/devices/${state.selectedDevice}/metrics?${params.toString()}`
@@ -1202,17 +1347,26 @@
 
       function renderMetricsChart(points = []) {
         const labels = points.map((p) => p.bucket);
-        const data = points.map((p) => Number(p?.avgVoltage ?? 0));
-        if (!state.chart) return;
-        state.chart.data.labels = labels;
-        state.chart.data.datasets[0].data = data;
-        state.chart.update();
+        const vData = points.map((p) => Number(p?.avgVoltage ?? 0));
+        const iData = points.map((p) => Number(p?.avgCurrent ?? 0));
+        const fData = points.map((p) => Number(p?.avgFrequency ?? 0));
+        const pfData = points.map((p) => Number(p?.avgPowerFactor ?? 0));
+
+        const { voltage, current, frequency, pf } = state.charts;
+        function assign(chart, data) {
+          if (!chart) return;
+          chart.data.labels = labels;
+          chart.data.datasets[0].data = data;
+          chart.update();
+        }
+        assign(voltage, vData);
+        assign(current, iData);
+        assign(frequency, fData);
+        assign(pf, pfData);
       }
 
       function addStreamEvent(event) {
-        if (!event || event.type !== "rule.report") {
-          return;
-        }
+        if (!event || event.type !== "rule.report") return;
         state.events.unshift(event);
         if (state.events.length > 200) state.events.pop();
         renderStream();
@@ -1230,7 +1384,6 @@
             style: "card-system",
           };
         }
-
         if (event.type === "device.telemetry") {
           return {
             title: event.deviceId
@@ -1243,7 +1396,6 @@
             style: "card-device",
           };
         }
-
         if (event.type === "rule.report" || event.type === "rule.alert") {
           const rows = Array.isArray(event.rows) ? event.rows : [];
           const summary = rows.length
@@ -1265,7 +1417,6 @@
             style: event.type === "rule.alert" ? "card-alert" : "card-report",
           };
         }
-
         if (event.type === "system") {
           return {
             title: "Sistema",
@@ -1276,7 +1427,6 @@
             style: "card-system",
           };
         }
-
         return {
           title: event.type ? `Evento ${event.type}` : "Evento",
           timestamp: event.generatedAt || nowIso,
@@ -1290,9 +1440,9 @@
       function renderStream() {
         streamList.innerHTML = "";
         streamFilters.innerHTML = "";
-
-        const reports = state.events.filter((event) => event.type === "rule.report");
-
+        const reports = state.events.filter(
+          (event) => event.type === "rule.report"
+        );
         if (reports.length === 0) {
           const empty = document.createElement("div");
           empty.className = "stream-empty";
@@ -1317,27 +1467,25 @@
         reports.forEach((event) => {
           const view = normalizeEvent(event) || {};
           const item = document.createElement("article");
-          const className = view.style ? `event-item ${view.style}` : "event-item card-report";
+          const className = view.style
+            ? `event-item ${view.style}`
+            : "event-item card-report";
           item.className = className;
 
           const meta = document.createElement("div");
           meta.className = "event-meta";
-
           const badge = document.createElement("span");
           badge.className = "event-badge";
           badge.textContent = view.category || "Relatório";
-
           const time = document.createElement("time");
           time.className = "event-time";
           if (view.timestamp) time.dateTime = view.timestamp;
           time.textContent = formatTimestamp(view.timestamp);
-
           meta.appendChild(badge);
           meta.appendChild(time);
 
           const title = document.createElement("h3");
           title.textContent = event.name || event.ruleId || "Relatório";
-
           const summary = document.createElement("p");
           summary.className = "event-summary";
           summary.textContent = view.summary || "";
@@ -1346,7 +1494,9 @@
           stats.className = "event-stats";
           const rowCount = Array.isArray(event.rows) ? event.rows.length : 0;
           const rowsSpan = document.createElement("span");
-          rowsSpan.textContent = `${rowCount} registro${rowCount === 1 ? "" : "s"}`;
+          rowsSpan.textContent = `${rowCount} registro${
+            rowCount === 1 ? "" : "s"
+          }`;
           stats.appendChild(rowsSpan);
           if (event.metadata && event.metadata.scheduleSummary) {
             const scheduleSpan = document.createElement("span");
@@ -1359,18 +1509,14 @@
           toggle.textContent = "Ver detalhes";
           const pre = document.createElement("pre");
           pre.textContent = view.details || JSON.stringify(event, null, 2);
-
           details.appendChild(toggle);
           details.appendChild(pre);
 
           item.appendChild(meta);
           item.appendChild(title);
-          if (summary.textContent) {
-            item.appendChild(summary);
-          }
+          if (summary.textContent) item.appendChild(summary);
           item.appendChild(stats);
           item.appendChild(details);
-
           streamList.appendChild(item);
         });
       }
@@ -1386,7 +1532,6 @@
           nlqRows.appendChild(empty);
           return;
         }
-
         const columns = Array.from(
           list.reduce((set, row) => {
             if (row && typeof row === "object") {
@@ -1395,9 +1540,7 @@
             return set;
           }, new Set())
         );
-        if (!columns.length) {
-          columns.push("resultado");
-        }
+        if (!columns.length) columns.push("resultado");
 
         const table = document.createElement("table");
         const thead = document.createElement("thead");
@@ -1416,18 +1559,19 @@
           columns.forEach((col) => {
             const td = document.createElement("td");
             let value = row && typeof row === "object" ? row[col] : null;
-            if ((value === null || value === undefined) && col === "resultado" && row !== null && row !== undefined) {
+            if (
+              (value === null || value === undefined) &&
+              col === "resultado" &&
+              row !== null &&
+              row !== undefined
+            )
               value = row;
-            }
-            if (value === null || value === undefined) {
-              td.textContent = "-";
-            } else if (typeof value === "number") {
+            if (value === null || value === undefined) td.textContent = "-";
+            else if (typeof value === "number")
               td.textContent = value.toLocaleString("pt-BR");
-            } else if (value instanceof Date) {
+            else if (value instanceof Date)
               td.textContent = value.toLocaleString("pt-BR");
-            } else {
-              td.textContent = String(value);
-            }
+            else td.textContent = String(value);
             tr.appendChild(td);
           });
           tbody.appendChild(tr);
@@ -1439,30 +1583,32 @@
       function showNlqResult(result) {
         if (!nlqAnswer) return;
         nlqAnswer.classList.remove("hidden");
-        nlqAnswerText.textContent = result?.answer || "Nenhuma resposta retornada.";
+        nlqAnswerText.textContent =
+          result?.answer || "Nenhuma resposta retornada.";
         renderNlqRows(result?.rows);
-        if (nlqSql) {
-          nlqSql.textContent = result?.sql || "-";
-        }
-        if (nlqCypher) {
-          nlqCypher.textContent = result?.cypher || "-";
-        }
+        if (nlqSql) nlqSql.textContent = result?.sql || "-";
+        if (nlqCypher) nlqCypher.textContent = result?.cypher || "-";
       }
 
       async function loadStreamEvents(limit = 50) {
         if (!state.token) return;
         if (streamMessage) setMessage(streamMessage);
         try {
-          const params = new URLSearchParams({ type: 'rule.report' });
-          if (limit) params.set('limit', String(limit));
+          const params = new URLSearchParams({ type: "rule.report" });
+          if (limit) params.set("limit", String(limit));
           const data = await apiFetch(`/events?${params.toString()}`);
-          const items = Array.isArray(data?.items) ? data.items.filter((event) => event.type === 'rule.report') : [];
+          const items = Array.isArray(data?.items)
+            ? data.items.filter((event) => event.type === "rule.report")
+            : [];
           state.events = items;
           renderStream();
         } catch (err) {
-          if (streamMessage) {
-            setMessage(streamMessage, err.message || 'Falha ao carregar relatórios.', 'error');
-          }
+          if (streamMessage)
+            setMessage(
+              streamMessage,
+              err.message || "Falha ao carregar relatórios.",
+              "error"
+            );
         }
       }
 
@@ -1494,7 +1640,7 @@
         if (pfEl) {
           const pf = sample.power_factor ?? sample.powerFactor;
           pfEl.textContent =
-            pf === null || pf === undefined
+            pf == null
               ? "-"
               : Number(pf).toLocaleString("pt-BR", {
                   maximumFractionDigits: 3,
@@ -1513,7 +1659,6 @@
         ws.onopen = () => {
           addStreamEvent({ type: "system", message: "WebSocket conectado." });
         };
-
         ws.onclose = () => {
           addStreamEvent({
             type: "system",
@@ -1523,16 +1668,13 @@
             setTimeout(connectWebSocket, 3000);
           }
         };
-
         ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
             addStreamEvent(data);
             if (data.type === "device.telemetry" && data.deviceId) {
               state.deviceLive[data.deviceId] = data;
-              if (state.selectedDevice === data.deviceId) {
-                updateLiveTelemetry();
-              }
+              if (state.selectedDevice === data.deviceId) updateLiveTelemetry();
             } else if (data.type && data.type.startsWith("rule.")) {
               loadRules();
             }
@@ -1550,7 +1692,6 @@
         loadDevices();
         connectWebSocket();
       }
-
       function showLogin() {
         dashboard.classList.add("hidden");
         loginView.classList.remove("hidden");
@@ -1596,17 +1737,13 @@
           Object.values(sections).forEach((sec) => sec.classList.add("hidden"));
           const target = btn.dataset.section;
           const selectedSection = sections[target];
-          if (selectedSection) {
-            selectedSection.classList.remove("hidden");
-          }
+          if (selectedSection) selectedSection.classList.remove("hidden");
           if (target === "stream") {
             renderStream();
             loadStreamEvents();
           } else if (target === "chat") {
             setMessage(nlqMessage);
-            if (nlqQuestion) {
-              nlqQuestion.focus();
-            }
+            if (nlqQuestion) nlqQuestion.focus();
           }
         });
       });
@@ -1628,24 +1765,33 @@
           event.preventDefault();
           const question = (nlqQuestion?.value || "").trim();
           if (!question) {
-            setMessage(nlqMessage, "Digite uma pergunta antes de enviar.", "error");
+            setMessage(
+              nlqMessage,
+              "Digite uma pergunta antes de enviar.",
+              "error"
+            );
             return;
           }
           if (!state.companyId) {
-            setMessage(nlqMessage, "Empresa não definida. Faça login novamente.", "error");
+            setMessage(
+              nlqMessage,
+              "Empresa não definida. Faça login novamente.",
+              "error"
+            );
             return;
           }
           setMessage(nlqMessage, "Consultando NLQ...", "info");
           try {
-            const payload = {
-              text: question,
-              companyId: state.companyId,
-            };
+            const payload = { text: question, companyId: state.companyId };
             const result = await apiFetch("/nlq/query", {
               method: "POST",
               body: JSON.stringify(payload),
             });
-            setMessage(nlqMessage, "Consulta executada com sucesso!", "success");
+            setMessage(
+              nlqMessage,
+              "Consulta executada com sucesso!",
+              "success"
+            );
             showNlqResult(result);
           } catch (err) {
             setMessage(
@@ -1678,7 +1824,6 @@
           prompt: document.getElementById("rulePrompt").value.trim(),
           activate: document.getElementById("ruleActivate").value === "yes",
         };
-
         try {
           await apiFetch("/rules", {
             method: "POST",
