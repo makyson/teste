@@ -23,12 +23,12 @@ export default async function registerEventsRoutes(fastify) {
 
     instance.get(
       "/events",
+
       {
         schema: {
           querystring: {
             type: "object",
             properties: {
-              companyId: { type: "string" },
               type: { type: "string" },
               limit: { type: "integer", minimum: 1, maximum: 200 },
             },
@@ -47,17 +47,19 @@ export default async function registerEventsRoutes(fastify) {
                       name: { type: "string" },
                       companyId: { type: "string" },
                       generatedAt: { type: "string" },
-                      metadata: { type: "object" },
+                      // rows pode ter colunas variáveis -> permitir tudo
                       rows: {
                         type: "array",
-                        items: { type: "object" },
+                        items: { type: "object", additionalProperties: true },
                       },
+                      // metadata também varia -> permitir tudo
+                      metadata: { type: "object", additionalProperties: true },
                     },
-                    additionalProperties: true,
+                    additionalProperties: false, // no topo pode manter fechado
                   },
                 },
               },
-              required: ["items"],
+              additionalProperties: false,
             },
           },
         },
