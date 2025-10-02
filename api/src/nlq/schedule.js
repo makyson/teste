@@ -82,7 +82,6 @@ export async function generateScheduleCron({ text }) {
   const response = await fetch(endpoint, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
       "x-goog-api-key": config.gemini.apiKey,
     },
     body: JSON.stringify({
