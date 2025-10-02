@@ -9,6 +9,7 @@ import config from './config.js';
 import registerHealthRoute from './routes/health.js';
 import registerNlqRoute from './routes/nlq.js';
 import registerRulesRoute from './routes/rules.js';
+import registerEventsRoute from './routes/events.js';
 import registerAuthRoute from './routes/auth.js';
 import registerTelemetryRoute from './routes/telemetry.js';
 import registerDeviceRoutes from './routes/devices.js';
@@ -98,6 +99,7 @@ app.register(registerHealthRoute);
 app.register(registerAuthRoute);
 app.register(registerNlqRoute);
 app.register(registerTelemetryRoute);
+app.register(registerEventsRoute);
 app.register(registerRulesRoute);
 app.register(registerDeviceRoutes);
 
@@ -184,3 +186,4 @@ async function shutdown(signal) {
 
 process.on('SIGINT', () => shutdown('SIGINT'));
 process.on('SIGTERM', () => shutdown('SIGTERM'));
+

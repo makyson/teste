@@ -1,5 +1,6 @@
 import cron from 'node-cron';
 import { runSql } from '../db/timescale.js';
+import { recordEvent } from '../events/store.js';
 import {
   listRules,
   getRuleById,
@@ -67,16 +68,24 @@ export function createRuleManager({ log, hub }) {
   };
 
   const broadcastResult = (rule, rows) => {
+    const payload = {
+      type: rule.type === 'threshold_alert' ? 'rule.alert' : 'rule.report',
+      ruleId: rule.id,
+      name: rule.name,
+      companyId: rule.companyId,
+      generatedAt: new Date().toISOString(),
+      rows,
+      metadata: rule.metadata ?? {}
+    };
+
     try {
-      hub.broadcast(rule.companyId, {
-        type: rule.type === 'threshold_alert' ? 'rule.alert' : 'rule.report',
-        ruleId: rule.id,
-        name: rule.name,
-        companyId: rule.companyId,
-        generatedAt: new Date().toISOString(),
-        rows,
-        metadata: rule.metadata ?? {}
-      });
+      recordEvent(rule.companyId, payload);
+    } catch (err) {
+      log.warn({ err, ruleId: rule.id }, 'Falha ao registrar evento recente da regra');
+    }
+
+    try {
+      hub.broadcast(rule.companyId, payload);
     } catch (err) {
       log.error({ err, ruleId: rule.id }, 'Falha ao transmitir resultado da regra');
     }
@@ -196,3 +205,4 @@ export function createRuleManager({ log, hub }) {
     broadcastResult
   };
 }
+
