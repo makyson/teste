@@ -1130,6 +1130,7 @@
         if (!state.token) throw new Error("Token não definido");
         const headers = Object.assign(
           {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${state.token}`,
           },
           options.headers || {}
@@ -1858,7 +1859,6 @@
             const payload = { text: question, companyId: state.companyId };
             const result = await apiFetch("/nlq/query", {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
               body: JSON.stringify(payload),
             });
             setMessage(
