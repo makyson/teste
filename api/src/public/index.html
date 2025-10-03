@@ -1144,6 +1144,23 @@
         return response.json();
       }
 
+      async function apiFetchdesatuliza(path, options = {}) {
+        if (!state.token) throw new Error("Token não definido");
+        const headers = Object.assign(
+          {
+            Authorization: `Bearer ${state.token}`,
+          },
+          options.headers || {}
+        );
+        const response = await fetch(path, { ...options, headers });
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(text || response.statusText);
+        }
+        if (response.status === 204) return null;
+        return response.json();
+      }
+
       async function loadRules() {
         try {
           const data = await apiFetch("/rules");
@@ -1241,7 +1258,9 @@
       async function toggleRule(rule) {
         try {
           const endpoint = rule.status === "active" ? "deactivate" : "activate";
-          await apiFetch(`/rules/${rule.id}/${endpoint}`, { method: "POST" });
+          await apiFetchdesatuliza(`/rules/${rule.id}/${endpoint}`, {
+            method: "POST",
+          });
           await loadRules();
         } catch (err) {
           setMessage(rulesMessage, err.message, "error");
