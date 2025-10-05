@@ -65,7 +65,14 @@ Regras de geração (obrigatórias):
 10) Nunca escreva consultas do tipo \`WITH (SELECT ...) AS alias\`. Use CTEs nomeadas (ex.: \`WITH total AS (...), top AS (...) SELECT ... FROM total CROSS JOIN top\`).
 11) Quando a pergunta indicar uma regra agendada ou recorrência, assuma janelas relativas ao presente (ex.: use ts <= now() e o intervalo apropriado) e deixe claro no SQL/Cypher que o recorte termina em now().
 12) Nunca substitua resultados por mensagens fixas ou strings literais. Sempre escreva consultas que retornem dados reais das tabelas disponíveis.
-
+13) Para perguntas sobre "consumo deste mês" (sinônimos: "gasto este mês", "kWh deste mês", "energia do mês atual"), a **SQL** deve retornar, por dispositivo, **exatamente** as colunas e aliases:
+   device_id, "avgConsumo", "avgVoltage", "avgCurrent", "avgFrequency", "avgPowerFactor", "avgAcumulado".
+   Definições:
+   - "avgConsumo" = AVG(dm.kwh) no mês (média diária em kWh/dia).
+   - "avgAcumulado" = SUM(dm.kwh) no mês (kWh do mês).
+   - As médias de tensão/corrente/frequência/fator de potência vêm de telemetry_raw **do mês corrente**.
+   Use \`c.id = $1\` e recorte de data com \`date_trunc('month', CURRENT_DATE)\`/\`now()\`.
+   No **Cypher**, retorne o que o grafo suportar (ex.: kwh/pf_avg), preservando ao menos \`device_id\`,\`avgConsumo\`, \`avgAcumulado\`.
 `.trim();
 
 const fewShots = [];
