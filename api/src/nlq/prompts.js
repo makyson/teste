@@ -73,38 +73,6 @@ Regras de geração (obrigatórias):
    - As médias de tensão/corrente/frequência/fator de potência vêm de telemetry_raw **do mês corrente**.
    Use \`c.id = $1\` e recorte de data com \`date_trunc('month', CURRENT_DATE)\`/\`now()\`.
    No **Cypher**, retorne o que o grafo suportar (ex.: kwh/pf_avg), preservando ao menos \`device_id\`,\`avgConsumo\`, \`avgAcumulado\`.
-
-14) **Equipamento que mais gastou** (no período especificado ou, se não houver, mês corrente):
-    - Mesma projeção do relatório padrão (device_id e os 6 aliases),
-      com **ORDER BY "avgAcumulado" DESC LIMIT 1**.
-
-15) Se o usuário pedir período explícito **em minutos/horas recentes**, pode usar **telemetry_raw**;
-    ainda assim, mantenha **os mesmos aliases**. Caso contrário, **prefira daily_metrics**.
-
-// (cole depois do seu item 13)
-16) Para perguntas sobre **tensão/voltagem** (sinônimos: "tensão", "voltagem", "voltage", "V"):
-    - A **SQL** deve retornar os aliases padrão, mas pode focar em "avgVoltage".
-    - Sempre **c.id = $1** e recorte de data coerente (mês atual por padrão).
-    - Sinônimos mapeados → alias canônico: tensão/voltagem/voltage → "avgVoltage".
-
-17) Para perguntas sobre **corrente/amperagem** (sinônimos: "corrente", "amperagem", "amperes", "ampères", "current", "A"):
-    - A **SQL** deve retornar os aliases padrão, mas pode focar em "avgCurrent".
-    - Sempre **c.id = $1** e recorte de data coerente (mês atual por padrão).
-    - Sinônimos mapeados → alias canônico: corrente/amperagem → "avgCurrent".
-
-18) Para perguntas de **consumo/energia/kWh/gasto** (inclusive “quanto gastei”):
-    - Use **daily_metrics** para janelas diárias/mensais.
-    - Mês atual (padrão): \`dm.bucket >= date_trunc('month', CURRENT_DATE)\` AND \`dm.bucket < now()\`.
-    - Retorne SEMPRE os 6 aliases padrão.  
-    - Definições no mês:
-      • "avgConsumo"   = AVG(dm."avgConsumo")      (média diária kWh/dia)
-      • "avgAcumulado" = SUM(dm."avgConsumo")      (kWh acumulado no mês)
-
-19) Se o usuário pedir **janela curta** (ex.: “últimos 30 min/2h/6h”), pode usar **telemetry_raw**:
-    - Calcule "avgVoltage","avgCurrent","avgFrequency","avgPowerFactor" como médias simples.
-    - "avgAcumulado" (kWh no período curto): integre potência **(V * A * PF / 1000)** vezes a duração entre amostras.
-    - Ainda assim, exponha **os mesmos 6 aliases** e **device_id**.
-
    `.trim();
 
 const fewShots = [];
