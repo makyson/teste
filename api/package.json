@@ -8,18 +8,19 @@
     "start": "node src/index.js"
   },
   "dependencies": {
-    "fastify": "4.29.1",
-    "@fastify/websocket": "8.3.0",
     "@fastify/jwt": "7.2.4",
+    "@fastify/static": "6.10.1",
+    "@fastify/websocket": "8.3.0",
+    "@google/generative-ai": "^0.24.1",
+    "@langchain/community": "0.2.33",
+    "@langchain/google-genai": "0.1.5",
     "dotenv": "16.4.5",
+    "fastify": "4.29.1",
+    "hnswlib-node": "^3.0.0",
+    "langchain": "0.2.17",
     "mqtt": "5.3.5",
     "neo4j-driver": "5.18.0",
-    "pg": "8.11.5",
     "node-cron": "3.0.3",
-    "@fastify/static": "6.10.1",
-    "langchain": "0.2.17",
-    "@langchain/google-genai": "0.1.5",
-    "@langchain/community": "0.2.33",
-    "hnswlib-node": "2.2.2"
+    "pg": "8.11.5"
   }
 }
