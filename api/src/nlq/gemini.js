@@ -56,7 +56,7 @@ async function ensureNlqCache() {
   // 👇 AQUI está o trecho que você pediu
   const cache = await ai.caches.create({
     model: `models/${modelName}`,
-    displayName: "energia:nlq:v1",
+    displayName: "energia:nlq:v2",
     config: {
       systemInstruction: buildSystemInstruction(),
       // opcional: você pode pré-injetar exemplos também em contents; aqui deixo vazio.

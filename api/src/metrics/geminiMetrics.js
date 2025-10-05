@@ -22,7 +22,7 @@ async function ensureMetricsCache() {
   // 👇 AQUI o uso do ai.caches.create para o contexto de métricas
   const cache = await ai.caches.create({
     model: `models/${modelName}`,
-    displayName: "energia:metrics:v1",
+    displayName: "energia:metrics:v2",
     config: {
       systemInstruction: `
 Você é um serviço de métricas elétricas.
