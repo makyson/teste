@@ -68,28 +68,7 @@ Regras de geração (obrigatórias):
 13) **Proibido** aliases em UPPERCASE e **proibido** usar 'total_kwh'/'TOTAL_KWH'. Use snake_case minúsculo coerente (ex.: \`kwh_total\`).
 `.trim();
 
-const fewShots = [
-  {
-    question: "top consumo de ontem e hoje",
-    json: `{"cypher":"MATCH (c:Company {id: $companyId})-[:HAS_SITE]->(:Site)-[:HAS_DEVICE]->(d:LogicalDevice)-[:HAS_DAILY]->(m:DailyMetric)\\nWHERE date(m.day) IN [date(), date() - duration({days: 1})]\\nRETURN d.id AS device_id, sum(m.kwh) AS kwh_total\\nORDER BY kwh_total DESC\\nLIMIT 10","sql":"SELECT d.id AS device_id, COALESCE(SUM(dm.kwh),0) AS kwh_total\\nFROM companies c\\nJOIN sites s           ON s.company_id=c.id\\nJOIN logical_devices d ON d.site_id=s.id\\nJOIN daily_metrics dm  ON dm.device_id=d.id\\nWHERE c.id=$1\\n  AND dm.day IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')\\nGROUP BY d.id\\nORDER BY kwh_total DESC\\nLIMIT 10"}`,
-  },
-  {
-    question: "quanto eu gastei esse mês",
-    json: `{"cypher":"MATCH (c:Company {id: $companyId})-[:HAS_SITE]->(:Site)-[:HAS_DEVICE]->(:LogicalDevice)-[:HAS_DAILY]->(m:DailyMetric)\\nWHERE date(m.day) >= date.truncate('month', date())\\nRETURN sum(m.kwh) AS kwh_total","sql":"SELECT COALESCE(SUM(dm.kwh),0) AS kwh_total\\nFROM companies c\\nJOIN sites s           ON s.company_id=c.id\\nJOIN logical_devices d ON d.site_id=s.id\\nJOIN daily_metrics dm  ON dm.device_id=d.id\\nWHERE c.id=$1\\n  AND dm.day >= date_trunc('month', CURRENT_DATE)"}`,
-  },
-  {
-    question: "consumo entre 2025-09-01 e 2025-09-10",
-    json: `{"cypher":"MATCH (c:Company {id: $companyId})-[:HAS_SITE]->(:Site)-[:HAS_DEVICE]->(:LogicalDevice)-[:HAS_DAILY]->(m:DailyMetric)\\nWHERE m.day >= date('2025-09-01') AND m.day < date('2025-09-11')\\nRETURN sum(m.kwh) AS kwh_total","sql":"SELECT COALESCE(SUM(dm.kwh),0) AS kwh_total\\nFROM companies c\\nJOIN sites s           ON s.company_id=c.id\\nJOIN logical_devices d ON d.site_id=s.id\\nJOIN daily_metrics dm  ON dm.device_id=d.id\\nWHERE c.id=$1\\n  AND dm.day >= DATE '2025-09-01'\\n  AND dm.day <  DATE '2025-09-11'"}`,
-  },
-  {
-    question: "maior frequência este mês",
-    json: `{"cypher":"MATCH (c:Company {id: $companyId})-[:HAS_SITE]->(:Site)-[:HAS_DEVICE]->(:LogicalDevice)-[:HAS_DAILY]->(m:DailyMetric)\\nWHERE date(m.day) >= date.truncate('month', date())\\nRETURN m.day AS dia, max(m.max_freq) AS frequencia_maxima\\nORDER BY frequencia_maxima DESC\\nLIMIT 1","sql":"SELECT dm.day AS dia, MAX(dm.max_freq) AS frequencia_maxima\\nFROM companies c\\nJOIN sites s           ON s.company_id=c.id\\nJOIN logical_devices d ON d.site_id=s.id\\nJOIN daily_metrics dm  ON dm.device_id=d.id\\nWHERE c.id=$1\\n  AND dm.day >= date_trunc('month', CURRENT_DATE)\\nGROUP BY dm.day\\nORDER BY frequencia_maxima DESC\\nLIMIT 1"}`,
-  },
-  {
-    question: "quanto gastei em 2025",
-    json: `{"cypher":"MATCH (c:Company {id: $companyId})-[:HAS_SITE]->(:Site)-[:HAS_DEVICE]->(:LogicalDevice)-[:HAS_DAILY]->(m:DailyMetric)\\nWHERE date(m.day) >= date.truncate('year', date('2025-01-01')) AND date(m.day) < date('2026-01-01')\\nRETURN sum(m.kwh) AS kwh_total_2025","sql":"SELECT COALESCE(SUM(dm.kwh),0) AS kwh_total_2025\\nFROM companies c\\nJOIN sites s           ON s.company_id=c.id\\nJOIN logical_devices d ON d.site_id=s.id\\nJOIN daily_metrics dm  ON dm.device_id=d.id\\nWHERE c.id=$1\\n  AND dm.day >= DATE '2025-01-01'\\n  AND dm.day <  DATE '2026-01-01'"}`,
-  },
-];
+const fewShots = [];
 
 const baseInstructions = `
 Você gera consultas para duas bases: Neo4j (Cypher) e Timescale/Postgres (SQL).
