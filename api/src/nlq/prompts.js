@@ -2,7 +2,7 @@
 
 // 👉 Helper opcional: passe um "contexto" real lido do Timescale/Neo4j
 // Ex.: { minDay: '2025-09-01', maxDay: '2025-09-10', companies: ['company-1'] }
-function renderContext(ctx = {}) {
+export function renderContext(ctx = {}) {
   const lines = [];
   if (ctx.minDay && ctx.maxDay) {
     lines.push(
@@ -65,20 +65,21 @@ Regras de geração (obrigatórias):
 10) Nunca escreva consultas do tipo \`WITH (SELECT ...) AS alias\`. Use CTEs nomeadas (ex.: \`WITH total AS (...), top AS (...) SELECT ... FROM total CROSS JOIN top\`).
 11) Quando a pergunta indicar uma regra agendada ou recorrência, assuma janelas relativas ao presente (ex.: use ts <= now() e o intervalo apropriado) e deixe claro no SQL/Cypher que o recorte termina em now().
 12) Nunca substitua resultados por mensagens fixas ou strings literais. Sempre escreva consultas que retornem dados reais das tabelas disponíveis.
+13) **Proibido** aliases em UPPERCASE e **proibido** usar 'total_kwh'/'TOTAL_KWH'. Use snake_case minúsculo coerente (ex.: \`kwh_total\`).
 `.trim();
 
 const fewShots = [
   {
     question: "top consumo de ontem e hoje",
-    json: `{"cypher":"MATCH (c:Company {id: $companyId})-[:HAS_SITE]->(:Site)-[:HAS_DEVICE]->(d:LogicalDevice)-[:HAS_DAILY]->(m:DailyMetric)\\nWHERE date(m.day) IN [date(), date() - duration({days: 1})]\\nRETURN d.id AS device_id, sum(m.kwh) AS total_kwh\\nORDER BY total_kwh DESC\\nLIMIT 10","sql":"SELECT d.id AS device_id, COALESCE(SUM(dm.kwh),0) AS total_kwh\\nFROM companies c\\nJOIN sites s           ON s.company_id=c.id\\nJOIN logical_devices d ON d.site_id=s.id\\nJOIN daily_metrics dm  ON dm.device_id=d.id\\nWHERE c.id=$1\\n  AND dm.day IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')\\nGROUP BY d.id\\nORDER BY total_kwh DESC\\nLIMIT 10"}`,
+    json: `{"cypher":"MATCH (c:Company {id: $companyId})-[:HAS_SITE]->(:Site)-[:HAS_DEVICE]->(d:LogicalDevice)-[:HAS_DAILY]->(m:DailyMetric)\\nWHERE date(m.day) IN [date(), date() - duration({days: 1})]\\nRETURN d.id AS device_id, sum(m.kwh) AS kwh_total\\nORDER BY kwh_total DESC\\nLIMIT 10","sql":"SELECT d.id AS device_id, COALESCE(SUM(dm.kwh),0) AS kwh_total\\nFROM companies c\\nJOIN sites s           ON s.company_id=c.id\\nJOIN logical_devices d ON d.site_id=s.id\\nJOIN daily_metrics dm  ON dm.device_id=d.id\\nWHERE c.id=$1\\n  AND dm.day IN (CURRENT_DATE, CURRENT_DATE - INTERVAL '1 day')\\nGROUP BY d.id\\nORDER BY kwh_total DESC\\nLIMIT 10"}`,
   },
   {
     question: "quanto eu gastei esse mês",
-    json: `{"cypher":"MATCH (c:Company {id: $companyId})-[:HAS_SITE]->(:Site)-[:HAS_DEVICE]->(:LogicalDevice)-[:HAS_DAILY]->(m:DailyMetric)\\nWHERE date(m.day) >= date.truncate('month', date())\\nRETURN sum(m.kwh) AS total_kwh","sql":"SELECT COALESCE(SUM(dm.kwh),0) AS total_kwh\\nFROM companies c\\nJOIN sites s           ON s.company_id=c.id\\nJOIN logical_devices d ON d.site_id=s.id\\nJOIN daily_metrics dm  ON dm.device_id=d.id\\nWHERE c.id=$1\\n  AND dm.day >= date_trunc('month', CURRENT_DATE)"}`,
+    json: `{"cypher":"MATCH (c:Company {id: $companyId})-[:HAS_SITE]->(:Site)-[:HAS_DEVICE]->(:LogicalDevice)-[:HAS_DAILY]->(m:DailyMetric)\\nWHERE date(m.day) >= date.truncate('month', date())\\nRETURN sum(m.kwh) AS kwh_total","sql":"SELECT COALESCE(SUM(dm.kwh),0) AS kwh_total\\nFROM companies c\\nJOIN sites s           ON s.company_id=c.id\\nJOIN logical_devices d ON d.site_id=s.id\\nJOIN daily_metrics dm  ON dm.device_id=d.id\\nWHERE c.id=$1\\n  AND dm.day >= date_trunc('month', CURRENT_DATE)"}`,
   },
   {
     question: "consumo entre 2025-09-01 e 2025-09-10",
-    json: `{"cypher":"MATCH (c:Company {id: $companyId})-[:HAS_SITE]->(:Site)-[:HAS_DEVICE]->(:LogicalDevice)-[:HAS_DAILY]->(m:DailyMetric)\\nWHERE m.day >= date('2025-09-01') AND m.day < date('2025-09-11')\\nRETURN sum(m.kwh) AS total_kwh","sql":"SELECT COALESCE(SUM(dm.kwh),0) AS total_kwh\\nFROM companies c\\nJOIN sites s           ON s.company_id=c.id\\nJOIN logical_devices d ON d.site_id=s.id\\nJOIN daily_metrics dm  ON dm.device_id=d.id\\nWHERE c.id=$1\\n  AND dm.day >= DATE '2025-09-01'\\n  AND dm.day <  DATE '2025-09-11'"}`,
+    json: `{"cypher":"MATCH (c:Company {id: $companyId})-[:HAS_SITE]->(:Site)-[:HAS_DEVICE]->(:LogicalDevice)-[:HAS_DAILY]->(m:DailyMetric)\\nWHERE m.day >= date('2025-09-01') AND m.day < date('2025-09-11')\\nRETURN sum(m.kwh) AS kwh_total","sql":"SELECT COALESCE(SUM(dm.kwh),0) AS kwh_total\\nFROM companies c\\nJOIN sites s           ON s.company_id=c.id\\nJOIN logical_devices d ON d.site_id=s.id\\nJOIN daily_metrics dm  ON dm.device_id=d.id\\nWHERE c.id=$1\\n  AND dm.day >= DATE '2025-09-01'\\n  AND dm.day <  DATE '2025-09-11'"}`,
   },
   {
     question: "maior frequência este mês",
@@ -86,7 +87,7 @@ const fewShots = [
   },
   {
     question: "quanto gastei em 2025",
-    json: `{"cypher":"MATCH (c:Company {id: $companyId})-[:HAS_SITE]->(:Site)-[:HAS_DEVICE]->(:LogicalDevice)-[:HAS_DAILY]->(m:DailyMetric)\\nWHERE date(m.day) >= date.truncate('year', date('2025-01-01')) AND date(m.day) < date('2026-01-01')\\nRETURN sum(m.kwh) AS total_kwh_2025","sql":"SELECT COALESCE(SUM(dm.kwh),0) AS total_kwh_2025\\nFROM companies c\\nJOIN sites s           ON s.company_id=c.id\\nJOIN logical_devices d ON d.site_id=s.id\\nJOIN daily_metrics dm  ON dm.device_id=d.id\\nWHERE c.id=$1\\n  AND dm.day >= DATE '2025-01-01'\\n  AND dm.day <  DATE '2026-01-01'"}`,
+    json: `{"cypher":"MATCH (c:Company {id: $companyId})-[:HAS_SITE]->(:Site)-[:HAS_DEVICE]->(:LogicalDevice)-[:HAS_DAILY]->(m:DailyMetric)\\nWHERE date(m.day) >= date.truncate('year', date('2025-01-01')) AND date(m.day) < date('2026-01-01')\\nRETURN sum(m.kwh) AS kwh_total_2025","sql":"SELECT COALESCE(SUM(dm.kwh),0) AS kwh_total_2025\\nFROM companies c\\nJOIN sites s           ON s.company_id=c.id\\nJOIN logical_devices d ON d.site_id=s.id\\nJOIN daily_metrics dm  ON dm.device_id=d.id\\nWHERE c.id=$1\\n  AND dm.day >= DATE '2025-01-01'\\n  AND dm.day <  DATE '2026-01-01'"}`,
   },
 ];
 
@@ -98,18 +99,29 @@ Gere **sempre** {"cypher":"...","sql":"..."}.
 - Se a pergunta mencionar "ontem", "hoje", "este mês", "este ano", **SQL** normalmente é a fonte primária mais confiável, mas gere os dois.
 `.trim();
 
-export function buildPrompt({
-  text,
-  companyId,
-  scope = "company",
-  context = null, // { minDay, maxDay, companies: [...], note: '...' }
-}) {
+// ===== export para uso com Caching API =====
+export function buildSystemInstruction() {
   const examples = fewShots
     .map(
       (ex) => `Usuário: ${ex.question}\nSaída:\n\`\`\`json\n${ex.json}\n\`\`\``
     )
     .join("\n\n");
 
+  return [
+    baseInstructions,
+    hardRules,
+    schemaDescription,
+    `Exemplos:\n\n${examples}`,
+    `Responda somente com JSON {"cypher":"...","sql":"..."}`,
+  ].join("\n\n");
+}
+
+export function buildUserFooter({
+  text,
+  companyId,
+  scope = "company",
+  context = null, // { minDay, maxDay, companies: [...], note: '...' }
+}) {
   const footer =
     scope === "all" || !companyId
       ? `Usuário: ${text}\nEscopo: global (todas as empresas)`
@@ -119,12 +131,18 @@ export function buildPrompt({
     ? `\n\nContexto disponível:\n${renderContext(context)}`
     : "";
 
-  return [
-    baseInstructions,
-    hardRules,
-    schemaDescription,
-    `Exemplos:\n\n${examples}`,
-    `${footer}${dynamicContext}\n\nResponda somente com JSON {"cypher":"...","sql":"..."}`,
-  ].join("\n\n");
+  // Nota: a instrução de "responda só JSON" já está no system cache
+  return `${footer}${dynamicContext}`;
 }
 
+// ===== compat: prompt monolítico antigo (se quiser manter chamadas antigas) ====
+export function buildPrompt({
+  text,
+  companyId,
+  scope = "company",
+  context = null,
+}) {
+  const sys = buildSystemInstruction();
+  const tail = buildUserFooter({ text, companyId, scope, context });
+  return `${sys}\n\n${tail}\n\nResponda somente com JSON {"cypher":"...","sql":"..."}`;
+}
