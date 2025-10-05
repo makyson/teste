@@ -8,10 +8,12 @@ const DEFAULT_MODEL = "gemini-2.0-flash";
 const COMMON_FIELDS = [
   "id",
   "lastTs",
-  "voltage",
-  "current",
-  "frequency",
-  "powerFactor",
+  "avgConsumo",
+  "avgVoltage",
+  "avgCurrent",
+  "avgFrequency",
+  "avgPowerFactor",
+  "avgAcumulado",
 ];
 
 function buildSchedulePrompt(text) {

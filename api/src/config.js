@@ -91,4 +91,13 @@ export default Object.freeze({
     jwtSecret: config.JWT_SECRET,
     tokenExpiresIn: config.JWT_EXPIRES_IN,
   },
+  rag: {
+    docsDir: process.env.RAG_DOCS_DIR
+      ? path.resolve(rootDir, process.env.RAG_DOCS_DIR)
+      : path.join(rootDir, 'api', 'docs'),
+    indexDir: process.env.RAG_INDEX_DIR
+      ? path.resolve(rootDir, process.env.RAG_INDEX_DIR)
+      : path.join(rootDir, 'api', 'data', 'rag_index'),
+    topK: Number.parseInt(process.env.RAG_TOP_K || '4', 10),
+  },
 });

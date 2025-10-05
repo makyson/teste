@@ -1,7 +1,7 @@
 param(
-    [string]$BaseUrl = "http://localhost:3000",
+    [string]$BaseUrl = "http://38.242.241.167:3000",
     [string]$Username = "admin",
-    [string]$Password = "admin",
+    [string]$Password = "TroqueEstaSenha!",
     [string]$CompanyId = "company-1",
     [string]$BoardId = "board-1",
     [string]$DeviceId = "device-123",

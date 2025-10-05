@@ -16,14 +16,13 @@ CREATE TABLE IF NOT EXISTS telemetry_raw (
 
 SELECT create_hypertable('telemetry_raw', 'ts', if_not_exists => TRUE);
 
-
 CREATE INDEX IF NOT EXISTS idx_telemetry_raw_company_ts
     ON telemetry_raw (company_id, ts DESC);
 CREATE INDEX IF NOT EXISTS idx_telemetry_raw_device_ts
     ON telemetry_raw (logical_id, ts DESC);
 
 -- =========================
--- MV (normal) para energia diária (pode usar CTE)
+-- MV (normal) para energia diária => avgConsumo (kWh) e bucket
 -- =========================
 DROP MATERIALIZED VIEW IF EXISTS ca_device_daily_energy;
 CREATE MATERIALIZED VIEW ca_device_daily_energy AS
@@ -31,7 +30,7 @@ WITH ordered AS (
   SELECT
     company_id,
     logical_id,
-    time_bucket('1 day', ts, 'UTC') AS day,
+    time_bucket('1 day', ts, 'UTC') AS bucket,
     ts,
     voltage,
     current,
@@ -47,20 +46,21 @@ WITH ordered AS (
 SELECT
   company_id,
   logical_id,
-  day,
-  SUM(((voltage * current * COALESCE(power_factor, 1)) / 1000.0) * duration_hours) AS kwh_estimated
+  bucket,
+  -- kWh estimado por dia
+  SUM(((voltage * current * COALESCE(power_factor, 1)) / 1000.0) * duration_hours) AS "avgConsumo"
 FROM ordered
-GROUP BY company_id, logical_id, day
+GROUP BY company_id, logical_id, bucket
 WITH NO DATA;
 
 CREATE INDEX IF NOT EXISTS ca_device_daily_energy_idx
-  ON ca_device_daily_energy (day DESC, company_id, logical_id);
+  ON ca_device_daily_energy (bucket DESC, company_id, logical_id);
 
 -- backfill inicial
 REFRESH MATERIALIZED VIEW ca_device_daily_energy;
 
 -- =========================
--- Continuous Aggregate (sem CTE) para métricas simples
+-- Continuous Aggregate para métricas simples com novos nomes
 -- =========================
 DROP MATERIALIZED VIEW IF EXISTS ca_device_daily_simple;
 CREATE MATERIALIZED VIEW ca_device_daily_simple
@@ -68,16 +68,18 @@ WITH (timescaledb.continuous) AS
 SELECT
   company_id,
   logical_id,
-  time_bucket('1 day', ts, 'UTC') AS day,
-  AVG(voltage * current) AS avg_power,
-  MIN(frequency)         AS min_freq,
-  MAX(frequency)         AS max_freq,
-  AVG(power_factor)      AS pf_avg
+  time_bucket('1 day', ts, 'UTC') AS bucket,
+  AVG(voltage)                   AS "avgVoltage",
+  AVG(current)                   AS "avgCurrent",
+  AVG(frequency)                 AS "avgFrequency",
+  AVG(power_factor)              AS "avgPowerFactor",
+  -- Mantém a métrica média de potência aparente como no script original (V*I)
+  AVG(voltage * current)         AS "avgAcumulado"
 FROM telemetry_raw
-GROUP BY company_id, logical_id, day;
+GROUP BY company_id, logical_id, bucket;
 
 CREATE INDEX IF NOT EXISTS ca_device_daily_simple_idx
-  ON ca_device_daily_simple (day DESC, company_id, logical_id);
+  ON ca_device_daily_simple (bucket DESC, company_id, logical_id);
 
 DO $$
 BEGIN
@@ -117,7 +119,7 @@ END;
 $$;
 
 -- =========================
--- Views de compatibilidade
+-- Views de compatibilidade (padronizadas com novos nomes)
 -- =========================
 CREATE OR REPLACE VIEW companies AS
 SELECT DISTINCT company_id AS id
@@ -136,14 +138,15 @@ SELECT DISTINCT
   (payload ->> 'board_id') AS site_id
 FROM telemetry_raw;
 
+-- View agregada diária com nomes padronizados
 CREATE OR REPLACE VIEW daily_metrics AS
 WITH ordered AS (
   SELECT
     company_id,
     logical_id,
-    time_bucket('1 day', ts, 'UTC') AS day,
-    COALESCE(voltage, 0) AS voltage,
-    COALESCE(current, 0) AS current,
+    time_bucket('1 day', ts, 'UTC') AS bucket,
+    COALESCE(voltage, 0)   AS voltage,
+    COALESCE(current, 0)   AS current,
     frequency,
     power_factor,
     GREATEST(
@@ -156,25 +159,30 @@ aggregated AS (
   SELECT
     company_id,
     logical_id,
-    day,
-    SUM(((voltage * current * COALESCE(power_factor, 1)) / 1000.0) * duration_hours) AS kwh,
-    AVG(voltage * current) AS avg_power,
-    MIN(frequency)        AS min_freq,
-    MAX(frequency)        AS max_freq,
-    AVG(power_factor)     AS pf_avg
+    bucket,
+    -- Consumo diário (kWh) => avgConsumo
+    SUM(((voltage * current * COALESCE(power_factor, 1)) / 1000.0) * duration_hours) AS "avgConsumo",
+    -- Médias simples
+    AVG(voltage)        AS "avgVoltage",
+    AVG(current)        AS "avgCurrent",
+    AVG(frequency)      AS "avgFrequency",
+    AVG(power_factor)   AS "avgPowerFactor",
+    -- Média de potência aparente (compatível com o antigo avg_power)
+    AVG(voltage * current) AS "avgAcumulado"
   FROM ordered
-  GROUP BY company_id, logical_id, day
+  GROUP BY company_id, logical_id, bucket
 )
 SELECT
   agg.company_id,
   ld.id AS device_id,
   s.id  AS site_id,
-  agg.day,
-  agg.kwh,
-  agg.avg_power,
-  agg.min_freq,
-  agg.max_freq,
-  agg.pf_avg
+  agg.bucket,
+  agg."avgConsumo",
+  agg."avgVoltage",
+  agg."avgCurrent",
+  agg."avgFrequency",
+  agg."avgPowerFactor",
+  agg."avgAcumulado"
 FROM aggregated agg
 LEFT JOIN logical_devices ld
   ON ld.id = agg.logical_id
@@ -182,10 +190,9 @@ LEFT JOIN sites s
   ON s.company_id = agg.company_id
  AND s.id = ld.site_id;
 
-
-
-
-
+-- =========================
+-- NLQ rules (inalterado)
+-- =========================
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS nlq_rules (

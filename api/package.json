@@ -16,6 +16,10 @@
     "neo4j-driver": "5.18.0",
     "pg": "8.11.5",
     "node-cron": "3.0.3",
-    "@fastify/static": "6.10.1"
+    "@fastify/static": "6.10.1",
+    "langchain": "0.2.17",
+    "@langchain/google-genai": "0.1.5",
+    "@langchain/community": "0.2.33",
+    "hnswlib-node": "2.2.2"
   }
 }
