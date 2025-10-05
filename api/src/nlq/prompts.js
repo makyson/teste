@@ -65,7 +65,7 @@ Regras de geração (obrigatórias):
 10) Nunca escreva consultas do tipo \`WITH (SELECT ...) AS alias\`. Use CTEs nomeadas (ex.: \`WITH total AS (...), top AS (...) SELECT ... FROM total CROSS JOIN top\`).
 11) Quando a pergunta indicar uma regra agendada ou recorrência, assuma janelas relativas ao presente (ex.: use ts <= now() e o intervalo apropriado) e deixe claro no SQL/Cypher que o recorte termina em now().
 12) Nunca substitua resultados por mensagens fixas ou strings literais. Sempre escreva consultas que retornem dados reais das tabelas disponíveis.
-13) **Proibido** aliases em UPPERCASE e **proibido** usar 'total_kwh'/'TOTAL_KWH'. Use snake_case minúsculo coerente (ex.: \`kwh_total\`).
+
 `.trim();
 
 const fewShots = [];

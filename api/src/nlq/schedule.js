@@ -46,7 +46,6 @@ ${schemaContext.trim()}
 
 Quando o SUMMARY citar atributos, **prefira** os identificadores canônicos: ${common}.
 - Mapeie sinônimos para os canônicos e **cite apenas o canônico** (ex.: device_id/logical_id → \`id\`; ts/timestamp → \`lastTs\`; power_factor → \`powerFactor\`; freq → \`frequency\`).
-- O SELECT final NÃO deve expor colunas agregadas como total_kwh, max_kwh_anual, weekly_kwh, total_amps etc.
 - O SELECT final deve expor SOMENTE campos canônicos.
 - **Não** inclua unidades, símbolos ou prefixos (sem V/A/Hz/k etc.). Apenas o nome do campo.
 - Se a consulta envolver consumo (kWh), descreva a ação no summary sem inventar identificadores novos; use texto natural (ex.: "maior consumo nas últimas 24h") e cite campos canônicos só se necessário.
